@@ -1,0 +1,100 @@
+/* ─── Fonts (must be first) ─────────────────────────────────── */
+@import url("https://fonts.googleapis.com/css2?family=Athiti:wght@200;300;400;500;600;700&display=swap");
+@import "tailwindcss";
+
+/* ─── Design Tokens ─────────────────────────────────────────── */
+@theme inline {
+  /* Brand Colors */
+  --color-brand-yellow:       #f5c800;
+  --color-brand-yellow-light: #ffe566;
+  --color-brand-yellow-dark:  #c9a200;
+  --color-brand-yellow-muted: #fdf3c0;
+
+  /* Neutrals */
+  --color-surface:      #ffffff;
+  --color-surface-alt:  #fafafa;
+  --color-border:       #e5e7eb;
+  --color-text-primary: #111827;
+  --color-text-muted:   #6b7280;
+
+  /* Glass */
+  --color-glass-bg:     rgba(255, 255, 255, 0.72);
+  --color-glass-border: rgba(255, 255, 255, 0.5);
+
+  /* Typography */
+  --font-athiti: "Athiti", "Arial", sans-serif;
+
+  /* Radius */
+  --radius-sm:  0.5rem;
+  --radius-md:  0.75rem;
+  --radius-lg:  1rem;
+  --radius-xl:  1.5rem;
+  --radius-2xl: 2rem;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-glass:
+    0 8px 32px 0 rgba(31, 38, 135, 0.08),
+    0 2px 8px 0 rgba(0, 0, 0, 0.04);
+  --shadow-card:
+    0 4px 24px 0 rgba(0, 0, 0, 0.06),
+    0 1px 4px 0 rgba(0, 0, 0, 0.04);
+
+  /* Transitions */
+  --transition-fast:   150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow:   400ms ease;
+}
+
+/* ─── Base ──────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font-athiti);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-athiti);
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+  min-height: 100dvh;
+}
+
+/* ─── Glassmorphism Utility ─────────────────────────────────── */
+.glass {
+  background: var(--color-glass-bg);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid var(--color-glass-border);
+  box-shadow: var(--shadow-glass);
+}
+
+/* ─── Focus Ring ────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--color-brand-yellow);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ─── Scrollbar ─────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
