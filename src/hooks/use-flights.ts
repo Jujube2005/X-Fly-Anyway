@@ -31,14 +31,16 @@ export function useFlights(): UseFlightsReturn {
     setIsLoading(true);
     setError(null);
     try {
-      const query = new URLSearchParams({
-        origin: params.originCode,
+      const queryObj: Record<string, string> = {
+        origin:     params.originCode,
         destination: params.destinationCode,
-        date: params.departureDate,
+        date:       params.departureDate,
         passengers: String(params.passengers),
-        cabin: params.cabinClass,
-        ...(params.returnDate ? { returnDate: params.returnDate } : {}),
-      });
+      };
+      if (params.cabinClass) {
+        queryObj.cabinClass = params.cabinClass;
+      }
+      const query = new URLSearchParams(queryObj);
       const res = await fetch(`/api/flights?${query}`);
       if (!res.ok) throw new Error("Failed to fetch flights");
       const data: FlightSearchResult = await res.json();
