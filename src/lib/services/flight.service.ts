@@ -26,7 +26,6 @@ import {
   queryAirportsOrdered,
 } from "@/lib/supabase/queries";
 
-type AnySupabaseClient = ReturnType<typeof createSupabaseClient>;
 
 // ─── Row → Domain mappers ───────────────────────────────────────────────────
 

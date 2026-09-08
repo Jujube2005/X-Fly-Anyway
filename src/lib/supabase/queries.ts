@@ -8,23 +8,14 @@ import type {
   PassengerRow,
   BookingSeatRow,
   PaymentRow,
-  ETicketRow,
 } from "@/types/database";
+
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnySupabaseClient = SupabaseClient<any, any, any>;
 
-
-/**
- * Typed Supabase query helpers — avoids TS2339 "never" errors from
- * generic SupabaseClient<Database> when using manual Database interface.
- *
- * These wrappers cast `.from()` results to our known row types.
- */
-
-type AnySupabaseClient = ReturnType<typeof createSupabaseClient>;
-
 // ─── Airport ────────────────────────────────────────────────────────────────
+
 
 export async function queryAirports(
   supabase: AnySupabaseClient,
