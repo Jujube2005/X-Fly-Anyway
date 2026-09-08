@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Athiti } from "next/font/google";
 import "./globals.css";
+import { BookingProvider } from "@/components/booking/BookingProvider";
 
 const athiti = Athiti({
   weight: ["300", "400", "500", "600", "700"],
@@ -37,8 +38,9 @@ export default function RootLayout({
   return (
     <html lang="th" className={athiti.variable}>
       <body className="min-h-dvh flex flex-col antialiased">
-        {children}
+        <BookingProvider>{children}</BookingProvider>
       </body>
     </html>
   );
 }
+
