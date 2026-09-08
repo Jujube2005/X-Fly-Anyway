@@ -60,7 +60,7 @@ export default function TicketPage() {
     : "—";
 
   const seats = ticket?.booking?.seats ?? [];
-  const seatLabel = seats.length > 0 ? seats.map((s) => s.seatNumber).join(", ") : "—";
+  const seatLabel = seats.length > 0 ? seats.map((s: any) => s.seatNumber).join(", ") : "—";
 
   return (
     <div
