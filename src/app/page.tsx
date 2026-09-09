@@ -1,13 +1,11 @@
-import type { Metadata } from "next";
+"use client";
+
 import { Header } from "@/components/layout/Header";
 import { FlightSearchForm } from "@/components/flight/FlightSearchForm";
+import { useTranslation } from "@/hooks/useTranslation";
 import "./page.css";
 
-export const metadata: Metadata = {
-  title: "X-Fly Anyway — Book Flights, Fly Anywhere",
-  description:
-    "Search and book flights instantly — no login needed. Just pick your route and go.",
-};
+
 
 const POPULAR_DESTINATIONS = [
   { city: "Paris, France", price: "$359", emoji: "🗼" },
@@ -16,6 +14,7 @@ const POPULAR_DESTINATIONS = [
 ];
 
 export default function HomePage() {
+  const { t } = useTranslation();
   return (
     <div className="relative min-h-dvh flex flex-col overflow-hidden home-container">
       {/* Noise/texture overlay */}
@@ -30,7 +29,7 @@ export default function HomePage() {
           {/* Headline */}
           <div className="mb-8">
             <h1 className="text-4xl md:text-5xl font-bold text-white leading-tight">
-              Your Journey Begins Here.
+              {t.home.hero}
               <br />
               <span className="text-white">X-Fly Anyway.</span>
             </h1>

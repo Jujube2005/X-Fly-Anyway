@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useBookingContext } from "@/components/booking/BookingProvider";
 import type { Airport } from "@/types/flight";
+import { useTranslation } from "@/hooks/useTranslation";
 
 // Takeoff icon
 function TakeoffIcon() {
@@ -48,6 +49,7 @@ interface FlightSearchFormProps {
 export function FlightSearchForm({ onSearch }: FlightSearchFormProps) {
   const router = useRouter();
   const { setPassengerCount } = useBookingContext();
+  const { t } = useTranslation();
 
   const [airports, setAirports] = useState<Airport[]>([]);
   const [origin, setOrigin] = useState("");
@@ -121,7 +123,7 @@ export function FlightSearchForm({ onSearch }: FlightSearchFormProps) {
               required
             >
               <option value="" disabled className="text-gray-900 bg-white">
-                From
+                {t.search.from}
               </option>
               {airports.map((a) => (
                 <option key={a.code} value={a.code} className="text-gray-900 bg-white">
@@ -144,7 +146,7 @@ export function FlightSearchForm({ onSearch }: FlightSearchFormProps) {
               required
             >
               <option value="" disabled className="text-gray-900 bg-white">
-                To
+                {t.search.to}
               </option>
               {airports.map((a) => (
                 <option key={a.code} value={a.code} className="text-gray-900 bg-white">
@@ -196,8 +198,8 @@ export function FlightSearchForm({ onSearch }: FlightSearchFormProps) {
                   value={`${n}-${cls}`}
                   className="text-gray-900 bg-white"
                 >
-                  {n} {n === 1 ? "Adult" : "Adults"},{" "}
-                  {cls === "premium_economy" ? "Premium Economy" : cls.charAt(0).toUpperCase() + cls.slice(1)}
+                  {n} {n === 1 ? t.search.adult : t.search.adults},{" "}
+                  {cls === "premium_economy" ? t.search.cabinClass.premium_economy : cls === "economy" ? t.search.cabinClass.economy : cls === "business" ? t.search.cabinClass.business : t.search.cabinClass.first}
                 </option>
               ))
             )}
@@ -209,7 +211,7 @@ export function FlightSearchForm({ onSearch }: FlightSearchFormProps) {
           disabled={isLoading}
           className="bg-[#f5c800] text-[#111827] font-bold rounded-xl py-3.5 px-6 hover:bg-[#e6b800] active:bg-[#c9a200] transition-colors duration-200 disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-[#f5c800] focus-visible:outline-offset-2"
         >
-          {isLoading ? "Searching..." : "Search Flights"}
+          {isLoading ? t.search.searching : t.search.searchFlights}
         </button>
       </div>
     </form>

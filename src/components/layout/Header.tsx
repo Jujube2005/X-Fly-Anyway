@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LocaleSelector } from "./LocaleSelector";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface HeaderProps {
   variant?: "transparent" | "glass" | "solid";
@@ -10,6 +11,7 @@ interface HeaderProps {
 
 export function Header({ variant = "transparent" }: HeaderProps) {
   const pathname = usePathname();
+  const { t } = useTranslation();
 
   const bgStyles = {
     transparent: "bg-transparent",
@@ -50,9 +52,9 @@ export function Header({ variant = "transparent" }: HeaderProps) {
         {/* Nav */}
         <nav className="hidden md:flex items-center gap-8" aria-label="Main navigation">
           {[
-            { href: "/", label: "Book" },
-            { href: "/flights", label: "Flights" },
-            { href: "/booking/confirmation", label: "My Booking" },
+                      { href: "/", label: t.nav.book },
+            { href: "/flights", label: t.nav.flights },
+            { href: "/booking/confirmation", label: t.nav.myBooking },
           ].map(({ href, label }) => {
             const isActive = pathname === href;
             return (

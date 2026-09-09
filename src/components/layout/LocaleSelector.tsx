@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useLocale } from "@/contexts/LocaleContext";
+import { useTranslation } from "@/hooks/useTranslation";
 import "./LocaleSelector.css";
 
 /* ── Data ─────────────────────────────────────────────────────── */
@@ -209,28 +211,9 @@ export const CURRENCIES = [
   { code: "ZMW", symbol: "K",   name: "กวาชาแซมเบีย",               popular: false },
 ];
 
-/* ── Types ────────────────────────────────────────────────────── */
-export interface LocaleState {
-  language: string;
-  currency: string;
-}
 
-/* ── Storage helpers ──────────────────────────────────────────── */
-const STORAGE_KEY = "xfly_locale";
 
-function loadLocale(): LocaleState {
-  if (typeof window === "undefined") return { language: "th", currency: "THB" };
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : { language: "th", currency: "THB" };
-  } catch {
-    return { language: "th", currency: "THB" };
-  }
-}
 
-function saveLocale(state: LocaleState) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
 
 /* ── Component ────────────────────────────────────────────────── */
 interface LocaleSelectorProps {
@@ -239,13 +222,11 @@ interface LocaleSelectorProps {
 }
 
 export function LocaleSelector({ textColor }: LocaleSelectorProps) {
-  const [locale, setLocale] = useState<LocaleState>({ language: "th", currency: "THB" });
+  const { language, currency, setLanguage, setCurrency } = useLocale();
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"lang" | "currency">("lang");
   const overlayRef = useRef<HTMLDivElement>(null);
-
-  // Hydrate from localStorage on client
-  useEffect(() => { setLocale(loadLocale()); }, []);
 
   // Close on Escape
   useEffect(() => {
@@ -262,20 +243,16 @@ export function LocaleSelector({ textColor }: LocaleSelectorProps) {
   }, [open]);
 
   const selectLanguage = useCallback((code: string) => {
-    const next = { ...locale, language: code };
-    setLocale(next);
-    saveLocale(next);
+    setLanguage(code);
     setOpen(false);
-  }, [locale]);
+  }, [setLanguage]);
 
   const selectCurrency = useCallback((code: string) => {
-    const next = { ...locale, currency: code };
-    setLocale(next);
-    saveLocale(next);
-  }, [locale]);
+    setCurrency(code);
+  }, [setCurrency]);
 
-  const currentLang = LANGUAGES.find((l) => l.code === locale.language) ?? LANGUAGES[0];
-  const currentCurrency = CURRENCIES.find((c) => c.code === locale.currency) ?? CURRENCIES[0];
+  const currentLang = LANGUAGES.find((l) => l.code === language) ?? LANGUAGES[0];
+  const currentCurrency = CURRENCIES.find((c) => c.code === currency) ?? CURRENCIES[0];
   const popularCurrencies = CURRENCIES.filter((c) => c.popular);
 
   return (
@@ -321,14 +298,14 @@ export function LocaleSelector({ textColor }: LocaleSelectorProps) {
                 onClick={() => setActiveTab("lang")}
                 id="locale-tab-lang"
               >
-                ภาษา
+                {t.locale.language}
               </button>
               <button
                 className={`locale-tab-btn ${activeTab === "currency" ? "active" : ""}`}
                 onClick={() => setActiveTab("currency")}
                 id="locale-tab-currency"
               >
-                สกุลเงิน
+                {t.locale.currency}
               </button>
               <button
                 className="locale-close-btn"
@@ -348,7 +325,7 @@ export function LocaleSelector({ textColor }: LocaleSelectorProps) {
               {/* ── Language tab ── */}
               {activeTab === "lang" && (
                 <>
-                  <p className="locale-section-label">ภาษาปัจจุบัน</p>
+                  <p className="locale-section-label">{t.locale.currentLanguage}</p>
                   <div className="locale-grid" style={{ marginBottom: "8px" }}>
                     <button className="locale-item selected">
                       <span className="locale-item-flag">{currentLang.flag}</span>
@@ -356,12 +333,12 @@ export function LocaleSelector({ textColor }: LocaleSelectorProps) {
                     </button>
                   </div>
 
-                  <p className="locale-section-label">ภาษาทั้งหมด</p>
+                  <p className="locale-section-label">{t.locale.allLanguages}</p>
                   <div className="locale-grid">
                     {LANGUAGES.map((lang) => (
                       <button
                         key={lang.code}
-                        className={`locale-item ${locale.language === lang.code ? "selected" : ""}`}
+                      className={`locale-item ${language === lang.code ? "selected" : ""}`}
                         onClick={() => selectLanguage(lang.code)}
                         id={`locale-lang-${lang.code}`}
                       >
@@ -376,12 +353,12 @@ export function LocaleSelector({ textColor }: LocaleSelectorProps) {
               {/* ── Currency tab ── */}
               {activeTab === "currency" && (
                 <>
-                  <p className="locale-section-label">สกุลเงินยอดนิยม</p>
+                  <p className="locale-section-label">{t.locale.popularCurrencies}</p>
                   <div className="locale-grid">
                     {popularCurrencies.map((cur) => (
                       <button
                         key={cur.code}
-                        className={`locale-item ${locale.currency === cur.code ? "selected" : ""}`}
+                        className={`locale-item ${currency === cur.code ? "selected" : ""}`}
                         onClick={() => selectCurrency(cur.code)}
                         id={`locale-cur-popular-${cur.code}`}
                       >
@@ -391,12 +368,12 @@ export function LocaleSelector({ textColor }: LocaleSelectorProps) {
                     ))}
                   </div>
 
-                  <p className="locale-section-label">สกุลเงินทั้งหมด</p>
+                  <p className="locale-section-label">{t.locale.allCurrencies}</p>
                   <div className="locale-grid">
                     {CURRENCIES.map((cur) => (
                       <button
                         key={cur.code}
-                        className={`locale-item ${locale.currency === cur.code ? "selected" : ""}`}
+                        className={`locale-item ${currency === cur.code ? "selected" : ""}`}
                         onClick={() => selectCurrency(cur.code)}
                         id={`locale-cur-${cur.code}`}
                       >

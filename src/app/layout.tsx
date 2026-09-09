@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Noto_Sans_Thai } from "next/font/google";
 import "./globals.css";
 import { BookingProvider } from "@/components/booking/BookingProvider";
+import { LocaleProvider } from "@/contexts/LocaleContext";
 
 const notoSansThai = Noto_Sans_Thai({
   weight: ["300", "400", "500", "600", "700"],
@@ -38,7 +39,9 @@ export default function RootLayout({
   return (
     <html lang="th" className={notoSansThai.variable}>
       <body className="min-h-dvh flex flex-col antialiased">
-        <BookingProvider>{children}</BookingProvider>
+        <LocaleProvider>
+          <BookingProvider>{children}</BookingProvider>
+        </LocaleProvider>
       </body>
     </html>
   );
