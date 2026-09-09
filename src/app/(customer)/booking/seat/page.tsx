@@ -9,6 +9,7 @@ import { LoadingState, ErrorState, EmptyState } from "@/components/ui/States";
 import { useBookingContext } from "@/components/booking/BookingProvider";
 import { useSeats } from "@/hooks/use-seats";
 import type { Seat } from "@/types/seat";
+import "./page.css";
 
 function SeatCell({ seat, isSelected, onClick }: { seat: Seat; isSelected: boolean; onClick: () => void }) {
   const getStyle = (): { bg: string; border: string; cursor: string; label: string } => {
@@ -75,18 +76,12 @@ export default function SeatSelectionPage() {
   const totalSeats = selectedSeats.length;
 
   return (
-    <div
-      className="min-h-dvh flex flex-col"
-      style={{ background: "linear-gradient(180deg, #bfdbfe 0%, #dbeafe 40%, #e0f2fe 100%)" }}
-    >
+    <div className="min-h-dvh flex flex-col seat-page-container">
       <Header variant="glass" />
 
       <main className="flex-1 flex flex-col items-center pt-20 pb-6 px-4">
         {/* Title + stepper */}
-        <div
-          className="text-center mb-6 px-8 py-4 rounded-2xl"
-          style={{ background: "rgba(255,255,255,0.5)", backdropFilter: "blur(12px)" }}
-        >
+        <div className="text-center mb-6 px-8 py-4 rounded-2xl seat-title-card">
           <h1 className="text-xl font-bold text-[#111827]">X-Fly Anyway</h1>
           <p className="text-sm text-[#6b7280] mb-2">Seat Selection</p>
           <BookingStepper currentLabel="Seats (Current)" variant="light" />
@@ -94,15 +89,7 @@ export default function SeatSelectionPage() {
 
         <div className="flex gap-6 w-full max-w-5xl items-start">
           {/* Seat map */}
-          <div
-            className="flex-1 rounded-3xl p-6 overflow-auto"
-            style={{
-              background: "rgba(255,255,255,0.7)",
-              backdropFilter: "blur(16px)",
-              border: "1px solid rgba(255,255,255,0.8)",
-              boxShadow: "0 8px 32px rgba(0,0,0,0.08)",
-            }}
-          >
+          <div className="flex-1 rounded-3xl p-6 overflow-auto seat-map-container">
             {isLoading && <LoadingState message="Loading seat map..." />}
             {!isLoading && error && <ErrorState message={error} onRetry={() => selectedFlight && cabinClass && fetchSeatMap(selectedFlight.id, cabinClass)} />}
             {!isLoading && !error && !seatMap && <EmptyState message="No seats available." />}
@@ -176,15 +163,7 @@ export default function SeatSelectionPage() {
           </div>
 
           {/* Selection panel */}
-          <div
-            className="w-64 shrink-0 rounded-3xl p-5 sticky top-24"
-            style={{
-              background: "rgba(255,255,255,0.85)",
-              backdropFilter: "blur(16px)",
-              border: "2px solid #f5c800",
-              boxShadow: "0 8px 32px rgba(245,200,0,0.15)",
-            }}
-          >
+          <div className="w-64 shrink-0 rounded-3xl p-5 sticky top-24 seat-selection-panel">
             <h2 className="text-base font-bold text-[#111827] mb-4">Your Selection</h2>
 
             {selectedSeats.length === 0 ? (

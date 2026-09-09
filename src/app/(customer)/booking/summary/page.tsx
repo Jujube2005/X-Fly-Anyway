@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/Button";
 import { useBookingContext } from "@/components/booking/BookingProvider";
+import "./page.css";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", {
@@ -28,12 +29,6 @@ function formatDuration(dep: string, arr: string) {
   return `${h}h ${m}m, Direct`;
 }
 
-const glassCard = {
-  background: "rgba(255,255,255,0.12)",
-  backdropFilter: "blur(16px)",
-  WebkitBackdropFilter: "blur(16px)",
-  border: "1px solid rgba(255,255,255,0.2)",
-};
 
 export default function BookingSummaryPage() {
   const router = useRouter();
@@ -61,13 +56,7 @@ export default function BookingSummaryPage() {
     }).format(n);
 
   return (
-    <div
-      className="min-h-dvh flex flex-col"
-      style={{
-        background:
-          "linear-gradient(135deg, #1e293b 0%, #334155 50%, #1e293b 100%)",
-      }}
-    >
+    <div className="min-h-dvh flex flex-col summary-page-container">
       <Header variant="glass" />
 
       <main className="flex-1 pt-24 pb-12 px-4">
@@ -79,7 +68,7 @@ export default function BookingSummaryPage() {
             </h1>
 
             {/* Flight details */}
-            <div className="rounded-2xl p-5" style={glassCard}>
+            <div className="rounded-2xl p-5 summary-glass-card">
               <h2 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">
                 Flight Details
               </h2>
@@ -132,7 +121,7 @@ export default function BookingSummaryPage() {
             </div>
 
             {/* Passenger info */}
-            <div className="rounded-2xl p-5" style={glassCard}>
+            <div className="rounded-2xl p-5 summary-glass-card">
               <h2 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">
                 Passenger Information
               </h2>
@@ -170,7 +159,7 @@ export default function BookingSummaryPage() {
 
             {/* Seat choice */}
             {selectedSeats.length > 0 && (
-              <div className="rounded-2xl p-5" style={glassCard}>
+              <div className="rounded-2xl p-5 summary-glass-card">
                 <h2 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">
                   Seat Choice
                 </h2>
@@ -195,15 +184,7 @@ export default function BookingSummaryPage() {
 
           {/* Right — price + CTA */}
           <div className="w-full lg:w-72 shrink-0">
-            <div
-              className="rounded-2xl p-6"
-              style={{
-                background: "rgba(255,255,255,0.08)",
-                backdropFilter: "blur(16px)",
-                border: "2px solid #f5c800",
-                boxShadow: "0 8px 32px rgba(245,200,0,0.15)",
-              }}
-            >
+            <div className="rounded-2xl p-6 summary-price-card">
               <h2 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">
                 Price Breakdown
               </h2>

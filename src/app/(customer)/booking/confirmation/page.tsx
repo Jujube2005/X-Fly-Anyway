@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/ui/States";
 import { useBookingContext } from "@/components/booking/BookingProvider";
 import type { Booking } from "@/types/booking";
+import "./page.css";
 
 export default function ConfirmationPage() {
   const router = useRouter();
@@ -32,13 +33,7 @@ export default function ConfirmationPage() {
     : "—";
 
   return (
-    <div
-      className="min-h-dvh flex flex-col"
-      style={{
-        background:
-          "radial-gradient(ellipse at center, #2d1b69 0%, #1a0a3c 50%, #0d0621 100%)",
-      }}
-    >
+    <div className="min-h-dvh flex flex-col confirmation-page-container">
       <Header variant="transparent" />
 
       <main className="flex-1 flex items-center justify-center px-4 py-16">
@@ -85,16 +80,7 @@ export default function ConfirmationPage() {
             </p>
 
             {/* Reference card */}
-            <div
-              className="rounded-3xl p-8"
-              style={{
-                background: "rgba(255,255,255,0.08)",
-                backdropFilter: "blur(20px)",
-                WebkitBackdropFilter: "blur(20px)",
-                border: "1px solid rgba(255,255,255,0.15)",
-                boxShadow: "0 8px 48px rgba(0,0,0,0.4)",
-              }}
-            >
+            <div className="rounded-3xl p-8 confirmation-card-glass">
               <p className="text-center text-xs text-white/50 uppercase tracking-widest mb-2">
                 Booking Reference
               </p>

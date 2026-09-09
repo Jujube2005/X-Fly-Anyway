@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Header } from "@/components/layout/Header";
 import { FlightSearchForm } from "@/components/flight/FlightSearchForm";
+import "./page.css";
 
 export const metadata: Metadata = {
   title: "X-Fly Anyway — Book Flights, Fly Anywhere",
@@ -16,37 +17,16 @@ const POPULAR_DESTINATIONS = [
 
 export default function HomePage() {
   return (
-    <div
-      className="relative min-h-dvh flex flex-col overflow-hidden"
-      style={{
-        background:
-          "radial-gradient(ellipse at 20% 50%, #6b21a8 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, #1e40af 0%, transparent 50%), radial-gradient(ellipse at 60% 80%, #c2410c 0%, transparent 50%), #0f172a",
-      }}
-    >
+    <div className="relative min-h-dvh flex flex-col overflow-hidden home-container">
       {/* Noise/texture overlay */}
-      <div
-        className="absolute inset-0 opacity-[0.03] pointer-events-none"
-        style={{
-          backgroundImage:
-            "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
-        }}
-      />
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none home-noise-overlay" />
 
       <Header variant="transparent" />
 
       {/* Hero */}
       <main className="relative flex-1 flex flex-col items-center justify-center px-4 pt-20 pb-8">
         {/* Glass search card */}
-        <div
-          className="w-full max-w-3xl rounded-3xl px-8 py-10"
-          style={{
-            background: "rgba(255,255,255,0.10)",
-            backdropFilter: "blur(20px) saturate(180%)",
-            WebkitBackdropFilter: "blur(20px) saturate(180%)",
-            border: "1px solid rgba(255,255,255,0.18)",
-            boxShadow: "0 8px 48px 0 rgba(0,0,0,0.24)",
-          }}
-        >
+        <div className="w-full max-w-3xl rounded-3xl px-8 py-10 home-hero-card">
           {/* Headline */}
           <div className="mb-8">
             <h1 className="text-4xl md:text-5xl font-bold text-white leading-tight">
@@ -61,15 +41,7 @@ export default function HomePage() {
 
         {/* Popular destinations */}
         <div className="mt-8 w-full max-w-3xl">
-          <div
-            className="rounded-2xl px-6 py-4"
-            style={{
-              background: "rgba(255,255,255,0.08)",
-              backdropFilter: "blur(12px)",
-              WebkitBackdropFilter: "blur(12px)",
-              border: "1px solid rgba(255,255,255,0.12)",
-            }}
-          >
+          <div className="rounded-2xl px-6 py-4 home-destinations-card">
             <div className="flex items-center gap-6 overflow-x-auto scrollbar-none">
               {POPULAR_DESTINATIONS.map((dest) => (
                 <div

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { useBookingContext } from "@/components/booking/BookingProvider";
 import type { CabinClass } from "@/types/flight";
+import "./page.css";
 
 const CABIN_DETAILS = {
   economy: {
@@ -84,13 +85,7 @@ export default function CabinClassPage() {
         }));
 
   return (
-    <div
-      className="min-h-dvh flex flex-col"
-      style={{
-        background:
-          "linear-gradient(180deg, #bfdbfe 0%, #e0f2fe 30%, #f0f9ff 60%, #ffffff 100%)",
-      }}
-    >
+    <div className="min-h-dvh flex flex-col cabin-page-container">
       <Header variant="glass" />
 
       <main className="flex-1 flex flex-col items-center justify-center px-4 pt-24 pb-12">
@@ -110,14 +105,7 @@ export default function CabinClassPage() {
             return (
               <div
                 key={cabin.cabinClass}
-                className="flex flex-col rounded-3xl p-8 transition-transform hover:-translate-y-1"
-                style={{
-                  background: "rgba(255,255,255,0.70)",
-                  backdropFilter: "blur(20px)",
-                  WebkitBackdropFilter: "blur(20px)",
-                  border: "1px solid rgba(255,255,255,0.8)",
-                  boxShadow: "0 8px 32px rgba(0,0,0,0.08)",
-                }}
+                className="flex flex-col rounded-3xl p-8 transition-transform hover:-translate-y-1 cabin-card-glass"
               >
                 <h2 className="text-3xl font-bold text-[#111827] mb-8 text-center">
                   {details.label}
@@ -139,8 +127,7 @@ export default function CabinClassPage() {
                 ) : (
                   <button
                     onClick={() => handleSelect(cabin.cabinClass)}
-                    className="w-full py-3.5 rounded-xl font-semibold text-[#111827] transition-all hover:brightness-95 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-[#f5c800]"
-                    style={{ background: "#f5c800" }}
+                    className="w-full py-3.5 rounded-xl font-semibold text-[#111827] transition-all hover:brightness-95 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-[#f5c800] cabin-btn"
                   >
                     Select from {priceDisplay}
                   </button>

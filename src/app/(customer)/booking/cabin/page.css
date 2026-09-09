@@ -1,0 +1,15 @@
+.cabin-page-container {
+  background: linear-gradient(180deg, #bfdbfe 0%, #e0f2fe 30%, #f0f9ff 60%, #ffffff 100%);
+}
+
+.cabin-card-glass {
+  background: rgba(255, 255, 255, 0.70);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+.cabin-btn {
+  background: #f5c800;
+}

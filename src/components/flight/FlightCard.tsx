@@ -1,7 +1,7 @@
 import { useBookingContext } from "@/components/booking/BookingProvider";
 import type { Flight, FlightCabinClassInfo } from "@/types/flight";
 import { Badge } from "@/components/ui/Badge";
-
+import "./FlightCard.css";
 
 function formatTime(iso: string) {
   return new Date(iso).toLocaleTimeString("en-US", {
@@ -147,15 +147,7 @@ export function FlightFilters({ selectedCabin, onCabinChange }: FlightFiltersPro
   ];
 
   return (
-    <div
-      className="rounded-2xl p-5"
-      style={{
-        background: "rgba(255,255,255,0.15)",
-        backdropFilter: "blur(16px)",
-        WebkitBackdropFilter: "blur(16px)",
-        border: "1px solid rgba(255,255,255,0.25)",
-      }}
-    >
+    <div className="rounded-2xl p-5 flight-filters-glass">
       <h2 className="text-base font-bold text-white mb-4">Filters</h2>
 
       <div>

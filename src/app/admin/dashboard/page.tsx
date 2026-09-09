@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 import { LoadingState } from "@/components/ui/States";
 import type { Booking } from "@/types/booking";
+import "./page.css";
 
 interface StatCardProps {
   title: string;
@@ -46,7 +47,7 @@ function SparklineChart() {
 
 function StatCard({ title, value, subtitle, chart }: StatCardProps) {
   return (
-    <div className="bg-white rounded-3xl p-6" style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.05)" }}>
+    <div className="bg-white rounded-3xl p-6 admin-card">
       <div className="flex items-start justify-between mb-2">
         <p className="text-sm font-semibold text-[#374151]">{title}</p>
         <button className="text-[#9ca3af] hover:text-[#6b7280]" aria-label="Options">⋯</button>
@@ -113,7 +114,7 @@ export default function AdminDashboardPage() {
           value={isLoading ? "..." : fmtCurrency(totalRevenue)}
           chart
         />
-        <div className="bg-white rounded-3xl p-6" style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.05)" }}>
+        <div className="bg-white rounded-3xl p-6 admin-card">
           <div className="flex items-start justify-between mb-3">
             <p className="text-sm font-semibold text-[#374151]">Flight Status</p>
             <button className="text-[#9ca3af]" aria-label="Options">⋯</button>
@@ -140,10 +141,7 @@ export default function AdminDashboardPage() {
       {/* Bottom row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Recent bookings table */}
-        <div
-          className="lg:col-span-2 bg-white rounded-3xl p-6"
-          style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.05)" }}
-        >
+        <div className="lg:col-span-2 bg-white rounded-3xl p-6 admin-card">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-bold text-[#111827]">Recent Bookings</h2>
             <button className="text-[#9ca3af]" aria-label="Options">⋯</button>
@@ -214,10 +212,7 @@ export default function AdminDashboardPage() {
             value={isLoading ? "..." : String(bookings.length)}
             subtitle="All time"
           />
-          <div
-            className="bg-white rounded-3xl p-6"
-            style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.05)" }}
-          >
+          <div className="bg-white rounded-3xl p-6 admin-card">
             <div className="flex items-center justify-between mb-3">
               <p className="text-sm font-semibold text-[#374151]">System Alerts</p>
               <button className="text-[#9ca3af]" aria-label="Options">⋯</button>

@@ -1,7 +1,8 @@
 /* ─── Fonts (must be first) ─────────────────────────────────── */
 @import url("https://fonts.googleapis.com/css2?family=Athiti:wght@200;300;400;500;600;700&display=swap");
 @import "tailwindcss";
-
+@import "../styles/variables.css";
+@import "../styles/utilities.css";
 /* ─── Design Tokens ─────────────────────────────────────────── */
 @theme inline {
   /* Brand Colors */
@@ -67,14 +68,6 @@ body {
   min-height: 100dvh;
 }
 
-/* ─── Glassmorphism Utility ─────────────────────────────────── */
-.glass {
-  background: var(--color-glass-bg);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border: 1px solid var(--color-glass-border);
-  box-shadow: var(--shadow-glass);
-}
 
 /* ─── Focus Ring ────────────────────────────────────────────── */
 :focus-visible {

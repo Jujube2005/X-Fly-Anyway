@@ -7,6 +7,7 @@ import { FlightCard, FlightFilters } from "@/components/flight/FlightCard";
 import { LoadingState, ErrorState, EmptyState } from "@/components/ui/States";
 import { useBookingContext } from "@/components/booking/BookingProvider";
 import type { Flight, FlightSearchResult, FlightCabinClassInfo } from "@/types/flight";
+import "./page.css";
 
 function FlightResultsContent() {
   const searchParams = useSearchParams();
@@ -71,27 +72,13 @@ function FlightResultsContent() {
     .join(" | ");
 
   return (
-    <div
-      className="min-h-dvh"
-      style={{
-        background:
-          "radial-gradient(ellipse at top, #93c5fd 0%, #7dd3fc 30%, #bae6fd 60%, #e0f2fe 100%)",
-      }}
-    >
+    <div className="min-h-dvh flights-page-container">
       <Header variant="glass" />
 
       <main className="pt-20 pb-12 px-4">
         <div className="max-w-5xl mx-auto">
           {/* Search bar row */}
-          <div
-            className="flex items-center justify-between gap-4 rounded-2xl px-5 py-3 mb-6"
-            style={{
-              background: "rgba(255,255,255,0.7)",
-              backdropFilter: "blur(12px)",
-              WebkitBackdropFilter: "blur(12px)",
-              border: "1px solid rgba(255,255,255,0.5)",
-            }}
-          >
+          <div className="flex items-center justify-between gap-4 rounded-2xl px-5 py-3 mb-6 flights-search-bar">
             <div className="flex items-center gap-2 text-[#374151] text-sm">
               <svg width="16" height="16" fill="none" viewBox="0 0 16 16" aria-hidden="true">
                 <circle cx="6.5" cy="6.5" r="5" stroke="#6b7280" strokeWidth="1.4" />

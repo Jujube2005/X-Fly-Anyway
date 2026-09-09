@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { LoadingState, ErrorState } from "@/components/ui/States";
 import { Button } from "@/components/ui/Button";
 import type { ETicket } from "@/types/ticket";
+import "./page.css";
 
 // Simple QR-code-like square using deterministic pattern
 function QRPlaceholder({ data }: { data: string }) {
@@ -63,13 +64,7 @@ export default function TicketPage() {
   const seatLabel = seats.length > 0 ? seats.map((s: any) => s.seatNumber).join(", ") : "—";
 
   return (
-    <div
-      className="min-h-dvh flex items-center justify-center px-4 py-12"
-      style={{
-        background:
-          "radial-gradient(ellipse at bottom, #1e3a5f 0%, #0d1b2a 60%, #000 100%)",
-      }}
-    >
+    <div className="min-h-dvh flex items-center justify-center px-4 py-12 ticket-page-container">
       {isLoading && <LoadingState message="Loading your ticket..." />}
 
       {!isLoading && error && (
@@ -80,16 +75,7 @@ export default function TicketPage() {
       )}
 
       {!isLoading && ticket && (
-        <div
-          className="w-full max-w-lg rounded-3xl overflow-hidden print:shadow-none"
-          style={{
-            background: "rgba(255,255,255,0.08)",
-            backdropFilter: "blur(20px)",
-            WebkitBackdropFilter: "blur(20px)",
-            border: "1px solid rgba(255,255,255,0.15)",
-            boxShadow: "0 16px 64px rgba(0,0,0,0.5)",
-          }}
-        >
+        <div className="w-full max-w-lg rounded-3xl overflow-hidden print:shadow-none ticket-card-glass">
           {/* Ticket header */}
           <div className="px-8 pt-7 pb-5 border-b border-white/10 flex items-center gap-4">
             <div className="flex items-center gap-2">

@@ -6,6 +6,7 @@ import { Header } from "@/components/layout/Header";
 import { BookingStepper } from "@/components/booking/BookingStepper";
 import { Button } from "@/components/ui/Button";
 import { useBookingContext, type PassengerInput } from "@/components/booking/BookingProvider";
+import "./page.css";
 
 const TITLE_OPTIONS = [
   { value: "Mr", label: "Mr" },
@@ -62,26 +63,11 @@ export default function PassengerPage() {
   }
 
   return (
-    <div
-      className="min-h-dvh flex flex-col"
-      style={{
-        background:
-          "radial-gradient(ellipse at bottom left, #713f12 0%, #1e1b4b 30%, #0f172a 70%)",
-      }}
-    >
+    <div className="min-h-dvh flex flex-col passenger-page-container">
       <Header variant="transparent" />
 
       <main className="flex-1 flex items-center justify-center px-4 pt-24 pb-12">
-        <div
-          className="w-full max-w-2xl rounded-3xl px-8 py-10"
-          style={{
-            background: "rgba(255,255,255,0.08)",
-            backdropFilter: "blur(20px) saturate(180%)",
-            WebkitBackdropFilter: "blur(20px) saturate(180%)",
-            border: "1px solid rgba(255,255,255,0.15)",
-            boxShadow: "0 8px 48px rgba(0,0,0,0.3)",
-          }}
-        >
+        <div className="w-full max-w-2xl rounded-3xl px-8 py-10 passenger-card-glass">
           <h1 className="text-3xl font-bold text-white mb-2">Passenger Information</h1>
 
           <div className="mb-6">

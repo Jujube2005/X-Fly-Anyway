@@ -6,6 +6,7 @@ import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/Button";
 import { useBookingContext } from "@/components/booking/BookingProvider";
 import type { PaymentMethod } from "@/types/payment";
+import "./page.css";
 
 type Method = "credit_card" | "card_charge" | "bitcoin";
 
@@ -136,26 +137,11 @@ export default function PaymentPage() {
   }
 
   return (
-    <div
-      className="min-h-dvh flex flex-col"
-      style={{
-        background:
-          "linear-gradient(135deg, #1e293b 0%, #334155 50%, #1e293b 100%)",
-      }}
-    >
+    <div className="min-h-dvh flex flex-col payment-page-container">
       <Header variant="glass" />
 
       <main className="flex-1 pt-24 pb-12 px-4 flex items-start justify-center">
-        <div
-          className="w-full max-w-3xl rounded-3xl overflow-hidden"
-          style={{
-            background: "rgba(255,255,255,0.08)",
-            backdropFilter: "blur(20px)",
-            WebkitBackdropFilter: "blur(20px)",
-            border: "1px solid rgba(255,255,255,0.15)",
-            boxShadow: "0 8px 48px rgba(0,0,0,0.3)",
-          }}
-        >
+        <div className="w-full max-w-3xl rounded-3xl overflow-hidden payment-card-glass">
           {/* Header bar */}
           <div className="px-8 py-5 border-b border-white/10 flex items-center gap-4">
             <span className="text-lg font-bold text-white">X-Fly Anyway</span>

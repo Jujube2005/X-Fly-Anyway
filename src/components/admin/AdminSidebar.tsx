@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import "./AdminSidebar.css";
 
 const NAV_ITEMS = [
   { href: "/admin/dashboard", label: "Overview", icon: "🏠" },
@@ -14,10 +15,7 @@ export function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside
-      className="w-56 shrink-0 bg-white rounded-3xl flex flex-col py-8 px-4"
-      style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.06)", minHeight: "calc(100vh - 3rem)" }}
-    >
+    <aside className="w-56 shrink-0 bg-white rounded-3xl flex flex-col py-8 px-4 admin-sidebar">
       {/* Logo */}
       <div className="px-2 mb-8">
         <span className="text-lg font-black text-[#111827]">
