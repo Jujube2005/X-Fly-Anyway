@@ -22,10 +22,13 @@ import { sv, da, fi } from "./nordic";
 import { el, ro, cs, hu } from "./eu-east";
 import { sk, bg, hr, ca, fa, he, bn, ur, lt, lv } from "./misc-1";
 import { et, sr, sw, tl, ka } from "./misc-2";
+import { km, lo, my, ne, si, ta, te, ml, gu, pa } from "./misc-3";
+import { sl, mk, sq, hy, az, kk, uz, mn } from "./misc-4";
+import { af, am, yo, ha, is, mt, cy, ga, eu, gl } from "./misc-5";
 
 export type { Translations } from "./th";
 
-const translationsMap: Record<string, typeof th> = {
+const translationsMap: Record<string, any> = {
   th,
   "th-TH": th,
   en,
@@ -72,6 +75,34 @@ const translationsMap: Record<string, typeof th> = {
   sw,
   tl,
   ka,
+  km,
+  lo,
+  my,
+  ne,
+  si,
+  ta,
+  te,
+  ml,
+  gu,
+  pa,
+  sl,
+  mk,
+  sq,
+  hy,
+  az,
+  kk,
+  uz,
+  mn,
+  af,
+  am,
+  yo,
+  ha,
+  is,
+  mt,
+  cy,
+  ga,
+  eu,
+  gl,
 };
 
 /**
@@ -93,6 +124,8 @@ export function getTranslations(language: string) {
 export {
   th, en, zhCN, zhTW, ja, ko, ar, de, es, fr, hi, id, ms, it, nl, pl,
   ptBR, ptPT, ru, tr, uk, vi, sv, da, fi, el, ro, cs, hu, sk, bg, hr,
-  ca, fa, he, bn, ur, lt, lv, et, sr, sw, tl, ka,
+  ca, fa, he, bn, ur, lt, lv, et, sr, sw, tl, ka, km, lo, my, ne, si,
+  ta, te, ml, gu, pa, sl, mk, sq, hy, az, kk, uz, mn, af, am, yo, ha,
+  is, mt, cy, ga, eu, gl,
 };
 
