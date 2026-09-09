@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { Athiti } from "next/font/google";
+import { Noto_Sans_Thai } from "next/font/google";
 import "./globals.css";
 import { BookingProvider } from "@/components/booking/BookingProvider";
 
-const athiti = Athiti({
+const notoSansThai = Noto_Sans_Thai({
   weight: ["300", "400", "500", "600", "700"],
   subsets: ["latin", "thai"],
-  variable: "--font-athiti",
+  variable: "--font-noto-sans-thai",
   display: "swap",
 });
 
@@ -36,7 +36,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="th" className={athiti.variable}>
+    <html lang="th" className={notoSansThai.variable}>
       <body className="min-h-dvh flex flex-col antialiased">
         <BookingProvider>{children}</BookingProvider>
       </body>

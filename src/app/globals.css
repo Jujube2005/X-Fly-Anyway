@@ -1,5 +1,5 @@
 /* ─── Fonts (must be first) ─────────────────────────────────── */
-@import url("https://fonts.googleapis.com/css2?family=Athiti:wght@200;300;400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;700&display=swap");
 @import "tailwindcss";
 @import "../styles/variables.css";
 @import "../styles/utilities.css";
@@ -23,7 +23,7 @@
   --color-glass-border: rgba(255, 255, 255, 0.5);
 
   /* Typography */
-  --font-athiti: "Athiti", "Arial", sans-serif;
+  --font-noto-sans-thai: "Noto Sans Thai", "Arial", sans-serif;
 
   /* Radius */
   --radius-sm:  0.5rem;
@@ -55,14 +55,14 @@
 }
 
 html {
-  font-family: var(--font-athiti);
+  font-family: var(--font-noto-sans-thai);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
 }
 
 body {
-  font-family: var(--font-athiti);
+  font-family: var(--font-noto-sans-thai);
   color: var(--color-text-primary);
   background: var(--color-surface);
   min-height: 100dvh;
