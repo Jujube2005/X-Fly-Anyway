@@ -14,7 +14,7 @@ export const LANGUAGES = [
   { code: "ja",    flag: "🇯🇵", label: "日本語" },
   { code: "ko",    flag: "🇰🇷", label: "한국어" },
   { code: "uk",    flag: "🇺🇦", label: "Українська" },
-  { code: "ar",    flag: "🇦🇹🇷",  label: "العربية" },
+  { code: "ar",    flag: "🇦🇷",  label: "العربية" },
   { code: "id",    flag: "🇮🇩", label: "Bahasa Indonesia" },
   { code: "ms",    flag: "🇲🇾", label: "Bahasa Melayu" },
   { code: "da",    flag: "🇩🇰", label: "Dansk" },
