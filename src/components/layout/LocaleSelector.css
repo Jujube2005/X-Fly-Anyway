@@ -1,0 +1,204 @@
+/* ── Overlay ──────────────────────────────────────────────────── */
+.locale-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 72px;
+  animation: locale-fade-in 0.15s ease;
+}
+
+@keyframes locale-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Modal panel ─────────────────────────────────────────────── */
+.locale-panel {
+  background: #ffffff;
+  border-radius: 16px;
+  width: min(860px, calc(100vw - 32px));
+  max-height: min(640px, calc(100dvh - 96px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
+  animation: locale-slide-in 0.2s ease;
+}
+
+@keyframes locale-slide-in {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Header bar ──────────────────────────────────────────────── */
+.locale-header {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #f0f0f0;
+  padding: 0 20px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.locale-tab-btn {
+  padding: 16px 4px;
+  margin-right: 28px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  color: #9ca3af;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+}
+
+.locale-tab-btn.active {
+  color: #111827;
+  border-bottom-color: #111827;
+  font-weight: 700;
+}
+
+.locale-close-btn {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 8px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.locale-close-btn:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+/* ── Scrollable body ─────────────────────────────────────────── */
+.locale-body {
+  overflow-y: auto;
+  padding: 20px;
+  flex: 1;
+}
+
+.locale-body::-webkit-scrollbar { width: 4px; }
+.locale-body::-webkit-scrollbar-track { background: transparent; }
+.locale-body::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 9999px; }
+
+/* ── Section label ───────────────────────────────────────────── */
+.locale-section-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 12px;
+  margin-top: 4px;
+}
+
+.locale-section-label + .locale-section-label,
+.locale-grid + .locale-section-label {
+  margin-top: 24px;
+}
+
+/* ── Grid of items ───────────────────────────────────────────── */
+.locale-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+
+@media (max-width: 600px) {
+  .locale-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── Individual item ─────────────────────────────────────────── */
+.locale-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.12s ease;
+  background: none;
+  border: none;
+  text-align: left;
+  width: 100%;
+  min-width: 0;
+}
+
+.locale-item:hover {
+  background: #f3f4f6;
+}
+
+.locale-item.selected {
+  background: #f0f9ff;
+}
+
+.locale-item-flag {
+  font-size: 20px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.locale-item-label {
+  font-size: 13.5px;
+  color: #374151;
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.locale-item.selected .locale-item-label {
+  color: #0ea5e9;
+  font-weight: 600;
+}
+
+.locale-item-code {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #374151;
+  flex-shrink: 0;
+  min-width: 40px;
+}
+
+.locale-item.selected .locale-item-code {
+  color: #0ea5e9;
+}
+
+/* ── Trigger button ──────────────────────────────────────────── */
+.locale-trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+}
+
+.locale-trigger:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.locale-trigger-text {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.locale-trigger-sep {
+  opacity: 0.4;
+  font-size: 12px;
+}

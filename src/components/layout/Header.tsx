@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { LocaleSelector } from "./LocaleSelector";
 
 interface HeaderProps {
   variant?: "transparent" | "glass" | "solid";
@@ -70,7 +71,10 @@ export function Header({ variant = "transparent" }: HeaderProps) {
           })}
         </nav>
 
-        {/* Right actions intentionally empty — Admin access is via company devices only */}
+        {/* Right actions — Admin access is via company devices only */}
+        <LocaleSelector
+          textColor={variant === "solid" ? "text-[#374151]" : "text-white/80"}
+        />
       </div>
     </header>
   );
