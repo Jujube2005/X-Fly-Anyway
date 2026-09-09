@@ -103,20 +103,23 @@ export function FlightSearchForm({ onSearch }: FlightSearchFormProps) {
   }, [fetchAirports]);
 
   function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!origin || !destination || !departureDate) return;
-    setIsLoading(true);
-    setPassengerCount(passengers);
-    const params = new URLSearchParams({
-      origin,
-      destination,
-      date: departureDate,
-      passengers: String(passengers),
-      cabinClass,
-    });
-    onSearch?.();
-    router.push(`/flights?${params}`);
-  }
+  e.preventDefault();
+  if (!origin || !destination || !departureDate) return;
+
+  setIsLoading(true);
+  setPassengerCount(passengers);
+
+  const params = new URLSearchParams({
+    origin,
+    destination,
+    date: departureDate,
+    passengers: String(passengers),
+    cabinClass,
+  });
+
+  onSearch?.();
+  router.push(`/flights?${params}`);
+}
 
   const inputBase =
     "w-full bg-white/15 backdrop-blur-sm border border-white/30 text-white placeholder:text-white/50 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:border-[#f5c800] focus:ring-1 focus:ring-[#f5c800] transition-all duration-200";
@@ -208,79 +211,195 @@ export function FlightSearchForm({ onSearch }: FlightSearchFormProps) {
               <PassengerIcon />
             </span>
             <span className="truncate">
-              {passengers} {passengers === 1 ? t.search.adult : t.search.adults},{" "}
-              {cabinClass === "premium_economy" ? t.search.cabinClass.premium_economy : cabinClass === "economy" ? t.search.cabinClass.economy : cabinClass === "business" ? t.search.cabinClass.business : t.search.cabinClass.first}
-            </span>
+              {passengers} {passengers === 1 ? "ผู้ใหญ่" : "ผู้ใหญ่"},
+              {" "}
+              {cabinClass === "premium_economy"
+                ? t.search.cabinClass.premium_economy
+                : cabinClass === "economy"
+                  ? t.search.cabinClass.economy
+      : cabinClass === "business"
+        ? t.search.cabinClass.business
+        : t.search.cabinClass.first}
+</span>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-white/50 shrink-0 ml-2">
               <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
 
           {isPopoverOpen && (
-            <div className="absolute top-full left-0 mt-2 w-full sm:w-72 bg-white rounded-2xl shadow-xl z-50 p-5 border border-gray-100 text-gray-900 animate-in fade-in slide-in-from-top-2 duration-200">
-              {/* Passengers */}
-              <div className="mb-5">
-                <div className="flex justify-between items-center mb-1">
-                  <div>
-                    <h4 className="font-bold text-sm text-gray-900">{t.search.passengers}</h4>
-                    <p className="text-xs text-gray-500">{t.search.adults}</p>
-                  </div>
+            <div className="absolute top-full left-0 mt-2 w-full sm:w-80 bg-white rounded-2xl shadow-xl z-50 p-5 border border-gray-100 text-gray-900 animate-in fade-in slide-in-from-top-2 duration-200">
+              {/* Passenger Count */}
+              <div>
+                <h4 className="font-bold text-base text-gray-900 mb-5">
+                  จำนวนผู้โดยสาร
+                </h4>
+
+                {/* Adult */}
+                <div className="flex items-center justify-between mb-5">
                   <div className="flex items-center gap-3">
+                    <PassengerIcon />
+
+                    <div>
+                      <p className="font-semibold text-sm">ผู้ใหญ่</p>
+                      <p className="text-xs text-gray-500">
+                        อายุตั้งแต่ 12 ปีขึ้นไป
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4">
                     <button
                       type="button"
-                      onClick={() => setPassengers(Math.max(1, passengers - 1))}
-                      disabled={passengers <= 1}
-                      className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 hover:border-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:hover:border-gray-200 disabled:hover:bg-transparent transition-all"
+                      onClick={() => setAdults(Math.max(1, adults - 1))}
+                      disabled={adults <= 1}
+                      className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 disabled:opacity-40"
                     >
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                      −
                     </button>
-                    <span className="w-4 text-center font-semibold text-sm">{passengers}</span>
+
+                    <span className="w-4 text-center font-semibold">
+                      {adults}
+                    </span>
+
                     <button
                       type="button"
-                      onClick={() => setPassengers(Math.min(9, passengers + 1))}
+                      onClick={() => setAdults(Math.min(9, adults + 1))}
                       disabled={passengers >= 9}
-                      className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 hover:border-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:hover:border-gray-200 disabled:hover:bg-transparent transition-all"
+                      className="w-9 h-9 rounded-full bg-sky-100 flex items-center justify-center text-gray-700 hover:bg-sky-200"
                     >
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                {/* Child */}
+                <div className="flex items-center justify-between mb-5">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xl">♧</span>
+
+                    <div>
+                      <p className="font-semibold text-sm">เด็ก</p>
+                      <p className="text-xs text-gray-500">
+                        2–11 ปี
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setChildren(Math.max(0, children - 1))}
+                      disabled={children <= 0}
+                      className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 disabled:opacity-40"
+                    >
+                      −
+                    </button>
+
+                    <span className="w-4 text-center font-semibold">
+                      {children}
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (passengers < 9) {
+                          setChildren(children + 1);
+                        }
+                      }}
+                      disabled={passengers >= 9}
+                      className="w-9 h-9 rounded-full bg-sky-100 flex items-center justify-center text-gray-700 hover:bg-sky-200"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                {/* Infant */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xl">◉</span>
+
+                    <div>
+                      <p className="font-semibold text-sm">ทารก</p>
+                      <p className="text-xs text-gray-500">
+                        ต่ำกว่า 2 ปี
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setInfants(Math.max(0, infants - 1))}
+                      disabled={infants <= 0}
+                      className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 disabled:opacity-40"
+                    >
+                      −
+                    </button>
+
+                    <span className="w-4 text-center font-semibold">
+                      {infants}
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (passengers < 9) {
+                          setInfants(infants + 1);
+                        }
+                      }}
+                      disabled={passengers >= 9}
+                      className="w-9 h-9 rounded-full bg-sky-100 flex items-center justify-center text-gray-700 hover:bg-sky-200"
+                    >
+                      +
                     </button>
                   </div>
                 </div>
               </div>
-              
-              <div className="h-px bg-gray-100 mb-5 w-full" />
-              
+
+              <div className="h-px bg-gray-100 my-6" />
+
               {/* Cabin Class */}
               <div>
-                <h4 className="font-bold text-sm text-gray-900 mb-3">
-                  {t.flights?.cabinClass || "Cabin Class"}
+                <h4 className="font-bold text-base text-gray-900 mb-3">
+                  ชั้นโดยสาร
                 </h4>
-                <div className="flex flex-col gap-2">
-                  {(["economy", "premium_economy", "business", "first"] as const).map((cls) => (
-                    <label key={cls} className="flex items-center gap-3 p-2.5 -mx-2.5 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors">
-                      <div className="relative flex items-center justify-center">
-                        <input
-                          type="radio"
-                          name="cabinClass"
-                          value={cls}
-                          checked={cabinClass === cls}
-                          onChange={() => setCabinClass(cls)}
-                          className="w-5 h-5 border-2 border-gray-300 rounded-full appearance-none checked:border-[#f5c800] transition-colors cursor-pointer"
-                        />
-                        {cabinClass === cls && (
-                          <div className="absolute w-2.5 h-2.5 rounded-full bg-[#f5c800] pointer-events-none" />
-                        )}
-                      </div>
-                      <span className="text-sm font-medium text-gray-700">
-                        {cls === "premium_economy" ? t.search.cabinClass.premium_economy : cls === "economy" ? t.search.cabinClass.economy : cls === "business" ? t.search.cabinClass.business : t.search.cabinClass.first}
-                      </span>
-                    </label>
-                  ))}
-                </div>
+
+                <select
+                  value={cabinClass}
+                  onChange={(e) => setCabinClass(e.target.value)}
+                  className="w-full h-12 rounded-xl border border-gray-300 px-4 text-sm text-gray-800 bg-white focus:outline-none focus:border-sky-500"
+                >
+                  <option value="economy">
+                    {t.search.cabinClass.economy}
+                  </option>
+
+                  <option value="premium_economy">
+                    {t.search.cabinClass.premium_economy}
+                  </option>
+
+                  <option value="business">
+                    {t.search.cabinClass.business}
+                  </option>
+
+                  <option value="first">
+                    {t.search.cabinClass.first}
+                  </option>
+                </select>
               </div>
+
+              {/* Done */}
+              <button
+                type="button"
+                onClick={() => setIsPopoverOpen(false)}
+                className="w-full mt-5 bg-sky-500 hover:bg-sky-600 text-white font-bold rounded-xl py-3.5 transition-colors"
+              >
+                เสร็จสิ้น
+              </button>
             </div>
           )}
         </div>
-
+        
         <button
           type="submit"
           disabled={isLoading}
