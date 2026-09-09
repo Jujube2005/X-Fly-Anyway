@@ -70,21 +70,7 @@ export function Header({ variant = "transparent" }: HeaderProps) {
           })}
         </nav>
 
-        {/* Right actions */}
-        <div className="flex items-center gap-3">
-          <Link
-            href="/admin/login"
-            className={`text-sm font-medium ${navColor} transition-colors`}
-          >
-            Log In
-          </Link>
-          <Link
-            href="/admin/login"
-            className="text-sm font-semibold border border-[#f5c800] text-[#f5c800] px-4 py-1.5 rounded-lg hover:bg-[#f5c800]/10 transition-colors"
-          >
-            Admin
-          </Link>
-        </div>
+        {/* Right actions intentionally empty — Admin access is via company devices only */}
       </div>
     </header>
   );
