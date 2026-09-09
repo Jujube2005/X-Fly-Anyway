@@ -1,6 +1,8 @@
 import { useBookingContext } from "@/components/booking/BookingProvider";
 import type { Flight, FlightCabinClassInfo } from "@/types/flight";
 import { Badge } from "@/components/ui/Badge";
+import { useLocale } from "@/contexts/LocaleContext";
+import { formatCurrency } from "@/lib/utils/currency";
 import "./FlightCard.css";
 
 function formatTime(iso: string) {
@@ -34,17 +36,15 @@ interface FlightCardProps {
 }
 
 export function FlightCard({ flight, cabinClasses, onSelect, isSelected = false }: FlightCardProps) {
+  const { language, currency } = useLocale();
+
   const cheapest = cabinClasses.reduce<FlightCabinClassInfo | null>((min, c) => {
     if (!min || c.price < min.price) return c;
     return min;
   }, null);
 
   const priceDisplay = cheapest
-    ? new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: cheapest.currency,
-        maximumFractionDigits: 0,
-      }).format(cheapest.price)
+    ? formatCurrency(cheapest.price, currency, language, cheapest.currency)
     : "—";
 
   const statusVariant = (): "confirmed" | "yellow" | "grey" | "red" => {

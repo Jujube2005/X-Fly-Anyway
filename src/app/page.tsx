@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Header } from "@/components/layout/Header";
 import { FlightSearchForm } from "@/components/flight/FlightSearchForm";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useLocale } from "@/contexts/LocaleContext";
+import { formatCurrency } from "@/lib/utils/currency";
 import "./page.css";
 
 /* ─── SVG Icons ──────────────────────────────────────────────── */
@@ -82,12 +84,12 @@ function IconTag() {
 /* ─── Static Data ────────────────────────────────────────────── */
 
 const POPULAR_DESTINATIONS = [
-  { city: "Paris, France",   price: "$359", iata: "CDG" },
-  { city: "Tokyo, Japan",    price: "$759", iata: "TYO" },
-  { city: "Dubai, UAE",      price: "$249", iata: "DXB" },
-  { city: "New York, USA",   price: "$529", iata: "JFK" },
-  { city: "Singapore",       price: "$189", iata: "SIN" },
-  { city: "London, UK",      price: "$429", iata: "LHR" },
+  { city: "Paris, France",   price: 12500, iata: "CDG" },
+  { city: "Tokyo, Japan",    price: 26500, iata: "TYO" },
+  { city: "Dubai, UAE",      price: 8700, iata: "DXB" },
+  { city: "New York, USA",   price: 18500, iata: "JFK" },
+  { city: "Singapore",       price: 6600, iata: "SIN" },
+  { city: "London, UK",      price: 15000, iata: "LHR" },
 ];
 
 const WHY_FLY_FEATURES = [
@@ -104,8 +106,8 @@ const OFFERS = [
     to: "Tokyo",
     toCode: "TYO",
     discount: "30% OFF",
-    price: "$529",
-    originalPrice: "$759",
+    price: 18500,
+    originalPrice: 26500,
     validUntil: "Sep 30",
     accent: "#1e40af",
     accentLight: "#3b82f6",
@@ -116,8 +118,8 @@ const OFFERS = [
     to: "Dubai",
     toCode: "DXB",
     discount: "20% OFF",
-    price: "$199",
-    originalPrice: "$249",
+    price: 6960,
+    originalPrice: 8700,
     validUntil: "Oct 15",
     accent: "#b45309",
     accentLight: "#f59e0b",
@@ -128,8 +130,8 @@ const OFFERS = [
     to: "London",
     toCode: "LHR",
     discount: "15% OFF",
-    price: "$365",
-    originalPrice: "$429",
+    price: 12750,
+    originalPrice: 15000,
     validUntil: "Oct 31",
     accent: "#065f46",
     accentLight: "#10b981",
@@ -148,6 +150,7 @@ const INSPIRATION = [
 
 export default function HomePage() {
   const { t } = useTranslation();
+  const { language, currency } = useLocale();
 
   return (
     <div className="flex flex-col">
@@ -188,7 +191,9 @@ export default function HomePage() {
                   </div>
                   <div>
                     <p className="text-white text-sm font-medium leading-tight">{dest.city}</p>
-                    <p className="text-[#f5c800] text-xs font-semibold">{dest.price}</p>
+                    <p className="text-[#f5c800] text-xs font-semibold">
+                      {formatCurrency(dest.price, currency, language)}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -244,8 +249,10 @@ export default function HomePage() {
                       <span className="text-white/60 text-xs font-medium">{offer.to}</span>
                     </div>
                     <div className="offer-price text-white">
-                      {offer.price}{" "}
-                      <span className="line-through">{offer.originalPrice}</span>
+                      {formatCurrency(offer.price, currency, language)}{" "}
+                      <span className="line-through">
+                        {formatCurrency(offer.originalPrice, currency, language)}
+                      </span>
                     </div>
                   </div>
                   {/* IATA destination code in a stylised box */}
