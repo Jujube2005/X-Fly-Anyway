@@ -1,8 +1,11 @@
-.home-container {
+/* ── Hero ─────────────────────────────────────────────────────── */
+.home-hero {
+  min-height: 100dvh;
   background: radial-gradient(ellipse at 20% 50%, #6b21a8 0%, transparent 50%),
               radial-gradient(ellipse at 80% 20%, #1e40af 0%, transparent 50%),
               radial-gradient(ellipse at 60% 80%, #c2410c 0%, transparent 50%),
               #0f172a;
+  position: relative;
 }
 
 .home-noise-overlay {
@@ -17,9 +20,277 @@
   box-shadow: 0 8px 48px 0 rgba(0, 0, 0, 0.24);
 }
 
-.home-destinations-card {
+/* ── Popular Destinations strip ──────────────────────────────── */
+.home-destinations-strip {
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* ── Section base ────────────────────────────────────────────── */
+.home-section {
+  padding: 5rem 1.5rem;
+}
+
+.home-section-inner {
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.home-section-label {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #f5c800;
+  margin-bottom: 0.75rem;
+}
+
+.home-section-title {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 800;
+  color: #111827;
+  line-height: 1.2;
+  margin-bottom: 0.75rem;
+}
+
+.home-section-subtitle {
+  font-size: 1.0625rem;
+  color: #6b7280;
+  max-width: 36rem;
+}
+
+/* ── Why Fly section (dark) ──────────────────────────────────── */
+.home-why-fly {
+  background: #0f172a;
+}
+
+.home-why-fly .home-section-title {
+  color: #ffffff;
+}
+
+.home-why-fly .home-section-subtitle {
+  color: rgba(255,255,255,0.6);
+}
+
+.why-fly-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1.25rem;
+  padding: 2rem;
+  transition: background 250ms ease, transform 250ms ease;
+}
+
+.why-fly-card:hover {
+  background: rgba(255, 255, 255, 0.09);
+  transform: translateY(-4px);
+}
+
+.why-fly-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.875rem;
+  background: rgba(245, 200, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.375rem;
+  margin-bottom: 1rem;
+}
+
+.why-fly-card h3 {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0.375rem;
+}
+
+.why-fly-card p {
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.55);
+  line-height: 1.6;
+}
+
+/* ── Offers section (light) ──────────────────────────────────── */
+.home-offers {
+  background: #fafafa;
+}
+
+.offer-card {
+  background: #ffffff;
+  border-radius: 1.5rem;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+  transition: box-shadow 250ms ease, transform 250ms ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.offer-card:hover {
+  box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+  transform: translateY(-4px);
+}
+
+.offer-badge {
+  display: inline-block;
+  background: #f5c800;
+  color: #111827;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.625rem;
+  border-radius: 0.375rem;
+}
+
+.offer-price {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #111827;
+}
+
+.offer-price span {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.offer-book-btn {
+  background: #111827;
+  color: #f5c800;
+  font-weight: 700;
+  font-size: 0.875rem;
+  border-radius: 0.875rem;
+  padding: 0.75rem 1.5rem;
+  transition: background 200ms ease;
+  text-align: center;
+  cursor: pointer;
+  border: none;
+  width: 100%;
+  margin-top: auto;
+}
+
+.offer-book-btn:hover {
+  background: #1f2937;
+}
+
+/* ── Inspiration grid (dark) ─────────────────────────────────── */
+.home-inspiration {
+  background: #111827;
+}
+
+.home-inspiration .home-section-title {
+  color: #ffffff;
+}
+
+.home-inspiration .home-section-subtitle {
+  color: rgba(255,255,255,0.6);
+}
+
+.inspiration-card {
+  position: relative;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.inspiration-card-bg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 400ms ease;
+}
+
+.inspiration-card:hover .inspiration-card-bg {
+  transform: scale(1.06);
+}
+
+.inspiration-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 60%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 1.5rem;
+}
+
+.inspiration-card-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.inspiration-card-sub {
+  font-size: 0.8125rem;
+  color: rgba(255,255,255,0.7);
+  margin-top: 0.125rem;
+}
+
+.inspiration-explore-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-top: 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #f5c800;
+  transition: gap 200ms ease;
+}
+
+.inspiration-card:hover .inspiration-explore-btn {
+  gap: 0.625rem;
+}
+
+/* ── Footer ─────────────────────────────────────────────────── */
+.home-footer {
+  background: #0f172a;
+  padding: 4rem 1.5rem 2rem;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+
+.home-footer-inner {
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.home-footer-logo-tagline {
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.45);
+  margin-top: 0.5rem;
+}
+
+.home-footer-col-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 1rem;
+}
+
+.home-footer-link {
+  display: block;
+  font-size: 0.875rem;
+  color: rgba(255,255,255,0.65);
+  margin-bottom: 0.625rem;
+  transition: color 200ms ease;
+  text-decoration: none;
+}
+
+.home-footer-link:hover {
+  color: #f5c800;
+}
+
+.home-footer-divider {
+  border: none;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  margin: 2.5rem 0 1.5rem;
+}
+
+.home-footer-copyright {
+  font-size: 0.8125rem;
+  color: rgba(255,255,255,0.35);
 }

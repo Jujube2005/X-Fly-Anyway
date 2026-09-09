@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { LocaleSelector } from "./LocaleSelector";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -10,9 +11,19 @@ interface HeaderProps {
   variant?: "transparent" | "glass" | "solid";
 }
 
-export function Header({ variant = "transparent" }: HeaderProps) {
+export function Header({ variant: variantProp = "transparent" }: HeaderProps) {
   const pathname = usePathname();
   const { t } = useTranslation();
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    if (variantProp !== "transparent") return;
+    const onScroll = () => setScrolled(window.scrollY > 80);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [variantProp]);
+
+  const variant = variantProp === "transparent" && scrolled ? "glass" : variantProp;
 
   const bgStyles = {
     transparent: "bg-transparent",
@@ -27,7 +38,7 @@ export function Header({ variant = "transparent" }: HeaderProps) {
       : "text-white/80 hover:text-white";
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 ${bgStyles[variant]}`}>
+    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${bgStyles[variant]}`}>
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center group">
@@ -73,3 +84,4 @@ export function Header({ variant = "transparent" }: HeaderProps) {
     </header>
   );
 }
+
