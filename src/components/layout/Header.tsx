@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LocaleSelector } from "./LocaleSelector";
@@ -29,24 +30,15 @@ export function Header({ variant = "transparent" }: HeaderProps) {
     <header className={`fixed top-0 left-0 right-0 z-50 ${bgStyles[variant]}`}>
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 group">
-          {/* Yellow wing icon */}
-          <svg
-            width="32"
-            height="28"
-            viewBox="0 0 32 28"
-            fill="none"
-            aria-hidden="true"
-          >
-            <path
-              d="M2 24L16 4L30 24H20L16 18L12 24H2Z"
-              fill="#f5c800"
-              className="group-hover:scale-105 transition-transform origin-bottom"
-            />
-          </svg>
-          <span className={`text-lg font-bold tracking-tight ${logoColor}`}>
-            X-Fly Anyway
-          </span>
+        <Link href="/" className="flex items-center group">
+          <Image
+            src="/images/logo/logo.png"
+            alt="X-Fly Anyway"
+            width={50}
+            height={28}
+            className="object-contain transition-opacity group-hover:opacity-80"
+            priority
+          />
         </Link>
 
         {/* Nav */}
