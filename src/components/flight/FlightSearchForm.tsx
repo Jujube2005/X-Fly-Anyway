@@ -73,7 +73,7 @@ export function FlightSearchForm({ onSearch }: FlightSearchFormProps) {
 
   const fetchAirports = useCallback(async () => {
     try {
-      const res = await fetch("/api/flights?listAirports=true");
+      const res = await fetch("/api/airports");
       console.log("Status API is: ", res.status);
       if (res.ok) {
         const data = await res.json();
