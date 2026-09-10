@@ -5,15 +5,7 @@ import { useRouter } from "next/navigation";
 import { useBookingContext } from "@/components/booking/BookingProvider";
 import type { Airport } from "@/types/flight";
 import { useTranslation } from "@/hooks/useTranslation";
-
-// Takeoff icon
-function TakeoffIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <path d="M3 14l3-3 3 1 6-7-1 7-4-1-3 3H3z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
+import { log } from "console";
 
 // Landing icon
 function LandingIcon() {
@@ -82,12 +74,14 @@ export function FlightSearchForm({ onSearch }: FlightSearchFormProps) {
   const fetchAirports = useCallback(async () => {
     try {
       const res = await fetch("/api/flights?listAirports=true");
+      console.log("Status API is: ", res.status);
       if (res.ok) {
         const data = await res.json();
+        console.log("Data is: ", data);
         if (data.airports) setAirports(data.airports);
       }
     } catch {
-      // airports will just be empty — user can still type
+      console.log("Error: ");
     }
   }, []);
 
@@ -131,18 +125,12 @@ export function FlightSearchForm({ onSearch }: FlightSearchFormProps) {
       {/* Row 1: From / To */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
         <div>
-          <label htmlFor="origin" className={labelBase}>
-            <TakeoffIcon />
-          </label>
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50">
-              <TakeoffIcon />
-            </span>
             <select
               id="origin"
               value={origin}
               onChange={(e) => setOrigin(e.target.value)}
-              className={`${inputBase} pl-10 appearance-none`}
+              className={`${inputBase} appearance-none`}
               required
             >
               <option value="" disabled className="text-gray-900 bg-white">
@@ -158,14 +146,11 @@ export function FlightSearchForm({ onSearch }: FlightSearchFormProps) {
         </div>
         <div>
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50">
-              <LandingIcon />
-            </span>
             <select
               id="destination"
               value={destination}
               onChange={(e) => setDestination(e.target.value)}
-              className={`${inputBase} pl-10 appearance-none`}
+              className={`${inputBase} appearance-none`}
               required
             >
               <option value="" disabled className="text-gray-900 bg-white">
@@ -192,7 +177,7 @@ export function FlightSearchForm({ onSearch }: FlightSearchFormProps) {
             type="date"
             value={departureDate}
             onChange={(e) => setDepartureDate(e.target.value)}
-            className={`${inputBase} pl-10`}
+            className={`${inputBase}`}
             min={new Date().toISOString().split("T")[0]}
             required
             aria-label="Departure date"
