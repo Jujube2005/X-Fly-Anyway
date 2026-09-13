@@ -137,8 +137,8 @@ export function FlightSearchForm({ onSearch }: FlightSearchFormProps) {
                 {t.search.from}
               </option>
               {airports.map((a) => (
-                <option key={a.code} value={a.code} className="text-gray-900 bg-white">
-                  {a.city} ({a.code})
+                <option key={a.airport_code} value={a.airport_code} className="text-gray-900 bg-white">
+                  {a.city} ({a.airport_code})
                 </option>
               ))}
             </select>
@@ -157,8 +157,8 @@ export function FlightSearchForm({ onSearch }: FlightSearchFormProps) {
                 {t.search.to}
               </option>
               {airports.map((a) => (
-                <option key={a.code} value={a.code} className="text-gray-900 bg-white">
-                  {a.city} ({a.code})
+                <option key={a.airport_code} value={a.airport_code} className="text-gray-900 bg-white">
+                  {a.city} ({a.airport_code})
                 </option>
               ))}
             </select>

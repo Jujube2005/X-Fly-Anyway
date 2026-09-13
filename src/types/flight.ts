@@ -7,11 +7,11 @@ export type CabinClass = CabinClassValue;
 // "economy" | "premium_economy" | "business" | "first"
 
 export interface Airport {
-  code: string;         // IATA airport code e.g. "BKK"
+  airport_code: string;         // IATA airport code e.g. "BKK"
   name: string;
   city: string;
   country: string;
-  countryCode: string;  // ISO 3166-1 alpha-2
+  country_code: string;  // ISO 3166-1 alpha-2
   timezone: string;     // IANA timezone e.g. "Asia/Bangkok"
 }
 
