@@ -417,7 +417,6 @@ export function FlightSearchForm({
               {errors.sameAirport}
             </p>
           )}
-        </div>
       </div>
 
       {/* Mobile swap button */}
@@ -515,7 +514,7 @@ export function FlightSearchForm({
             aria-haspopup="dialog"
             aria-expanded={isPopoverOpen}
           >
-            <span className="absolute left-3 top-[calc(50%+0.6rem)] -translate-y-1/2 text-white/50 pointer-events-none">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50 pointer-events-none">
               <PassengerIcon />
             </span>
             <span className="truncate">
