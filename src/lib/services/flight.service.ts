@@ -31,12 +31,12 @@ import {
 
 function toAirport(row: AirportRow): Airport {
   return {
-    code:        row.id,
-    name:        row.name,
-    city:        row.city,
-    country:     row.country,
-    countryCode: row.country_code,
-    timezone:    row.timezone,
+    airport_code: row.id,
+    name:         row.name,
+    city:         row.city,
+    country:      row.country,
+    country_code: row.country_code,
+    timezone:     row.timezone,
   };
 }
 

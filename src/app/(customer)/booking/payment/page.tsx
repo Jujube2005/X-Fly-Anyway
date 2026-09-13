@@ -156,8 +156,8 @@ export default function PaymentPage() {
                 <span className="text-[#f5c800] text-xl">✈</span>
               </div>
               <p className="text-white font-bold text-sm mb-1">
-                Flight {selectedFlight.flightNumber} — {selectedFlight.origin.code} to{" "}
-                {selectedFlight.destination.code}
+                Flight {selectedFlight.flightNumber} — {selectedFlight.origin.airport_code} to{" "}
+                {selectedFlight.destination.airport_code}
               </p>
               <p className="text-white/50 text-xs mb-6">
                 {new Date(selectedFlight.departureAt).toLocaleDateString("en-US", {

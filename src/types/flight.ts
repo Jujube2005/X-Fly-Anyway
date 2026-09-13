@@ -39,6 +39,8 @@ export interface FlightSearchParams {
   originCode: string;
   destinationCode: string;
   departureDate: string; // YYYY-MM-DD
+  returnDate?: string;   // YYYY-MM-DD
+  tripType: 'one_way' | 'round_trip';
   passengers: number;
   cabinClass?: CabinClass; // optional filter — customer can filter post-search (FR-CUS-004)
 }

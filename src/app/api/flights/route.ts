@@ -25,6 +25,7 @@ export async function GET(request: NextRequest) {
   const date        = searchParams.get("date")?.trim();
   const passengerRaw = searchParams.get("passengers");
   const cabinClass  = searchParams.get("cabinClass") as CabinClass | null;
+  const tripType    = (searchParams.get("tripType") as 'one_way' | 'round_trip') || 'one_way';
 
   // Validate required parameters
   if (!origin || !destination || !date || !passengerRaw) {
@@ -75,6 +76,7 @@ export async function GET(request: NextRequest) {
       departureDate:   date,
       passengers,
       cabinClass:      cabinClass ?? undefined,
+      tripType,
     };
 
     const result = await service.searchFlights(params);

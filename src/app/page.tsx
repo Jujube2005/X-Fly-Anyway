@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { Header } from "@/components/layout/Header";
 import { FlightSearchForm } from "@/components/flight/FlightSearchForm";
@@ -83,13 +84,15 @@ function IconTag() {
 
 /* ─── Static Data ────────────────────────────────────────────── */
 
+// clickable=true means the IATA code exists in the seeded airport database.
+// CDG, TYO, JFK are NOT seeded — display only, not clickable.
 const POPULAR_DESTINATIONS = [
-  { city: "Paris, France",   price: 12500, iata: "CDG" },
-  { city: "Tokyo, Japan",    price: 26500, iata: "TYO" },
-  { city: "Dubai, UAE",      price: 8700, iata: "DXB" },
-  { city: "New York, USA",   price: 18500, iata: "JFK" },
-  { city: "Singapore",       price: 6600, iata: "SIN" },
-  { city: "London, UK",      price: 15000, iata: "LHR" },
+  { city: "Paris, France",   price: 12500, iata: "CDG", clickable: false },
+  { city: "Tokyo, Japan",    price: 26500, iata: "NRT", clickable: true  },
+  { city: "Dubai, UAE",      price: 8700,  iata: "DXB", clickable: true  },
+  { city: "New York, USA",   price: 18500, iata: "JFK", clickable: false },
+  { city: "Singapore",       price: 6600,  iata: "SIN", clickable: true  },
+  { city: "London, UK",      price: 15000, iata: "LHR", clickable: true  },
 ];
 
 const WHY_FLY_FEATURES = [
@@ -152,6 +155,10 @@ export default function HomePage() {
   const { t } = useTranslation();
   const { language, currency } = useLocale();
 
+  // Popular destination click-to-fill: stores the IATA code to set as destination.
+  // Only airports that exist in the seed DB are clickable.
+  const [heroDestination, setHeroDestination] = useState<string | undefined>(undefined);
+
   return (
     <div className="flex flex-col">
       <Header variant="transparent" />
@@ -168,7 +175,7 @@ export default function HomePage() {
               <span className="text-white">X-Fly Anyway.</span>
             </h1>
           </div>
-          <FlightSearchForm />
+          <FlightSearchForm defaultDestination={heroDestination} />
         </div>
 
         {/* Popular destinations strip */}
@@ -181,18 +188,36 @@ export default function HomePage() {
               {POPULAR_DESTINATIONS.map((dest) => (
                 <div
                   key={dest.city}
-                  className="flex items-center gap-3 min-w-max group cursor-pointer"
+                  onClick={() => {
+                    if (dest.clickable) {
+                      setHeroDestination(dest.iata);
+                      // Scroll hero card into view so user sees the form update
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }
+                  }}
+                  title={dest.clickable ? `เลือกปลายทาง ${dest.city}` : undefined}
+                  className={`flex items-center gap-3 min-w-max group ${
+                    dest.clickable
+                      ? "cursor-pointer"
+                      : "cursor-default opacity-50"
+                  }`}
                 >
-                  {/* IATA code badge instead of emoji */}
-                  <div className="w-11 h-11 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors shrink-0">
+                  {/* IATA code badge */}
+                  <div className={`w-11 h-11 rounded-full bg-white/10 flex items-center justify-center transition-colors shrink-0 ${
+                    dest.clickable ? "group-hover:bg-white/20 group-hover:ring-1 group-hover:ring-[#f5c800]/40" : ""
+                  }`}>
                     <span className="text-white text-[10px] font-bold tracking-wide leading-none">
                       {dest.iata}
                     </span>
                   </div>
                   <div>
                     <p className="text-white text-sm font-medium leading-tight">{dest.city}</p>
-                    <p className="text-[#f5c800] text-xs font-semibold">
-                      {formatCurrency(dest.price, currency, language)}
+                    <p className={`text-xs font-semibold ${
+                      dest.clickable ? "text-[#f5c800]" : "text-white/40"
+                    }`}>
+                      {dest.clickable
+                        ? formatCurrency(dest.price, currency, language)
+                        : "Coming soon"}
                     </p>
                   </div>
                 </div>

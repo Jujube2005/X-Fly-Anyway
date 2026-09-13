@@ -79,8 +79,8 @@ export default function BookingSummaryPage() {
                     <span className="text-[#f5c800]">
                       {selectedFlight.flightNumber}
                     </span>
-                    : {selectedFlight.origin.code} to{" "}
-                    {selectedFlight.destination.code}
+                    : {selectedFlight.origin.airport_code} to{" "}
+                    {selectedFlight.destination.airport_code}
                   </span>
                   <span className="text-xs text-white/50">
                     {cabinClass?.replace("_", " ")}

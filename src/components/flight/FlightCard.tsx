@@ -90,7 +90,7 @@ export function FlightCard({ flight, cabinClasses, onSelect, isSelected = false 
               <p className="text-base font-bold text-[#111827]">
                 {formatTime(flight.departureAt)}
               </p>
-              <p className="text-xs text-[#6b7280]">{flight.origin.code}</p>
+              <p className="text-xs text-[#6b7280]">{flight.origin.airport_code}</p>
             </div>
 
             <div className="flex-1 flex flex-col items-center gap-0.5 min-w-0">
@@ -111,7 +111,7 @@ export function FlightCard({ flight, cabinClasses, onSelect, isSelected = false 
               <p className="text-base font-bold text-[#111827]">
                 {formatTime(flight.arrivalAt)}
               </p>
-              <p className="text-xs text-[#6b7280]">{flight.destination.code}</p>
+              <p className="text-xs text-[#6b7280]">{flight.destination.airport_code}</p>
             </div>
           </div>
         </div>
