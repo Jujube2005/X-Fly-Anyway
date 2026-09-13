@@ -48,10 +48,10 @@ export function AirportAutocomplete({
     return airports
       .filter(
         (a) =>
-          a.city.toLowerCase().includes(lowerSearch) ||
-          a.name.toLowerCase().includes(lowerSearch) ||
-          a.airport_code.toLowerCase().includes(lowerSearch) ||
-          a.country.toLowerCase().includes(lowerSearch)
+          (a.city?.toLowerCase() || "").includes(lowerSearch) ||
+          (a.name?.toLowerCase() || "").includes(lowerSearch) ||
+          (a.airport_code?.toLowerCase() || "").includes(lowerSearch) ||
+          (a.country?.toLowerCase() || "").includes(lowerSearch)
       )
       .slice(0, 50);
   }, [airports, searchTerm]);

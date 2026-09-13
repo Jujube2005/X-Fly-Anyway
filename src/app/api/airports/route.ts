@@ -5,13 +5,28 @@ export async function GET() {
   try {
     const supabase = await createClient();
     
-    // Supabase has a default limit of 1000 rows. We need to override it to get all 6000+ airports.
-    const { data: airports, error } = await supabase.from('airport').select('*').limit(7000);
-    console.log("Data Airports: ", airports);
+    let allAirports: any[] = [];
+    let hasMore = true;
+    let page = 0;
+    const pageSize = 1000;
 
-    if (error) throw error;
+    while (hasMore) {
+      const { data, error } = await supabase
+        .from('airport')
+        .select('*')
+        .range(page * pageSize, (page + 1) * pageSize - 1);
 
-    return NextResponse.json({ airports });
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        allAirports = [...allAirports, ...data];
+        page++;
+      } else {
+        hasMore = false;
+      }
+    }
+
+    return NextResponse.json({ airports: allAirports });
     
   } catch (error) {
     console.error("Error fetching airports:", error);
