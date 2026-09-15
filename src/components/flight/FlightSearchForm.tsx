@@ -382,6 +382,7 @@ export function FlightSearchForm({
             aria-label="สลับต้นทางและปลายทาง"
             title="สลับต้นทางและปลายทาง"
             className="flex items-center justify-center w-10 h-10 rounded-full bg-white/10 border border-white/20 text-white/80 hover:bg-white/20 hover:border-[#f5c800]/50 hover:text-[#f5c800] transition-all duration-200 focus-visible:outline-2 focus-visible:outline-[#f5c800]"
+            suppressHydrationWarning
           >
             <SwapIcon />
           </button>
@@ -513,6 +514,7 @@ export function FlightSearchForm({
             className={`${inputBase} pl-10 text-left flex items-center justify-between`}
             aria-haspopup="dialog"
             aria-expanded={isPopoverOpen}
+            suppressHydrationWarning
           >
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50 pointer-events-none">
               <PassengerIcon />
@@ -671,6 +673,7 @@ export function FlightSearchForm({
           type="submit"
           disabled={isLoading}
           className="self-end bg-[#f5c800] text-[#111827] font-bold rounded-xl py-3.5 px-6 hover:bg-[#e6b800] active:bg-[#c9a200] transition-colors duration-200 disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-[#f5c800] focus-visible:outline-offset-2 flex items-center justify-center gap-2"
+          suppressHydrationWarning
         >
           {isLoading ? (
             <>

@@ -147,6 +147,7 @@ export function AirportAutocomplete({
           className={value ? `${className} pr-9` : className}
           autoComplete="off"
           required={!value}
+          suppressHydrationWarning
         />
 
         {/* Clear button — only shown when a value is selected */}
