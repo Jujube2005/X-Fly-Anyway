@@ -41,9 +41,9 @@ export async function GET(
       );
     }
 
-    const [payment, flight] = await Promise.all([
+    const [payment, flights] = await Promise.all([
       paymentService.getPaymentByBookingId(booking.id),
-      flightService.getFlightById(booking.flightId),
+      Promise.all(booking.flightIds.map(id => flightService.getFlightById(id))),
     ]);
 
     // Return ticket data for client-side rendering / print view
@@ -52,7 +52,7 @@ export async function GET(
       ticket: {
         booking,
         payment,
-        flight,
+        flights,
         issuedAt: new Date().toISOString(),
       },
     });

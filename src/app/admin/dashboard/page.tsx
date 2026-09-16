@@ -174,7 +174,7 @@ export default function AdminDashboardPage() {
                       <td className="py-3 pr-3 text-[#374151]">
                         {b.contact?.email ?? "—"}
                       </td>
-                      <td className="py-3 pr-3 text-[#374151]">{b.flightId?.slice(0, 8)}</td>
+                      <td className="py-3 pr-3 text-[#374151]">{b.flightIds?.[0]?.slice(0, 8)}</td>
                       <td className="py-3 pr-3 text-[#374151]">
                         {b.createdAt
                           ? new Date(b.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })

@@ -375,10 +375,10 @@ export async function queryBookingSeatsWithSeat(
 ) {
   const result = await supabase
     .from("booking_seat")
-    .select("seat_id, seat:seat_id(seat_number)")
+    .select("seat_id, seat:seat_id(seat_number, flight_id)")
     .eq("booking_id", bookingId);
   return result as {
-    data: { seat_id: string; seat: { seat_number: string } | null }[] | null;
+    data: { seat_id: string; seat: { seat_number: string; flight_id: string } | null }[] | null;
     error: { message: string } | null;
   };
 }

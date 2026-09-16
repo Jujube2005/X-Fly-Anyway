@@ -94,8 +94,8 @@ export default function ConfirmationPage() {
                   <span className="font-semibold text-white">{passengerName}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-white/50">Flight:</span>
-                  <span className="font-semibold text-white">{booking.flightId}</span>
+                  <span className="text-white/50">Flights:</span>
+                  <span className="font-semibold text-white">{booking.flightIds?.length > 1 ? "Connecting (1 Stop)" : booking.flightIds?.[0]}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-white/50">Class:</span>

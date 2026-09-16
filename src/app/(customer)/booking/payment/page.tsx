@@ -164,17 +164,22 @@ export default function PaymentPage() {
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-[#f5c800] text-xl">✈</span>
               </div>
-              <p className="text-white font-bold text-sm mb-1">
-                Flight {selectedFlight.flightNumber} — {selectedFlight.origin.airport_code} to{" "}
-                {selectedFlight.destination.airport_code}
-              </p>
-              <p className="text-white/50 text-xs mb-6">
-                {new Date(selectedFlight.departureAt).toLocaleDateString("en-US", {
-                  weekday: "short",
-                  month: "short",
-                  day: "numeric",
-                })}
-              </p>
+              <div className="flex flex-col gap-4 mb-4">
+                {selectedLegs.map((leg, idx) => (
+                  <div key={leg.id}>
+                    <p className="text-white font-bold text-sm mb-1">
+                      Flight {leg.flightNumber} — {leg.origin.airport_code} to {leg.destination.airport_code}
+                    </p>
+                    <p className="text-white/50 text-xs">
+                      {new Date(leg.departureAt).toLocaleDateString("en-US", {
+                        weekday: "short",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </p>
+                  </div>
+                ))}
+              </div>
 
               <div className="border-t border-white/10 pt-4">
                 <p className="text-xs text-white/50 mb-1">Total</p>
@@ -182,7 +187,7 @@ export default function PaymentPage() {
                 <div className="mt-3 text-xs text-white/40 flex flex-col gap-1">
                   <div className="flex justify-between">
                     <span>Base Fare × {passengers.length}</span>
-                    <span>{fmt((cabinInfo ? Number(cabinInfo.price) : 0) * passengers.length)}</span>
+                    <span>{fmt(basePrice * passengers.length)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Taxes & Fees</span>
