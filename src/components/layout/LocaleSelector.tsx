@@ -273,7 +273,7 @@ export function LocaleSelector({ textColor }: LocaleSelectorProps) {
           <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
         </svg>
         <span className={`locale-trigger-text ${textColor}`}>
-          {currentLang.flag} {currentLang.label}
+          {currentLang.label}
         </span>
         <span className="locale-trigger-sep" style={{ color: "inherit" }}>|</span>
         <span className={`locale-trigger-text ${textColor}`}>
@@ -329,7 +329,6 @@ export function LocaleSelector({ textColor }: LocaleSelectorProps) {
                   <p className="locale-section-label">{t.locale.currentLanguage}</p>
                   <div className="locale-grid" style={{ marginBottom: "8px" }}>
                     <button className="locale-item selected">
-                      <span className="locale-item-flag">{currentLang.flag}</span>
                       <span className="locale-item-label">{currentLang.label}</span>
                     </button>
                   </div>
@@ -343,7 +342,6 @@ export function LocaleSelector({ textColor }: LocaleSelectorProps) {
                         onClick={() => selectLanguage(lang.code)}
                         id={`locale-lang-${lang.code}`}
                       >
-                        <span className="locale-item-flag">{lang.flag}</span>
                         <span className="locale-item-label">{lang.label}</span>
                       </button>
                     ))}
