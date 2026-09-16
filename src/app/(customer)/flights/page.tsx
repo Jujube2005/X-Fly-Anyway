@@ -6,6 +6,7 @@ import { Header } from "@/components/layout/Header";
 import { FlightCard, FlightFilters } from "@/components/flight/FlightCard";
 import { LoadingState, ErrorState, EmptyState } from "@/components/ui/States";
 import { useBookingContext } from "@/components/booking/BookingProvider";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { Flight, FlightSearchResult, FlightCabinClassInfo } from "@/types/flight";
 import "./page.css";
 
@@ -13,6 +14,7 @@ function FlightResultsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { setSelectedFlight } = useBookingContext();
+  const { t } = useTranslation();
 
   const [results, setResults] = useState<FlightSearchResult | null>(null);
   const [cabinMap, setCabinMap] = useState<Record<string, FlightCabinClassInfo[]>>({});
@@ -65,7 +67,7 @@ function FlightResultsContent() {
   const summaryText = [
     origin && destination ? `${origin} → ${destination}` : "",
     date,
-    `${passengers} Passenger${Number(passengers) > 1 ? "s" : ""}`,
+    `${passengers} ${Number(passengers) > 1 ? t.flights.passengers : t.flights.passenger}`,
     cabinLabel,
   ]
     .filter(Boolean)
@@ -90,7 +92,7 @@ function FlightResultsContent() {
               onClick={() => router.push("/")}
               className="shrink-0 text-sm font-semibold border border-[#f5c800] text-[#c9a200] px-4 py-1.5 rounded-lg hover:bg-[#f5c800]/10 transition-colors"
             >
-              Modify Search
+              {t.flights.modifySearch}
             </button>
           </div>
 
@@ -105,12 +107,12 @@ function FlightResultsContent() {
 
             {/* Flight list */}
             <section className="flex-1 min-w-0" aria-label="Flight results">
-              {isLoading && <LoadingState message="Loading flights..." />}
+              {isLoading && <LoadingState message={t.flights.loading} />}
               {!isLoading && error && (
                 <ErrorState message={error} onRetry={searchFlights} />
               )}
               {!isLoading && !error && results && (results.flights ?? []).length === 0 && (
-                <EmptyState message="No flights found for your search. Try different dates or destinations." />
+                <EmptyState message={t.flights.noFlights} />
               )}
               {!isLoading && !error && results && (results.flights ?? []).length > 0 && (
                 <div className="flex flex-col gap-3">
@@ -133,8 +135,9 @@ function FlightResultsContent() {
 }
 
 export default function FlightsPage() {
+  const { t } = useTranslation();
   return (
-    <Suspense fallback={<LoadingState message="Loading flights..." />}>
+    <Suspense fallback={<LoadingState message={t.flights.loading} />}>
       <FlightResultsContent />
     </Suspense>
   );

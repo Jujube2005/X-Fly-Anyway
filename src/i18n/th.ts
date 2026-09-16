@@ -144,6 +144,18 @@ export const th = {
     error: "เกิดข้อผิดพลาด",
     close: "ปิด",
   },
+  flights: {
+    loading: "กำลังค้นหาเที่ยวบิน...",
+    noFlights: "ไม่พบเที่ยวบินสำหรับการค้นหานี้ กรุณาลองเปลี่ยนวันหรือจุดหมายปลายทาง",
+    modifySearch: "แก้ไขการค้นหา",
+    passenger: "ผู้โดยสาร",
+    passengers: "ผู้โดยสาร",
+    filters: "ตัวกรอง",
+    cabinClass: "ชั้นโดยสาร",
+    allClasses: "ทุกชั้นโดยสาร",
+    select: "เลือก",
+    nonStop: "บินตรง",
+  },
   locale: {
     language: "ภาษา",
     currency: "สกุลเงิน",

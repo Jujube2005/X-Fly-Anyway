@@ -2,6 +2,7 @@ import { useBookingContext } from "@/components/booking/BookingProvider";
 import type { Flight, FlightCabinClassInfo } from "@/types/flight";
 import { Badge } from "@/components/ui/Badge";
 import { useLocale } from "@/contexts/LocaleContext";
+import { useTranslation } from "@/hooks/useTranslation";
 import { formatCurrency } from "@/lib/utils/currency";
 import "./FlightCard.css";
 
@@ -37,6 +38,7 @@ interface FlightCardProps {
 
 export function FlightCard({ flight, cabinClasses, onSelect, isSelected = false }: FlightCardProps) {
   const { language, currency } = useLocale();
+  const { t } = useTranslation();
 
   const cheapest = cabinClasses.reduce<FlightCabinClassInfo | null>((min, c) => {
     if (!min || c.price < min.price) return c;
@@ -105,7 +107,7 @@ export function FlightCard({ flight, cabinClasses, onSelect, isSelected = false 
                 <div className="flex-1 h-px bg-[#e5e7eb]" />
               </div>
               <p className="text-xs text-[#6b7280]">
-                {cabinClasses.length === 0 ? "" : "Non-stop"}
+                {cabinClasses.length === 0 ? "" : t.flights.nonStop}
               </p>
             </div>
 
@@ -125,7 +127,7 @@ export function FlightCard({ flight, cabinClasses, onSelect, isSelected = false 
             onClick={() => onSelect(flight)}
             className="bg-[#f5c800] text-[#111827] font-semibold text-sm px-5 py-2 rounded-xl hover:bg-[#e6b800] active:bg-[#c9a200] transition-colors focus-visible:outline-2 focus-visible:outline-[#f5c800]"
           >
-            Select
+            {t.flights.select}
           </button>
         </div>
       </div>
@@ -140,21 +142,22 @@ interface FlightFiltersProps {
 }
 
 export function FlightFilters({ selectedCabin, onCabinChange }: FlightFiltersProps) {
+  const { t } = useTranslation();
   const cabins = [
-    { value: "", label: "All Classes" },
-    { value: "economy", label: "Economy" },
-    { value: "premium_economy", label: "Premium Economy" },
-    { value: "business", label: "Business" },
-    { value: "first", label: "First" },
+    { value: "", label: t.flights.allClasses },
+    { value: "economy", label: t.search.cabinClass.economy },
+    { value: "premium_economy", label: t.search.cabinClass.premium_economy },
+    { value: "business", label: t.search.cabinClass.business },
+    { value: "first", label: t.search.cabinClass.first },
   ];
 
   return (
     <div className="rounded-2xl p-5 flight-filters-glass">
-      <h2 className="text-base font-bold text-white mb-4">Filters</h2>
+      <h2 className="text-base font-bold text-white mb-4">{t.flights.filters}</h2>
 
       <div>
         <p className="text-xs font-semibold text-white/70 uppercase tracking-wide mb-3">
-          Cabin Class
+          {t.flights.cabinClass}
         </p>
         <div className="flex flex-col gap-2">
           {cabins.map((c) => (

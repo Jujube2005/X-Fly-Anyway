@@ -144,6 +144,18 @@ export const en = {
     error: "An error occurred",
     close: "Close",
   },
+  flights: {
+    loading: "Loading flights...",
+    noFlights: "No flights found for your search. Try different dates or destinations.",
+    modifySearch: "Modify Search",
+    passenger: "Passenger",
+    passengers: "Passengers",
+    filters: "Filters",
+    cabinClass: "Cabin Class",
+    allClasses: "All Classes",
+    select: "Select",
+    nonStop: "Non-stop",
+  },
   locale: {
     language: "Language",
     currency: "Currency",
