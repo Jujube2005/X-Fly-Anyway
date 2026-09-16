@@ -342,8 +342,8 @@ export function FlightSearchForm({
 
         {/* International warning — inline, not alert */}
         {isIntl && (
-          <span className="ml-auto text-xs text-[#f5c800] font-medium bg-[#f5c800]/10 border border-[#f5c800]/30 rounded-lg px-3 py-1 leading-snug">
-            ✈ ระหว่างประเทศ · ต้องไป-กลับ
+          <span className="ml-auto text-xs text-[#f5c800] font-medium bg-[#f5c800]/10 border border-[#f5c800]/30 rounded-lg px-3 py-1 leading-snug flex items-center gap-1.5">
+            ระหว่างประเทศ · ต้องไป-กลับ
           </span>
         )}
       </div>
