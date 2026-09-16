@@ -86,7 +86,7 @@ DECLARE
 BEGIN
 
 -- ── Domestic Flights ──────────────────────────────────────────────────────
-INSERT INTO flight (id, flight_number, origin_code, destination_code, departure_at, arrival_at, status)
+INSERT INTO flight (id, flight_number, origin_airport_id, destination_airport_id, departure_time, arrival_time, status)
 VALUES
   (f01,'XFA001','BKK','CNX','2026-09-10 06:30:00+07','2026-09-10 07:50:00+07','scheduled'),
   (f02,'XFA002','BKK','HKT','2026-09-10 08:00:00+07','2026-09-10 09:20:00+07','scheduled'),
@@ -99,7 +99,7 @@ VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- ── Regional Flights ─────────────────────────────────────────────────────
-INSERT INTO flight (id, flight_number, origin_code, destination_code, departure_at, arrival_at, status)
+INSERT INTO flight (id, flight_number, origin_airport_id, destination_airport_id, departure_time, arrival_time, status)
 VALUES
   (f09,'XFA009','BKK','SIN','2026-09-10 10:00:00+07','2026-09-10 13:20:00+08','scheduled'),
   (f10,'XFA010','BKK','KUL','2026-09-10 11:30:00+07','2026-09-10 14:45:00+08','scheduled'),
@@ -110,7 +110,7 @@ VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- ── Long-haul Flights ─────────────────────────────────────────────────────
-INSERT INTO flight (id, flight_number, origin_code, destination_code, departure_at, arrival_at, status)
+INSERT INTO flight (id, flight_number, origin_airport_id, destination_airport_id, departure_time, arrival_time, status)
 VALUES
   (f15,'XFA015','BKK','NRT','2026-09-10 23:30:00+07','2026-09-11 07:30:00+09','scheduled'),
   (f16,'XFA016','BKK','ICN','2026-09-11 22:00:00+07','2026-09-12 05:40:00+09','scheduled'),

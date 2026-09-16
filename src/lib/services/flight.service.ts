@@ -32,7 +32,7 @@ import {
 
 function toAirport(row: AirportRow): Airport {
   return {
-    airport_code: row.airport_code,         // IATA code field (not the integer id)
+    airport_code: row.id,             // airport.id IS the IATA code
     name:         row.name         ?? "",
     city:         row.city         ?? "",
     country:      row.country      ?? "",
@@ -92,49 +92,45 @@ export class FlightService {
     const dayStart = `${departureDate}T00:00:00+07:00`;
     const dayEnd   = `${departureDate}T23:59:59+07:00`;
 
-    // Step 1: Resolve IATA codes → airport rows (with integer surrogate IDs)
-    const { data: searchAirports, error: airportLookupError } = await queryAirportsByCode(
-      this.supabase, [originCode, destinationCode]
-    );
-    if (airportLookupError) throw new Error(`Airport lookup failed: ${airportLookupError.message}`);
-
-    const originRow = searchAirports?.find((a) => a.airport_code === originCode);
-    const destRow   = searchAirports?.find((a) => a.airport_code === destinationCode);
-    if (!originRow || !destRow) return { flights: [], totalCount: 0 };
-
-    // Step 2: Search flights using integer airport IDs
+    // Step 1: Search flights — origin_airport_id / destination_airport_id ARE the IATA codes
     const { data: flightRows, error: flightError } = await queryFlightSearch(
-      this.supabase, originRow.id, destRow.id, dayStart, dayEnd
+      this.supabase, originCode, destinationCode, dayStart, dayEnd
     );
     if (flightError) throw new Error(`Flight search failed: ${flightError.message}`);
     if (!flightRows || flightRows.length === 0) return { flights: [], totalCount: 0 };
 
     const flightIds = flightRows.map((f) => f.id);
 
-    // Step 3: Fetch cabin classes for all matching flights
+    // Step 2: Fetch cabin classes for all matching flights
     const { data: ccRows, error: ccError } = await queryCabinClassesByFlights(
       this.supabase, flightIds, cabinClass, passengers
     );
     if (ccError) throw new Error(`Cabin class fetch failed: ${ccError.message}`);
 
-    // Key by stringified flight_id (integer FK → string for safe Map key)
+    // Key cabin classes by flight UUID
     const ccByFlight = new Map<string, FlightCabinClassInfo[]>();
     for (const cc of ccRows ?? []) {
-      const key  = String(cc.flight_id);
+      const key  = cc.flight_id;
       const list = ccByFlight.get(key) ?? [];
       list.push(toCabinClassInfo(cc));
       ccByFlight.set(key, list);
     }
 
-    // Step 4: Build airport map from already-resolved rows (keyed by integer id)
-    const airportMap = new Map<number, Airport>(
+    // Step 3: Fetch airport rows for origin + destination
+    const { data: searchAirports, error: airportLookupError } = await queryAirportsByCode(
+      this.supabase, [originCode, destinationCode]
+    );
+    if (airportLookupError) throw new Error(`Airport lookup failed: ${airportLookupError.message}`);
+
+    // Airport map keyed by IATA code (= airport.id)
+    const airportMap = new Map<string, Airport>(
       (searchAirports ?? []).map((a) => [a.id, toAirport(a)])
     );
 
-    // Step 5: Assemble domain Flight objects
+    // Step 4: Assemble domain Flight objects
     const flights: Flight[] = [];
     for (const row of flightRows) {
-      const ccs = ccByFlight.get(String(row.id));
+      const ccs = ccByFlight.get(row.id);
       if (!ccs || ccs.length === 0) continue;
 
       const origin      = airportMap.get(row.origin_airport_id!);
@@ -151,26 +147,23 @@ export class FlightService {
    * Get a single flight by ID, including cabin class info and airport details.
    */
   async getFlightById(id: string): Promise<Flight | null> {
-    // Flight IDs are stored as strings (converted from integer), parse back for DB
-    const numId = parseInt(id, 10);
-    const queryId = isNaN(numId) ? id : numId;
-
-    const { data: row, error } = await queryFlightById(this.supabase, queryId);
+    const { data: row, error } = await queryFlightById(this.supabase, id);
     if (error || !row) return null;
 
-    // Collect non-null airport integer IDs
-    const airportIds = [row.origin_airport_id, row.destination_airport_id]
-      .filter((v): v is number => v !== null);
+    // Collect non-null airport IATA codes
+    const airportCodes = [row.origin_airport_id, row.destination_airport_id]
+      .filter((v): v is string => v !== null);
 
     const [ccResult, airportResult] = await Promise.all([
-      queryCabinClassesByFlight(this.supabase, queryId),
-      queryAirports(this.supabase, airportIds),
+      queryCabinClassesByFlight(this.supabase, id),
+      queryAirports(this.supabase, airportCodes),
     ]);
 
     if (ccResult.error) throw new Error(ccResult.error.message);
     if (airportResult.error) throw new Error(airportResult.error.message);
 
-    const airportMap = new Map<number, Airport>(
+    // Airport map keyed by IATA code
+    const airportMap = new Map<string, Airport>(
       (airportResult.data ?? []).map((a) => [a.id, toAirport(a)])
     );
 
@@ -200,17 +193,18 @@ export class FlightService {
     if (!flightRows || flightRows.length === 0) return [];
 
     const flightIds  = flightRows.map((f) => f.id);
-    const airportIds = [
+    // origin_airport_id / destination_airport_id are TEXT IATA codes
+    const airportCodes = [
       ...new Set(
         flightRows.flatMap((f) =>
-          [f.origin_airport_id, f.destination_airport_id].filter((v): v is number => v !== null)
+          [f.origin_airport_id, f.destination_airport_id].filter((v): v is string => v !== null)
         )
       ),
     ];
 
     const [ccResult, airportResult] = await Promise.all([
       queryCabinClassesByFlights(this.supabase, flightIds),
-      queryAirports(this.supabase, airportIds),
+      queryAirports(this.supabase, airportCodes),
     ]);
 
     if (ccResult.error) throw new Error(ccResult.error.message);
@@ -218,13 +212,14 @@ export class FlightService {
 
     const ccByFlight = new Map<string, FlightCabinClassInfo[]>();
     for (const cc of ccResult.data ?? []) {
-      const key  = String(cc.flight_id);
+      const key  = cc.flight_id;
       const list = ccByFlight.get(key) ?? [];
       list.push(toCabinClassInfo(cc));
       ccByFlight.set(key, list);
     }
 
-    const airportMap = new Map<number, Airport>(
+    // Airport map keyed by IATA code
+    const airportMap = new Map<string, Airport>(
       (airportResult.data ?? []).map((a) => [a.id, toAirport(a)])
     );
 
@@ -233,7 +228,7 @@ export class FlightService {
         const origin      = airportMap.get(row.origin_airport_id!);
         const destination = airportMap.get(row.destination_airport_id!);
         if (!origin || !destination) return null;
-        return toFlight(row, origin, destination, ccByFlight.get(String(row.id)) ?? []);
+        return toFlight(row, origin, destination, ccByFlight.get(row.id) ?? []);
       })
       .filter((f): f is Flight => f !== null);
   }

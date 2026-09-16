@@ -19,15 +19,16 @@ type AnySupabaseClient = SupabaseClient<any, any, any>;
 
 export async function queryAirports(
   supabase: AnySupabaseClient,
-  ids?: number[]
+  codes?: string[]
 ) {
   const q = supabase.from("airport").select("*");
-  if (ids) q.in("id", ids);
+  if (codes && codes.length > 0) q.in("id", codes);
   const result = await q;
   return result as { data: AirportRow[] | null; error: { message: string } | null };
 }
 
-/** Resolve IATA codes (e.g. ["BKK", "CNX"]) → full airport rows with integer IDs. */
+/** Resolve IATA codes (e.g. ["BKK", "CNX"]) → full airport rows.
+ *  Since airport.id IS the IATA code, this is just a filtered queryAirports. */
 export async function queryAirportsByCode(
   supabase: AnySupabaseClient,
   codes: string[]
@@ -35,7 +36,7 @@ export async function queryAirportsByCode(
   const result = await supabase
     .from("airport")
     .select("*")
-    .in("airport_code", codes);
+    .in("id", codes);
   return result as { data: AirportRow[] | null; error: { message: string } | null };
 }
 
@@ -50,27 +51,26 @@ export async function queryAirportsOrdered(supabase: AnySupabaseClient) {
 
 // ─── Flight ─────────────────────────────────────────────────────────────────
 
-export async function queryFlightById(supabase: AnySupabaseClient, id: number | string) {
+export async function queryFlightById(supabase: AnySupabaseClient, id: string) {
   const result = await supabase.from("flight").select("*").eq("id", id).single();
   return result as { data: FlightRow | null; error: { message: string } | null };
 }
 
 /**
- * Search flights by integer airport IDs and time window.
- * Caller must resolve IATA codes → integer IDs first via queryAirportsByCode.
+ * Search flights by IATA airport codes and time window.
  */
 export async function queryFlightSearch(
   supabase: AnySupabaseClient,
-  originId: number,
-  destinationId: number,
+  originCode: string,
+  destinationCode: string,
   dayStart: string,
   dayEnd: string
 ) {
   const result = await supabase
     .from("flight")
     .select("*")
-    .eq("origin_airport_id", originId)
-    .eq("destination_airport_id", destinationId)
+    .eq("origin_airport_id", originCode)
+    .eq("destination_airport_id", destinationCode)
     .gte("departure_time", dayStart)
     .lte("departure_time", dayEnd)
     .order("departure_time", { ascending: true });
@@ -101,7 +101,7 @@ export async function queryCabinClassesByFlight(
 
 export async function queryCabinClassesByFlights(
   supabase: AnySupabaseClient,
-  flightIds: number[],
+  flightIds: string[],
   cabinClass?: string,
   minSeats?: number
 ) {
