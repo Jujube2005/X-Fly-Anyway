@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { useBookingContext } from "@/components/booking/BookingProvider";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { CabinClass } from "@/types/flight";
 import "./page.css";
 
@@ -56,6 +57,55 @@ const CABIN_DETAILS = {
 export default function CabinClassPage() {
   const router = useRouter();
   const { selectedFlight, setCabinClass } = useBookingContext();
+  const { t } = useTranslation();
+
+  // Build CABIN_DETAILS inside the component so it reacts to language changes
+  const CABIN_DETAILS = {
+    economy: {
+      label: t.search.cabinClass.economy,
+      color: "#6b7280",
+      features: [
+        { icon: "🧳", text: t.booking.cabin.features.economy[0] },
+        { icon: "💺", text: t.booking.cabin.features.economy[1] },
+        { icon: "🥤", text: t.booking.cabin.features.economy[2] },
+        { icon: "🚫", text: t.booking.cabin.features.economy[3] },
+        { icon: "❌", text: t.booking.cabin.features.economy[4] },
+      ],
+    },
+    premium_economy: {
+      label: t.search.cabinClass.premium_economy,
+      color: "#f5c800",
+      features: [
+        { icon: "🧳", text: t.booking.cabin.features.premium_economy[0] },
+        { icon: "💺", text: t.booking.cabin.features.premium_economy[1] },
+        { icon: "🍽️", text: t.booking.cabin.features.premium_economy[2] },
+        { icon: "⭐", text: t.booking.cabin.features.premium_economy[3] },
+        { icon: "🔄", text: t.booking.cabin.features.premium_economy[4] },
+      ],
+    },
+    business: {
+      label: t.search.cabinClass.business,
+      color: "#f5c800",
+      features: [
+        { icon: "🧳", text: t.booking.cabin.features.business[0] },
+        { icon: "🛌️", text: t.booking.cabin.features.business[1] },
+        { icon: "🍷", text: t.booking.cabin.features.business[2] },
+        { icon: "🛋️", text: t.booking.cabin.features.business[3] },
+        { icon: "✅", text: t.booking.cabin.features.business[4] },
+      ],
+    },
+    first: {
+      label: t.search.cabinClass.first,
+      color: "#f5c800",
+      features: [
+        { icon: "🧳", text: t.booking.cabin.features.first[0] },
+        { icon: "🛌️", text: t.booking.cabin.features.first[1] },
+        { icon: "🍾", text: t.booking.cabin.features.first[2] },
+        { icon: "🌟", text: t.booking.cabin.features.first[3] },
+        { icon: "✅", text: t.booking.cabin.features.first[4] },
+      ],
+    },
+  };
 
   if (!selectedFlight) {
     if (typeof window !== "undefined") router.replace("/");
@@ -90,7 +140,7 @@ export default function CabinClassPage() {
 
       <main className="flex-1 flex flex-col items-center justify-center px-4 pt-24 pb-12">
         <h1 className="text-4xl md:text-5xl font-bold text-[#111827] mb-12 text-center">
-          Select Cabin Class
+          {t.booking.cabin.title}
         </h1>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl">
@@ -122,14 +172,14 @@ export default function CabinClassPage() {
 
                 {cabin.availableSeats === 0 ? (
                   <div className="w-full py-3 text-center text-sm text-[#9ca3af] font-medium rounded-xl border border-[#e5e7eb]">
-                    Sold Out
+                    {t.booking.cabin.soldOut}
                   </div>
                 ) : (
                   <button
                     onClick={() => handleSelect(cabin.cabinClass)}
                     className="w-full py-3.5 rounded-xl font-semibold text-[#111827] transition-all hover:brightness-95 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-[#f5c800] cabin-btn"
                   >
-                    Select from {priceDisplay}
+                    {t.booking.cabin.selectFrom} {priceDisplay}
                   </button>
                 )}
               </div>

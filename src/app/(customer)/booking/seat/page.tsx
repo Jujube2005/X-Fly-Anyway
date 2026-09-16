@@ -7,16 +7,17 @@ import { BookingStepper } from "@/components/booking/BookingStepper";
 import { Button } from "@/components/ui/Button";
 import { LoadingState, ErrorState, EmptyState } from "@/components/ui/States";
 import { useBookingContext } from "@/components/booking/BookingProvider";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useSeats } from "@/hooks/use-seats";
 import type { Seat } from "@/types/seat";
 import "./page.css";
 
-function SeatCell({ seat, isSelected, onClick }: { seat: Seat; isSelected: boolean; onClick: () => void }) {
+function SeatCell({ seat, isSelected, onClick, t }: { seat: Seat; isSelected: boolean; onClick: () => void; t: ReturnType<typeof useTranslation>['t'] }) {
   const getStyle = (): { bg: string; border: string; cursor: string; label: string } => {
-    if (seat.status === "occupied") return { bg: "#374151", border: "#374151", cursor: "cursor-not-allowed", label: "Occupied" };
-    if (seat.status === "blocked") return { bg: "#6b7280", border: "#6b7280", cursor: "cursor-not-allowed", label: "Blocked" };
-    if (isSelected) return { bg: "#f5c800", border: "#c9a200", cursor: "cursor-pointer", label: "Selected" };
-    return { bg: "#f9fafb", border: "#e5e7eb", cursor: "cursor-pointer", label: "Available" };
+    if (seat.status === "occupied") return { bg: "#374151", border: "#374151", cursor: "cursor-not-allowed", label: t.booking.seat.status.occupied };
+    if (seat.status === "blocked") return { bg: "#6b7280", border: "#6b7280", cursor: "cursor-not-allowed", label: t.booking.seat.status.blocked };
+    if (isSelected) return { bg: "#f5c800", border: "#c9a200", cursor: "cursor-pointer", label: t.booking.seat.status.selected };
+    return { bg: "#f9fafb", border: "#e5e7eb", cursor: "cursor-pointer", label: t.booking.seat.status.available };
   };
 
   const { bg, border, cursor, label } = getStyle();
@@ -42,6 +43,7 @@ export default function SeatSelectionPage() {
   const router = useRouter();
   const { selectedFlight, cabinClass, selectedSeats, setSelectedSeats, passengerCount } = useBookingContext();
   const { seatMap, isLoading, error, fetchSeatMap, toggleSeat } = useSeats();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!selectedFlight || !cabinClass) { router.replace("/"); return; }
@@ -83,16 +85,16 @@ export default function SeatSelectionPage() {
         {/* Title + stepper */}
         <div className="text-center mb-6 px-8 py-4 rounded-2xl seat-title-card">
           <h1 className="text-xl font-bold text-[#111827]">X-Fly Anyway</h1>
-          <p className="text-sm text-[#6b7280] mb-2">Seat Selection</p>
-          <BookingStepper currentLabel="Seats (Current)" variant="light" />
+          <p className="text-sm text-[#6b7280] mb-2">{t.booking.seat.seatSelection}</p>
+          <BookingStepper currentLabel={t.booking.seat.seatsCurrent} variant="light" />
         </div>
 
         <div className="flex gap-6 w-full max-w-5xl items-start">
           {/* Seat map */}
           <div className="flex-1 rounded-3xl p-6 overflow-auto seat-map-container">
-            {isLoading && <LoadingState message="Loading seat map..." />}
+            {isLoading && <LoadingState message={t.booking.seat.loading} />}
             {!isLoading && error && <ErrorState message={error} onRetry={() => selectedFlight && cabinClass && fetchSeatMap(selectedFlight.id, cabinClass)} />}
-            {!isLoading && !error && !seatMap && <EmptyState message="No seats available." />}
+            {!isLoading && !error && !seatMap && <EmptyState message={t.booking.seat.noSeats} />}
 
             {seatMap && (
               <>
@@ -125,6 +127,7 @@ export default function SeatSelectionPage() {
                               seat={seat}
                               isSelected={selectedSeats.some((s) => s.id === seat.id)}
                               onClick={() => handleToggle(seat)}
+                              t={t}
                             />
                           ))}
                           <div className="w-4" />
@@ -134,6 +137,7 @@ export default function SeatSelectionPage() {
                               seat={seat}
                               isSelected={selectedSeats.some((s) => s.id === seat.id)}
                               onClick={() => handleToggle(seat)}
+                              t={t}
                             />
                           ))}
                         </div>
@@ -144,10 +148,10 @@ export default function SeatSelectionPage() {
                 {/* Legend */}
                 <div className="flex items-center gap-4 mt-5 justify-center flex-wrap text-xs text-[#6b7280]">
                   {[
-                    { color: "#f9fafb", border: "#e5e7eb", label: "Available" },
-                    { color: "#f5c800", border: "#c9a200", label: "Selected" },
-                    { color: "#374151", border: "#374151", label: "Occupied" },
-                    { color: "#6b7280", border: "#6b7280", label: "Blocked" },
+                    { color: "#f9fafb", border: "#e5e7eb", label: t.booking.seat.legend.available },
+                    { color: "#f5c800", border: "#c9a200", label: t.booking.seat.legend.selected },
+                    { color: "#374151", border: "#374151", label: t.booking.seat.legend.occupied },
+                    { color: "#6b7280", border: "#6b7280", label: t.booking.seat.legend.blocked },
                   ].map(({ color, border, label }) => (
                     <div key={label} className="flex items-center gap-1.5">
                       <div
@@ -164,17 +168,17 @@ export default function SeatSelectionPage() {
 
           {/* Selection panel */}
           <div className="w-64 shrink-0 rounded-3xl p-5 sticky top-24 seat-selection-panel">
-            <h2 className="text-base font-bold text-[#111827] mb-4">Your Selection</h2>
+            <h2 className="text-base font-bold text-[#111827] mb-4">{t.booking.seat.yourSelection}</h2>
 
             {selectedSeats.length === 0 ? (
               <p className="text-sm text-[#9ca3af] mb-6">
-                Select up to {passengerCount} seat{passengerCount > 1 ? "s" : ""}
+                {t.booking.seat.selectUpTo} {passengerCount} {t.booking.seat.seat}{passengerCount > 1 ? "s" : ""}
               </p>
             ) : (
               <ul className="flex flex-col gap-2 mb-4">
                 {selectedSeats.map((seat) => (
                   <li key={seat.id} className="flex justify-between text-sm">
-                    <span className="font-semibold text-[#111827]">Seat {seat.seatNumber}</span>
+                    <span className="font-semibold text-[#111827]">{t.booking.seat.seat} {seat.seatNumber}</span>
                     <span className="text-[#6b7280] capitalize">{seat.cabinClass}</span>
                   </li>
                 ))}
@@ -183,7 +187,7 @@ export default function SeatSelectionPage() {
 
             <div className="border-t border-[#e5e7eb] pt-3 mb-5">
               <div className="flex justify-between text-sm">
-                <span className="text-[#6b7280]">Selected</span>
+                <span className="text-[#6b7280]">{t.booking.seat.selected}</span>
                 <span className="font-bold text-[#111827]">
                   {totalSeats} / {passengerCount}
                 </span>
@@ -196,7 +200,7 @@ export default function SeatSelectionPage() {
                 disabled={totalSeats === 0}
                 fullWidth
               >
-                Confirm Seats
+                {t.booking.seat.confirmSeats}
               </Button>
               <Button
                 variant="ghost"
@@ -206,7 +210,7 @@ export default function SeatSelectionPage() {
                 fullWidth
                 className="text-[#6b7280] text-sm"
               >
-                Change Selection
+                {t.booking.seat.changeSelection}
               </Button>
             </div>
           </div>
