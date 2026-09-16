@@ -164,7 +164,7 @@ export function FlightSearchForm({
   // Fetch airports
   const fetchAirports = useCallback(async () => {
     try {
-      const res = await fetch("/api/airports");
+      const res = await fetch("/api/airports", { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         if (data.airports) setAirports(data.airports);

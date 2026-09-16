@@ -198,11 +198,11 @@ export function AirportAutocomplete({
                   role="option"
                   aria-selected={airport.airport_code === value}
                   onClick={() => handleSelect(airport)}
-                  className={`px-4 py-2.5 cursor-pointer transition-colors duration-100 flex flex-col ${
-                    idx === activeIndex
-                      ? "bg-[#f5c800]/20"
-                      : "hover:bg-[#f5c800]/10"
-                  } ${airport.airport_code === value ? "bg-[#f5c800]/10" : ""}`}
+                  className={[
+                    "px-4 py-2.5 cursor-pointer transition-colors duration-100 flex flex-col",
+                    idx === activeIndex ? "bg-[#f5c800]/20" : "hover:bg-[#f5c800]/10",
+                    airport.airport_code === value ? "bg-[#f5c800]/10" : "",
+                  ].join(" ")}
                 >
                   <span className="text-gray-900 font-semibold text-sm leading-tight">
                     {airport.city}{" "}
