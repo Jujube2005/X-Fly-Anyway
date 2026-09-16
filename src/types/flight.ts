@@ -45,8 +45,19 @@ export interface FlightSearchParams {
   cabinClass?: CabinClass; // optional filter — customer can filter post-search (FR-CUS-004)
 }
 
+export interface ConnectingFlight {
+  type: 'connecting';
+  legs: [Flight, Flight];
+  via: Airport;
+  layoverMinutes: number;
+  totalDurationMinutes: number;
+  totalPrice: number;
+  cabinClass: CabinClass;
+}
+
 export interface FlightSearchResult {
-  flights: Flight[];
+  direct: Flight[];
+  connecting: ConnectingFlight[];
   totalCount: number;
 }
 

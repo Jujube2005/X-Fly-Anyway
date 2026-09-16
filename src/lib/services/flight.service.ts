@@ -97,7 +97,11 @@ export class FlightService {
       this.supabase, originCode, destinationCode, dayStart, dayEnd
     );
     if (flightError) throw new Error(`Flight search failed: ${flightError.message}`);
-    if (!flightRows || flightRows.length === 0) return { flights: [], totalCount: 0 };
+    if (!flightRows || flightRows.length === 0) {
+      // Fallback to connecting flights if no direct flights found
+      const connecting = await this.searchConnectingFlights(params);
+      return { direct: [], connecting, totalCount: connecting.length };
+    }
 
     const flightIds = flightRows.map((f) => f.id);
 
@@ -140,7 +144,168 @@ export class FlightService {
       flights.push(toFlight(row, origin, destination, ccs));
     }
 
-    return { flights, totalCount: flights.length };
+    return { direct: flights, connecting: [], totalCount: flights.length };
+  }
+
+  /**
+   * Search for connecting flights with exactly 1 stop.
+   * Rules:
+   * - 45m <= layover <= 8h
+   * - Same cabin class with enough seats on both legs
+   * - Same hub airport
+   */
+  private async searchConnectingFlights(params: FlightSearchParams): Promise<import("@/types/flight").ConnectingFlight[]> {
+    const { originCode, destinationCode, departureDate, passengers, cabinClass } = params;
+    
+    // We need the new queries from queries.ts
+    const { queryFlightsByOrigin, queryFlightsByDestination } = await import("@/lib/supabase/queries");
+
+    const dayStart = `${departureDate}T00:00:00+07:00`;
+    const dayEnd   = `${departureDate}T23:59:59+07:00`;
+
+    // 1. Fetch all possible Leg 1 flights from origin
+    const { data: leg1Rows, error: leg1Error } = await queryFlightsByOrigin(
+      this.supabase, originCode, dayStart, dayEnd
+    );
+    if (leg1Error) throw new Error(`Leg 1 search failed: ${leg1Error.message}`);
+    if (!leg1Rows || leg1Rows.length === 0) return [];
+
+    // Optimize: Find min and max arrival times of Leg 1 to scope Leg 2 search
+    // Min departure of Leg 2 is min arrival of Leg 1 + 45 minutes
+    // Max departure of Leg 2 is max arrival of Leg 1 + 8 hours
+    let minArr = new Date("2100-01-01").getTime();
+    let maxArr = 0;
+    for (const r of leg1Rows) {
+      const arr = new Date(r.arrival_time).getTime();
+      if (arr < minArr) minArr = arr;
+      if (arr > maxArr) maxArr = arr;
+    }
+    
+    const minDepLeg2 = new Date(minArr + 45 * 60000).toISOString();
+    const maxDepLeg2 = new Date(maxArr + 8 * 3600000).toISOString();
+
+    // 2. Fetch all possible Leg 2 flights to destination within the time window
+    const { data: leg2Rows, error: leg2Error } = await queryFlightsByDestination(
+      this.supabase, destinationCode, minDepLeg2, maxDepLeg2
+    );
+    if (leg2Error) throw new Error(`Leg 2 search failed: ${leg2Error.message}`);
+    if (!leg2Rows || leg2Rows.length === 0) return [];
+
+    // 3. Match pairs and validate layover rules
+    const validPairs: { leg1: FlightRow, leg2: FlightRow, layoverMins: number }[] = [];
+    for (const l1 of leg1Rows) {
+      if (!l1.destination_airport_id) continue;
+      
+      const arrMs = new Date(l1.arrival_time).getTime();
+      
+      for (const l2 of leg2Rows) {
+        // Hub must match
+        if (l2.origin_airport_id !== l1.destination_airport_id) continue;
+        
+        const depMs = new Date(l2.departure_time).getTime();
+        const layoverMins = Math.round((depMs - arrMs) / 60000);
+        
+        // 45 mins <= layover <= 8 hours
+        if (layoverMins >= 45 && layoverMins <= 480) {
+          validPairs.push({ leg1: l1, leg2: l2, layoverMins });
+        }
+      }
+    }
+    if (validPairs.length === 0) return [];
+
+    // 4. Gather unique flight IDs to fetch cabin classes
+    const uniqueFlightIds = new Set<string>();
+    validPairs.forEach(p => {
+      uniqueFlightIds.add(p.leg1.id);
+      uniqueFlightIds.add(p.leg2.id);
+    });
+
+    const { data: ccRows, error: ccError } = await queryCabinClassesByFlights(
+      this.supabase, Array.from(uniqueFlightIds), cabinClass, passengers
+    );
+    if (ccError) throw new Error(`Cabin class fetch failed: ${ccError.message}`);
+
+    const ccByFlightAndClass = new Map<string, FlightCabinClassRow>();
+    for (const cc of ccRows ?? []) {
+      ccByFlightAndClass.set(`${cc.flight_id}-${cc.cabin_class}`, cc);
+    }
+
+    // 5. Filter pairs that share the SAME cabin class with enough seats on BOTH legs
+    // Since cabinClass filter could be optional, we must find any class that is valid on both
+    const validClasses = cabinClass ? [cabinClass] : ["economy", "premium_economy", "business", "first"];
+    
+    const fullyValidPairs: {
+      leg1: FlightRow,
+      leg2: FlightRow,
+      layoverMins: number,
+      cabinClass: CabinClass,
+      totalPrice: number,
+      cc1: FlightCabinClassInfo,
+      cc2: FlightCabinClassInfo
+    }[] = [];
+
+    for (const pair of validPairs) {
+      for (const ccName of validClasses) {
+        const cc1 = ccByFlightAndClass.get(`${pair.leg1.id}-${ccName}`);
+        const cc2 = ccByFlightAndClass.get(`${pair.leg2.id}-${ccName}`);
+        
+        if (cc1 && cc2 && cc1.available_seats >= passengers && cc2.available_seats >= passengers) {
+          fullyValidPairs.push({
+            leg1: pair.leg1,
+            leg2: pair.leg2,
+            layoverMins: pair.layoverMins,
+            cabinClass: ccName as CabinClass,
+            totalPrice: Number(cc1.price) + Number(cc2.price),
+            cc1: toCabinClassInfo(cc1),
+            cc2: toCabinClassInfo(cc2),
+          });
+        }
+      }
+    }
+    if (fullyValidPairs.length === 0) return [];
+
+    // 6. Gather all unique airports for mapping
+    const airportIds = new Set<string>();
+    airportIds.add(originCode);
+    airportIds.add(destinationCode);
+    fullyValidPairs.forEach(p => airportIds.add(p.leg1.destination_airport_id!));
+    
+    const { data: searchAirports } = await queryAirportsByCode(
+      this.supabase, Array.from(airportIds)
+    );
+    const airportMap = new Map<string, Airport>(
+      (searchAirports ?? []).map((a) => [a.id, toAirport(a)])
+    );
+
+    // 7. Assemble connecting flights
+    const connectingFlights: import("@/types/flight").ConnectingFlight[] = [];
+    for (const match of fullyValidPairs) {
+      const origin = airportMap.get(originCode)!;
+      const hub = airportMap.get(match.leg1.destination_airport_id!)!;
+      const dest = airportMap.get(destinationCode)!;
+
+      const flight1 = toFlight(match.leg1, origin, hub, [match.cc1]);
+      const flight2 = toFlight(match.leg2, hub, dest, [match.cc2]);
+      const totalDurationMins = flight1.durationMinutes + match.layoverMins + flight2.durationMinutes;
+
+      connectingFlights.push({
+        type: 'connecting',
+        legs: [flight1, flight2],
+        via: hub,
+        layoverMinutes: match.layoverMins,
+        totalDurationMinutes: totalDurationMins,
+        totalPrice: match.totalPrice,
+        cabinClass: match.cabinClass,
+      });
+    }
+
+    // Sort by price, then by duration
+    connectingFlights.sort((a, b) => {
+      if (a.totalPrice !== b.totalPrice) return a.totalPrice - b.totalPrice;
+      return a.totalDurationMinutes - b.totalDurationMinutes;
+    });
+
+    return connectingFlights;
   }
 
   /**

@@ -16,11 +16,11 @@ export interface BookingContact {
 export interface Booking {
   id: string;
   reference: string;         // e.g. "XFA-20260907-A1B2"
-  flightId: string;
+  flightIds: string[];       // 1 for direct, 2 for connecting
   cabinClass: CabinClass;
   passengers: Passenger[];
   contact: BookingContact;
-  seatNumbers: string[];     // selected seat numbers e.g. ["12A"]
+  seatNumbers: string[][];   // per leg, e.g. [["12A"], ["14B"]]
   totalAmount: number;
   currency: string;
   status: BookingStatus;
@@ -29,11 +29,11 @@ export interface Booking {
 }
 
 export interface CreateBookingPayload {
-  flightId: string;
+  flightIds: string[];
   cabinClass: CabinClass;
   passengers: Passenger[];
   contact: BookingContact;
-  seatNumbers: string[];
+  seatNumbers: string[][];
 }
 
 /**
@@ -41,9 +41,9 @@ export interface CreateBookingPayload {
  * Cleared after booking is confirmed (BR-002: no customer auth/session).
  */
 export interface BookingDraft {
-  flightId: string;
+  flightIds: string[];
   cabinClass: CabinClass;
-  seatNumber: string;
+  seatNumbers: string[][];
   passengers: Partial<Passenger>[];
   contact: Partial<BookingContact>;
   pricePerSeat: number;

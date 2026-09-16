@@ -56,7 +56,7 @@ const CABIN_DETAILS = {
 
 export default function CabinClassPage() {
   const router = useRouter();
-  const { selectedFlight, setCabinClass } = useBookingContext();
+  const { selectedLegs } = useBookingContext();
   const { t } = useTranslation();
 
   // Build CABIN_DETAILS inside the component so it reacts to language changes
@@ -107,17 +107,48 @@ export default function CabinClassPage() {
     },
   };
 
-  if (!selectedFlight) {
+  const { setCabinClass } = useBookingContext();
+
+  if (!selectedLegs || selectedLegs.length === 0) {
     if (typeof window !== "undefined") router.replace("/");
     return null;
   }
 
-  const availableCabins = (selectedFlight.cabinClasses ?? []) as Array<{
-    cabinClass: CabinClass;
-    price: number;
-    currency: string;
-    availableSeats: number;
-  }>;
+  // Aggregate cabin availability across all legs
+  // A cabin is available if it exists and has seats on ALL legs
+  // Price is the sum of prices on all legs
+  const cabinMap = new Map<CabinClass, { price: number; currency: string; minAvailable: number }>();
+  
+  if (selectedLegs.length > 0) {
+    const firstLegCabins = selectedLegs[0].cabinClasses ?? [];
+    for (const c of firstLegCabins) {
+      cabinMap.set(c.cabinClass, {
+        price: c.price,
+        currency: c.currency,
+        minAvailable: c.availableSeats
+      });
+    }
+
+    for (let i = 1; i < selectedLegs.length; i++) {
+      const legCabins = selectedLegs[i].cabinClasses ?? [];
+      for (const [cClass, data] of Array.from(cabinMap.entries())) {
+        const legC = legCabins.find(lc => lc.cabinClass === cClass);
+        if (!legC) {
+          cabinMap.delete(cClass); // Missing on this leg, cannot be booked
+        } else {
+          data.price += legC.price;
+          data.minAvailable = Math.min(data.minAvailable, legC.availableSeats);
+        }
+      }
+    }
+  }
+
+  const availableCabins = Array.from(cabinMap.entries()).map(([cClass, data]) => ({
+    cabinClass: cClass,
+    price: data.price,
+    currency: data.currency,
+    availableSeats: data.minAvailable,
+  }));
 
   function handleSelect(cabin: CabinClass) {
     setCabinClass(cabin);

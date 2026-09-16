@@ -32,20 +32,28 @@ function formatDuration(dep: string, arr: string) {
 
 export default function BookingSummaryPage() {
   const router = useRouter();
-  const { selectedFlight, cabinClass, selectedSeats, passengers, contact } =
+  const { selectedLegs, cabinClass, selectedSeats, passengers, contact } =
     useBookingContext();
 
-  if (!selectedFlight || !contact) {
+  if (!selectedLegs || selectedLegs.length === 0 || !contact) {
     if (typeof window !== "undefined") router.replace("/");
     return null;
   }
 
-  // Find price from cabinClasses
-  const cabinInfo = (selectedFlight.cabinClasses ?? []).find(
-    (c) => c.cabinClass === cabinClass
-  );
-  const basePrice = cabinInfo ? Number(cabinInfo.price) : 0;
-  const currency = cabinInfo?.currency ?? "THB";
+  // Find price from cabinClasses across all legs
+  let basePrice = 0;
+  let currency = "THB";
+  
+  for (const leg of selectedLegs) {
+    const cabinInfo = (leg.cabinClasses ?? []).find(
+      (c) => c.cabinClass === cabinClass
+    );
+    if (cabinInfo) {
+      basePrice += Number(cabinInfo.price);
+      currency = cabinInfo.currency;
+    }
+  }
+  
   const totalAmount = basePrice * passengers.length;
 
   const fmt = (n: number) =>
@@ -72,51 +80,55 @@ export default function BookingSummaryPage() {
               <h2 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">
                 Flight Details
               </h2>
-              <div className="rounded-xl p-4 bg-white/5 border border-white/10">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-bold text-white">
-                    Flight{" "}
-                    <span className="text-[#f5c800]">
-                      {selectedFlight.flightNumber}
-                    </span>
-                    : {selectedFlight.origin.airport_code} to{" "}
-                    {selectedFlight.destination.airport_code}
-                  </span>
-                  <span className="text-xs text-white/50">
-                    {cabinClass?.replace("_", " ")}
-                  </span>
-                </div>
-                <div className="flex items-center gap-4 text-sm">
-                  <div>
-                    <p className="text-white font-bold">
-                      {formatDate(selectedFlight.departureAt)}
-                    </p>
-                    <p className="text-white/60">
-                      {formatTime(selectedFlight.departureAt)}
-                    </p>
-                  </div>
-                  <div className="flex-1 flex flex-col items-center">
-                    <p className="text-xs text-white/50">
-                      {formatDuration(
-                        selectedFlight.departureAt,
-                        selectedFlight.arrivalAt
-                      )}
-                    </p>
-                    <div className="w-full flex items-center gap-1 mt-1">
-                      <div className="flex-1 h-px bg-white/20" />
-                      <span className="text-[#f5c800] text-xs">✈</span>
-                      <div className="flex-1 h-px bg-white/20" />
+              <div className="flex flex-col gap-4">
+                {selectedLegs.map((leg, legIndex) => (
+                  <div key={leg.id} className="rounded-xl p-4 bg-white/5 border border-white/10">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-sm font-bold text-white">
+                        Flight{" "}
+                        <span className="text-[#f5c800]">
+                          {leg.flightNumber}
+                        </span>
+                        : {leg.origin.airport_code} to{" "}
+                        {leg.destination.airport_code}
+                      </span>
+                      <span className="text-xs text-white/50">
+                        {cabinClass?.replace("_", " ")}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-4 text-sm">
+                      <div>
+                        <p className="text-white font-bold">
+                          {formatDate(leg.departureAt)}
+                        </p>
+                        <p className="text-white/60">
+                          {formatTime(leg.departureAt)}
+                        </p>
+                      </div>
+                      <div className="flex-1 flex flex-col items-center">
+                        <p className="text-xs text-white/50">
+                          {formatDuration(
+                            leg.departureAt,
+                            leg.arrivalAt
+                          )}
+                        </p>
+                        <div className="w-full flex items-center gap-1 mt-1">
+                          <div className="flex-1 h-px bg-white/20" />
+                          <span className="text-[#f5c800] text-xs">✈</span>
+                          <div className="flex-1 h-px bg-white/20" />
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-white font-bold">
+                          {formatDate(leg.arrivalAt)}
+                        </p>
+                        <p className="text-white/60">
+                          {formatTime(leg.arrivalAt)}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-white font-bold">
-                      {formatDate(selectedFlight.arrivalAt)}
-                    </p>
-                    <p className="text-white/60">
-                      {formatTime(selectedFlight.arrivalAt)}
-                    </p>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 
@@ -163,19 +175,28 @@ export default function BookingSummaryPage() {
                 <h2 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">
                   Seat Choice
                 </h2>
-                <div className="rounded-xl p-4 bg-white/5 border border-white/10">
-                  {passengers.map((p, i) => {
-                    const seat = selectedSeats[i];
-                    return seat ? (
-                      <p key={i} className="text-sm text-white/80 mb-1">
-                        <span className="font-bold text-white">
-                          {p.firstName} {p.lastName}
-                        </span>
-                        : Seat {seat.seatNumber} (
-                        {seat.isWindow ? "Window" : seat.isAisle ? "Aisle" : "Middle"},{" "}
-                        {cabinClass})
-                      </p>
-                    ) : null;
+                <div className="flex flex-col gap-4">
+                  {selectedLegs.map((leg, legIdx) => {
+                    const legSeats = selectedSeats[legIdx] || [];
+                    if (legSeats.length === 0) return null;
+                    return (
+                      <div key={leg.id} className="rounded-xl p-4 bg-white/5 border border-white/10">
+                        <p className="text-sm font-bold text-[#f5c800] mb-2">{leg.origin.airport_code} to {leg.destination.airport_code}</p>
+                        {passengers.map((p, pIdx) => {
+                          const seat = legSeats[pIdx];
+                          return seat ? (
+                            <p key={pIdx} className="text-sm text-white/80 mb-1">
+                              <span className="font-bold text-white">
+                                {p.firstName} {p.lastName}
+                              </span>
+                              : Seat {seat.seatNumber} (
+                              {seat.isWindow ? "Window" : seat.isAisle ? "Aisle" : "Middle"},{" "}
+                              {cabinClass})
+                            </p>
+                          ) : null;
+                        })}
+                      </div>
+                    );
                   })}
                 </div>
               </div>

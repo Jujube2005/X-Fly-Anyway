@@ -22,7 +22,7 @@ const inputCls =
 export default function PaymentPage() {
   const router = useRouter();
   const {
-    selectedFlight,
+    selectedLegs,
     cabinClass,
     selectedSeats,
     passengers,
@@ -38,16 +38,25 @@ export default function PaymentPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (!selectedFlight || !contact || !cabinClass) {
+  if (!selectedLegs || selectedLegs.length === 0 || !contact || !cabinClass) {
     if (typeof window !== "undefined") router.replace("/");
     return null;
   }
 
-  const cabinInfo = (selectedFlight.cabinClasses ?? []).find(
-    (c) => c.cabinClass === cabinClass
-  );
-  const totalAmount = (cabinInfo ? Number(cabinInfo.price) : 0) * passengers.length;
-  const currency = cabinInfo?.currency ?? "THB";
+  let basePrice = 0;
+  let currency = "THB";
+  
+  for (const leg of selectedLegs) {
+    const cabinInfo = (leg.cabinClasses ?? []).find(
+      (c) => c.cabinClass === cabinClass
+    );
+    if (cabinInfo) {
+      basePrice += Number(cabinInfo.price);
+      currency = cabinInfo.currency;
+    }
+  }
+  
+  const totalAmount = basePrice * passengers.length;
 
   const fmt = (n: number) =>
     new Intl.NumberFormat("en-US", {
@@ -70,7 +79,7 @@ export default function PaymentPage() {
       const { month: expiryMonth, year: expiryYear } = parseExpiry(expiry);
 
       const bookingPayload = {
-        flightId: selectedFlight!.id,
+        flightIds: selectedLegs.map(l => l.id),
         cabinClass,
         passengers: passengers.map((p) => ({
           type: "adult" as const,
@@ -89,7 +98,7 @@ export default function PaymentPage() {
           email: contact!.email,
           phone: contact!.phone,
         },
-        seatNumbers: selectedSeats.map((s) => s.seatNumber),
+        seatNumbers: selectedLegs.map((_, i) => (selectedSeats[i] || []).map(s => s.seatNumber)),
         payment: {
           method: method as PaymentMethod,
           ...(method !== "bitcoin"

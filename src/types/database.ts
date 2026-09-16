@@ -101,7 +101,7 @@ export interface SeatRow {
 export interface BookingRow {
   id: string;                  // UUID PRIMARY KEY
   reference: string;           // e.g. "XFA-20260907-A1B2" — UNIQUE
-  flight_id: string;           // FK → flight.id
+  flight_id: string | null;    // FK → flight.id (nullable for connecting flights)
   cabin_class: CabinClassValue;
   contact_first_name: string;
   contact_last_name: string;
@@ -112,6 +112,14 @@ export interface BookingRow {
   status: BookingStatusValue;  // default "pending"
   created_at: string;
   updated_at: string;
+}
+
+export interface BookingLegRow {
+  id: string;                  // UUID PRIMARY KEY
+  booking_id: string;          // FK → booking.id
+  flight_id: string;           // FK → flight.id
+  leg_sequence: number;
+  created_at: string;
 }
 
 export interface PassengerRow {

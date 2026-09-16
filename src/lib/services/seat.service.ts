@@ -173,4 +173,21 @@ export class SeatService {
       throw new Error(`Available seats decrement failed: ${updateError.message}`);
     }
   }
+
+  /**
+   * Increment available_seats count for a cabin class after booking cancellation.
+   */
+  async incrementAvailableSeats(
+    flightId: string,
+    cabinClass: import("@/types/flight").CabinClass,
+    count: number
+  ): Promise<void> {
+    const { data, error: fetchError } = await queryCabinClassPrice(
+      this.supabase, flightId, cabinClass
+    );
+    if (fetchError || !data) return; // Silent fail on rollback
+
+    const newAvailable = data.available_seats + count;
+    await updateCabinClassAvailableSeats(this.supabase, data.id, newAvailable);
+  }
 }

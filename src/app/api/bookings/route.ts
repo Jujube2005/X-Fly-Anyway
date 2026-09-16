@@ -40,7 +40,8 @@ export async function POST(request: Request) {
 
   // Validate required fields
   if (
-    !bookingPayload?.flightId ||
+    !bookingPayload?.flightIds ||
+    !bookingPayload.flightIds.length ||
     !bookingPayload?.cabinClass ||
     !bookingPayload?.passengers?.length ||
     !bookingPayload?.contact?.email ||
@@ -50,7 +51,7 @@ export async function POST(request: Request) {
     return Response.json(
       {
         error:
-          "Missing required fields: booking.flightId, cabinClass, passengers, contact, seatNumbers, payment.method",
+          "Missing required fields: booking.flightIds, cabinClass, passengers, contact, seatNumbers, payment.method",
       },
       { status: 400 }
     );
@@ -68,20 +69,23 @@ export async function POST(request: Request) {
     const booking = await bookingService.createBooking(bookingPayload);
     bookingId = booking.id;
 
-    // Step 2: Reserve seats (marks as 'occupied', inserts booking_seat)
-    // Throws on race condition (unique constraint violation)
-    await seatService.reserveSeats(
-      bookingPayload.flightId,
-      bookingPayload.seatNumbers,
-      booking.id
-    );
+    // Step 2 & 3: Reserve seats and decrement availability per leg
+    for (let i = 0; i < bookingPayload.flightIds.length; i++) {
+      const flightId = bookingPayload.flightIds[i];
+      const legSeats = bookingPayload.seatNumbers[i];
+      if (!legSeats || legSeats.length === 0) continue;
 
-    // Step 3: Decrement available_seats counter
-    await seatService.decrementAvailableSeats(
-      bookingPayload.flightId,
-      bookingPayload.cabinClass,
-      bookingPayload.seatNumbers.length
-    );
+      // Reserve seats (marks as 'occupied', inserts booking_seat)
+      // Throws on race condition (unique constraint violation)
+      await seatService.reserveSeats(flightId, legSeats, booking.id);
+
+      // Decrement available_seats counter
+      await seatService.decrementAvailableSeats(
+        flightId,
+        bookingPayload.cabinClass,
+        legSeats.length
+      );
+    }
 
     // Step 4: Process mock payment
     const paymentPayload: MockPaymentPayload = {
@@ -109,6 +113,13 @@ export async function POST(request: Request) {
       // Step 5b: Payment failed — cancel booking and release seats
       await bookingService.cancelBooking(booking.id);
       await seatService.releaseSeats(booking.id);
+      for (let i = 0; i < bookingPayload.flightIds.length; i++) {
+        const flightId = bookingPayload.flightIds[i];
+        const legSeats = bookingPayload.seatNumbers[i];
+        if (legSeats && legSeats.length > 0) {
+          await seatService.incrementAvailableSeats(flightId, bookingPayload.cabinClass, legSeats.length);
+        }
+      }
 
       return Response.json(
         {
@@ -128,6 +139,13 @@ export async function POST(request: Request) {
       try {
         await bookingService.cancelBooking(bookingId);
         await seatService.releaseSeats(bookingId);
+        for (let i = 0; i < bookingPayload.flightIds.length; i++) {
+          const flightId = bookingPayload.flightIds[i];
+          const legSeats = bookingPayload.seatNumbers[i];
+          if (legSeats && legSeats.length > 0) {
+            await seatService.incrementAvailableSeats(flightId, bookingPayload.cabinClass, legSeats.length);
+          }
+        }
       } catch (cleanupErr) {
         console.error("[POST /api/bookings] cleanup failed:", cleanupErr);
       }

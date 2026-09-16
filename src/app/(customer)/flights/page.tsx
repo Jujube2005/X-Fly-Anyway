@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Header } from "@/components/layout/Header";
-import { FlightCard, FlightFilters } from "@/components/flight/FlightCard";
+import { FlightCard, FlightFilters, ConnectingFlightCard } from "@/components/flight/FlightCard";
 import { LoadingState, ErrorState, EmptyState } from "@/components/ui/States";
 import { useBookingContext } from "@/components/booking/BookingProvider";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -13,7 +13,7 @@ import "./page.css";
 function FlightResultsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { setSelectedFlight } = useBookingContext();
+  const { setSelectedLegs } = useBookingContext();
   const { t } = useTranslation();
 
   const [results, setResults] = useState<FlightSearchResult | null>(null);
@@ -40,8 +40,12 @@ function FlightResultsContent() {
 
       // Build cabin map
       const map: Record<string, FlightCabinClassInfo[]> = {};
-      for (const f of data.flights ?? []) {
+      for (const f of data.direct ?? []) {
         map[f.id] = f.cabinClasses ?? [];
+      }
+      for (const c of data.connecting ?? []) {
+        map[c.legs[0].id] = c.legs[0].cabinClasses ?? [];
+        map[c.legs[1].id] = c.legs[1].cabinClasses ?? [];
       }
       setCabinMap(map);
     } catch (err) {
@@ -56,8 +60,8 @@ function FlightResultsContent() {
     if (origin && destination && date) searchFlights();
   }, [searchFlights, origin, destination, date]);
 
-  function handleSelect(flight: Flight) {
-    setSelectedFlight(flight);
+  function handleSelect(flights: Flight[]) {
+    setSelectedLegs(flights);
     router.push("/booking/cabin");
   }
 
@@ -111,16 +115,23 @@ function FlightResultsContent() {
               {!isLoading && error && (
                 <ErrorState message={error} onRetry={searchFlights} />
               )}
-              {!isLoading && !error && results && (results.flights ?? []).length === 0 && (
+              {!isLoading && !error && results && results.totalCount === 0 && (
                 <EmptyState message={t.flights.noFlights} />
               )}
-              {!isLoading && !error && results && (results.flights ?? []).length > 0 && (
+              {!isLoading && !error && results && results.totalCount > 0 && (
                 <div className="flex flex-col gap-3">
-                  {(results.flights ?? []).map((flight) => (
+                  {(results.direct ?? []).map((flight) => (
                     <FlightCard
                       key={flight.id}
                       flight={flight}
                       cabinClasses={cabinMap[flight.id] ?? []}
+                      onSelect={(f) => handleSelect([f])}
+                    />
+                  ))}
+                  {(results.connecting ?? []).map((conn, idx) => (
+                    <ConnectingFlightCard
+                      key={`conn-${idx}`}
+                      connecting={conn}
                       onSelect={handleSelect}
                     />
                   ))}

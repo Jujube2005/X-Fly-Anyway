@@ -41,30 +41,41 @@ function SeatCell({ seat, isSelected, onClick, t }: { seat: Seat; isSelected: bo
 
 export default function SeatSelectionPage() {
   const router = useRouter();
-  const { selectedFlight, cabinClass, selectedSeats, setSelectedSeats, passengerCount } = useBookingContext();
+  const { selectedLegs, cabinClass, selectedSeats, setSelectedSeats, passengerCount } = useBookingContext();
   const { seatMap, isLoading, error, fetchSeatMap, toggleSeat } = useSeats();
   const { t } = useTranslation();
 
-  useEffect(() => {
-    if (!selectedFlight || !cabinClass) { router.replace("/"); return; }
-    fetchSeatMap(selectedFlight.id, cabinClass);
-  }, [selectedFlight, cabinClass, fetchSeatMap, router]);
+  const [currentLegIndex, setCurrentLegIndex] = useState(0);
 
-  // Sync useSeats selected with context
+  useEffect(() => {
+    if (!selectedLegs || selectedLegs.length === 0 || !cabinClass) { router.replace("/"); return; }
+    fetchSeatMap(selectedLegs[currentLegIndex].id, cabinClass);
+  }, [selectedLegs, cabinClass, fetchSeatMap, router, currentLegIndex]);
+
+  // Sync useSeats selected with context for current leg
+  const currentLegSeats = selectedSeats[currentLegIndex] || [];
+  
   function handleToggle(seat: Seat) {
-    const alreadySelected = selectedSeats.some((s) => s.id === seat.id);
-    if (!alreadySelected && selectedSeats.length >= passengerCount) return; // max reached
+    const alreadySelected = currentLegSeats.some((s) => s.id === seat.id);
+    if (!alreadySelected && currentLegSeats.length >= passengerCount) return; // max reached
     toggleSeat(seat);
-    setSelectedSeats(
-      alreadySelected
-        ? selectedSeats.filter((s) => s.id !== seat.id)
-        : [...selectedSeats, seat]
-    );
+    
+    const newLegSeats = alreadySelected
+      ? currentLegSeats.filter((s) => s.id !== seat.id)
+      : [...currentLegSeats, seat];
+      
+    const newSelectedSeats = [...selectedSeats];
+    newSelectedSeats[currentLegIndex] = newLegSeats;
+    setSelectedSeats(newSelectedSeats);
   }
 
   function handleConfirm() {
-    if (selectedSeats.length === 0) return;
-    router.push("/booking/passenger");
+    if (currentLegSeats.length === 0) return;
+    if (currentLegIndex < selectedLegs.length - 1) {
+      setCurrentLegIndex(currentLegIndex + 1);
+    } else {
+      router.push("/booking/passenger");
+    }
   }
 
   const groupedByRow = seatMap
@@ -85,7 +96,7 @@ export default function SeatSelectionPage() {
         {/* Title + stepper */}
         <div className="text-center mb-6 px-8 py-4 rounded-2xl seat-title-card">
           <h1 className="text-xl font-bold text-[#111827]">X-Fly Anyway</h1>
-          <p className="text-sm text-[#6b7280] mb-2">{t.booking.seat.seatSelection}</p>
+          <p className="text-sm text-[#6b7280] mb-2">{t.booking.seat.seatSelection} {selectedLegs.length > 1 ? `(Leg ${currentLegIndex + 1} of ${selectedLegs.length})` : ''}</p>
           <BookingStepper currentLabel={t.booking.seat.seatsCurrent} variant="light" />
         </div>
 
@@ -93,7 +104,7 @@ export default function SeatSelectionPage() {
           {/* Seat map */}
           <div className="flex-1 rounded-3xl p-6 overflow-auto seat-map-container">
             {isLoading && <LoadingState message={t.booking.seat.loading} />}
-            {!isLoading && error && <ErrorState message={error} onRetry={() => selectedFlight && cabinClass && fetchSeatMap(selectedFlight.id, cabinClass)} />}
+            {!isLoading && error && <ErrorState message={error} onRetry={() => selectedLegs && cabinClass && fetchSeatMap(selectedLegs[currentLegIndex].id, cabinClass)} />}
             {!isLoading && !error && !seatMap && <EmptyState message={t.booking.seat.noSeats} />}
 
             {seatMap && (
@@ -125,7 +136,7 @@ export default function SeatSelectionPage() {
                             <SeatCell
                               key={seat.id}
                               seat={seat}
-                              isSelected={selectedSeats.some((s) => s.id === seat.id)}
+                              isSelected={currentLegSeats.some((s) => s.id === seat.id)}
                               onClick={() => handleToggle(seat)}
                               t={t}
                             />
@@ -135,7 +146,7 @@ export default function SeatSelectionPage() {
                             <SeatCell
                               key={seat.id}
                               seat={seat}
-                              isSelected={selectedSeats.some((s) => s.id === seat.id)}
+                              isSelected={currentLegSeats.some((s) => s.id === seat.id)}
                               onClick={() => handleToggle(seat)}
                               t={t}
                             />
@@ -170,13 +181,13 @@ export default function SeatSelectionPage() {
           <div className="w-64 shrink-0 rounded-3xl p-5 sticky top-24 seat-selection-panel">
             <h2 className="text-base font-bold text-[#111827] mb-4">{t.booking.seat.yourSelection}</h2>
 
-            {selectedSeats.length === 0 ? (
+            {currentLegSeats.length === 0 ? (
               <p className="text-sm text-[#9ca3af] mb-6">
                 {t.booking.seat.selectUpTo} {passengerCount} {t.booking.seat.seat}{passengerCount > 1 ? "s" : ""}
               </p>
             ) : (
               <ul className="flex flex-col gap-2 mb-4">
-                {selectedSeats.map((seat) => (
+                {currentLegSeats.map((seat) => (
                   <li key={seat.id} className="flex justify-between text-sm">
                     <span className="font-semibold text-[#111827]">{t.booking.seat.seat} {seat.seatNumber}</span>
                     <span className="text-[#6b7280] capitalize">{seat.cabinClass}</span>
@@ -189,7 +200,7 @@ export default function SeatSelectionPage() {
               <div className="flex justify-between text-sm">
                 <span className="text-[#6b7280]">{t.booking.seat.selected}</span>
                 <span className="font-bold text-[#111827]">
-                  {totalSeats} / {passengerCount}
+                  {currentLegSeats.length} / {passengerCount}
                 </span>
               </div>
             </div>
@@ -197,15 +208,17 @@ export default function SeatSelectionPage() {
             <div className="flex flex-col gap-2">
               <Button
                 onClick={handleConfirm}
-                disabled={totalSeats === 0}
+                disabled={currentLegSeats.length === 0}
                 fullWidth
               >
-                {t.booking.seat.confirmSeats}
+                {currentLegIndex < selectedLegs.length - 1 ? "Next Flight →" : t.booking.seat.confirmSeats}
               </Button>
               <Button
                 variant="ghost"
                 onClick={() => {
-                  setSelectedSeats([]);
+                  const newSelectedSeats = [...selectedSeats];
+                  newSelectedSeats[currentLegIndex] = [];
+                  setSelectedSeats(newSelectedSeats);
                 }}
                 fullWidth
                 className="text-[#6b7280] text-sm"

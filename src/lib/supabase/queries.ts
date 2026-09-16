@@ -77,6 +77,38 @@ export async function queryFlightSearch(
   return result as { data: FlightRow[] | null; error: { message: string } | null };
 }
 
+export async function queryFlightsByOrigin(
+  supabase: AnySupabaseClient,
+  originCode: string,
+  dayStart: string,
+  dayEnd: string
+) {
+  const result = await supabase
+    .from("flight")
+    .select("*")
+    .eq("origin_airport_id", originCode)
+    .gte("departure_time", dayStart)
+    .lte("departure_time", dayEnd)
+    .order("departure_time", { ascending: true });
+  return result as { data: FlightRow[] | null; error: { message: string } | null };
+}
+
+export async function queryFlightsByDestination(
+  supabase: AnySupabaseClient,
+  destinationCode: string,
+  minDepartureTime: string,
+  maxDepartureTime: string
+) {
+  const result = await supabase
+    .from("flight")
+    .select("*")
+    .eq("destination_airport_id", destinationCode)
+    .gte("departure_time", minDepartureTime)
+    .lte("departure_time", maxDepartureTime)
+    .order("departure_time", { ascending: true });
+  return result as { data: FlightRow[] | null; error: { message: string } | null };
+}
+
 export async function queryAllFlights(supabase: AnySupabaseClient) {
   const result = await supabase
     .from("flight")
@@ -273,6 +305,26 @@ export async function queryBookingRefExists(
 }
 
 // ─── Passenger ───────────────────────────────────────────────────────────────
+
+export async function insertBookingLegs(
+  supabase: AnySupabaseClient,
+  legs: Partial<import("@/types/database").BookingLegRow>[]
+) {
+  const result = await supabase.from("booking_leg").insert(legs);
+  return result as { error: { message: string } | null };
+}
+
+export async function queryBookingLegsByBooking(
+  supabase: AnySupabaseClient,
+  bookingId: string
+) {
+  const result = await supabase
+    .from("booking_leg")
+    .select("*")
+    .eq("booking_id", bookingId)
+    .order("leg_sequence", { ascending: true });
+  return result as { data: import("@/types/database").BookingLegRow[] | null; error: { message: string } | null };
+}
 
 export async function insertPassengers(
   supabase: AnySupabaseClient,

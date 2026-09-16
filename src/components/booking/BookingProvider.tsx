@@ -32,9 +32,9 @@ export interface ContactInput {
 }
 
 export interface BookingState {
-  selectedFlight: Flight | null;
+  selectedLegs: Flight[]; // 1 for direct, 2 for connecting
   cabinClass: CabinClass | null;
-  selectedSeats: Seat[];
+  selectedSeats: Seat[][]; // Index matches selectedLegs
   passengers: PassengerInput[];
   contact: ContactInput | null;
   bookingRef: string | null;
@@ -42,9 +42,9 @@ export interface BookingState {
 }
 
 interface BookingContextValue extends BookingState {
-  setSelectedFlight: (flight: Flight) => void;
+  setSelectedLegs: (legs: Flight[]) => void;
   setCabinClass: (c: CabinClass) => void;
-  setSelectedSeats: (seats: Seat[]) => void;
+  setSelectedSeats: (seats: Seat[][]) => void;
   setPassengers: (p: PassengerInput[]) => void;
   setContact: (c: ContactInput) => void;
   setBookingRef: (ref: string) => void;
@@ -57,7 +57,7 @@ interface BookingContextValue extends BookingState {
 const STORAGE_KEY = "xfa_booking_state";
 
 const DEFAULT_STATE: BookingState = {
-  selectedFlight: null,
+  selectedLegs: [],
   cabinClass: null,
   selectedSeats: [],
   passengers: [],
@@ -116,7 +116,7 @@ export function BookingProvider({ children }: { children: ReactNode }) {
     <BookingContext.Provider
       value={{
         ...state,
-        setSelectedFlight: (flight) => update({ selectedFlight: flight }),
+        setSelectedLegs: (legs) => update({ selectedLegs: legs }),
         setCabinClass: (c) => update({ cabinClass: c }),
         setSelectedSeats: (seats) => update({ selectedSeats: seats }),
         setPassengers: (p) => update({ passengers: p }),

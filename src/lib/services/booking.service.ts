@@ -40,12 +40,12 @@ function toPassenger(row: PassengerRow): Passenger {
 function toBooking(
   row: BookingRow,
   passengers: Passenger[],
-  seatNumbers: string[]
+  seatNumbers: string[][]
 ): Booking {
   return {
     id:         row.id,
     reference:  row.reference,
-    flightId:   row.flight_id,
+    flightIds:  row.flight_id ? [row.flight_id] : [],
     cabinClass: row.cabin_class,
     passengers,
     contact: {
@@ -76,7 +76,7 @@ export class BookingService {
    * FR-CUS-008: Booking created before payment is processed.
    */
   async createBooking(payload: CreateBookingPayload): Promise<Booking> {
-    const { flightId, cabinClass, passengers, contact, seatNumbers } = payload;
+    const { flightIds, cabinClass, passengers, contact, seatNumbers } = payload;
 
     // Generate unique booking reference — retry up to 3 times on collision
     let reference = "";
@@ -86,32 +86,45 @@ export class BookingService {
       if (!existing) break;
     }
 
-    // Fetch price from flight_cabin_class
-    const { data: fcc, error: fccError } = await queryCabinClassPrice(
-      this.supabase, flightId, cabinClass
-    );
-    if (fccError || !fcc) {
-      throw new Error(`Cannot find pricing for ${cabinClass} on flight ${flightId}`);
+    // Fetch price from flight_cabin_class for all legs
+    let totalAmount = 0;
+    let currency = "THB";
+    for (const flightId of flightIds) {
+      const { data: fcc, error: fccError } = await queryCabinClassPrice(
+        this.supabase, flightId, cabinClass
+      );
+      if (fccError || !fcc) {
+        throw new Error(`Cannot find pricing for ${cabinClass} on flight ${flightId}`);
+      }
+      totalAmount += Number(fcc.price) * passengers.length;
+      currency = fcc.currency; // Assume same currency for simplicity
     }
-
-    const totalAmount = Number(fcc.price) * passengers.length;
 
     const { data: bookingRow, error: bookingError } = await insertBooking(this.supabase, {
       reference,
-      flight_id:          flightId,
+      flight_id:          flightIds.length === 1 ? flightIds[0] : null,
       cabin_class:        cabinClass as CabinClass,
       contact_first_name: contact.firstName,
       contact_last_name:  contact.lastName,
       contact_email:      contact.email,
       contact_phone:      contact.phone,
       total_amount:       totalAmount,
-      currency:           fcc.currency,
+      currency:           currency,
       status:             "pending",
     });
 
     if (bookingError || !bookingRow) {
       throw new Error(`Booking creation failed: ${bookingError?.message}`);
     }
+
+    // Insert legs
+    const legs = flightIds.map((flightId, idx) => ({
+      booking_id: bookingRow.id,
+      flight_id: flightId,
+      leg_sequence: idx + 1,
+    }));
+    const { error: legError } = await import("@/lib/supabase/queries").then(m => m.insertBookingLegs(this.supabase, legs));
+    if (legError) throw new Error(`Booking leg insert failed: ${legError.message}`);
 
     const passengerInserts = passengers.map((p) => ({
       booking_id:      bookingRow.id,
@@ -125,10 +138,12 @@ export class BookingService {
       passport_expiry: p.passportExpiry ?? null,
     }));
 
-    const { error: passError } = await insertPassengers(this.supabase, passengerInserts);
+    const { error: passError } = await import("@/lib/supabase/queries").then(m => m.insertPassengers(this.supabase, passengerInserts));
     if (passError) throw new Error(`Passenger insert failed: ${passError.message}`);
 
-    return toBooking(bookingRow, passengers, seatNumbers);
+    const booking = toBooking(bookingRow, passengers, seatNumbers);
+    booking.flightIds = flightIds;
+    return booking;
   }
 
   /**
@@ -159,20 +174,37 @@ export class BookingService {
     );
     if (bookingError || !bookingRow) return null;
 
-    const [passResult, bsResult] = await Promise.all([
+    const { queryBookingLegsByBooking } = await import("@/lib/supabase/queries");
+    const [passResult, bsResult, legResult] = await Promise.all([
       queryPassengersByBooking(this.supabase, bookingRow.id),
       queryBookingSeatsWithSeat(this.supabase, bookingRow.id),
+      queryBookingLegsByBooking(this.supabase, bookingRow.id),
     ]);
 
     if (passResult.error) throw new Error(passResult.error.message);
     if (bsResult.error) throw new Error(bsResult.error.message);
+    if (legResult.error) throw new Error(legResult.error.message);
 
     const passengers = (passResult.data ?? []).map(toPassenger);
-    const seatNumbers = (bsResult.data ?? [])
-      .map((bs) => bs.seat?.seat_number)
-      .filter((sn): sn is string => !!sn);
+    
+    // Group seats by flightId, then map back to flightIds order
+    const seatsByFlight = new Map<string, string[]>();
+    for (const bs of bsResult.data ?? []) {
+      const flightId = bs.seat?.flight_id;
+      const seatNum = bs.seat?.seat_number;
+      if (flightId && seatNum) {
+        if (!seatsByFlight.has(flightId)) seatsByFlight.set(flightId, []);
+        seatsByFlight.get(flightId)!.push(seatNum);
+      }
+    }
+    
+    const flightIds = (legResult.data ?? []).map(l => l.flight_id);
+    const seatNumbers = flightIds.map(fid => seatsByFlight.get(fid) ?? []);
 
-    return toBooking(bookingRow, passengers, seatNumbers);
+    const booking = toBooking(bookingRow, passengers, seatNumbers);
+    booking.flightIds = flightIds;
+    
+    return booking;
   }
 
   /**
