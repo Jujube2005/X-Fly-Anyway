@@ -78,9 +78,11 @@ export function FlightCard({ flight, cabinClasses, onSelect, isSelected = false 
               <span className="text-sm font-semibold text-[#111827]">
                 {flight.flightNumber}
               </span>
-              <Badge variant={statusVariant()} className="ml-2">
-                {flight.status}
-              </Badge>
+              {flight.status && (
+                <Badge variant={statusVariant()} className="ml-2">
+                  {flight.status}
+                </Badge>
+              )}
             </div>
           </div>
 

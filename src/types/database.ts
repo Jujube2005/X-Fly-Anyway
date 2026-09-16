@@ -51,25 +51,23 @@ export type GenderValue = "male" | "female" | "unspecified";
 // ─── Table row types ────────────────────────────────────────────────────────
 
 export interface AirportRow {
-  id: string;           // IATA code e.g. "BKK" — PRIMARY KEY
-  name: string;
-  city: string;
-  country: string;
-  country_code: string; // ISO 3166-1 alpha-2
-  timezone: string;     // IANA timezone e.g. "Asia/Bangkok"
-  created_at: string;   // ISO 8601
+  id: number;               // integer PRIMARY KEY (surrogate key)
+  airport_code: string;     // IATA code e.g. "BKK"
+  name: string | null;
+  city: string | null;
+  country: string | null;
+  country_code: string | null; // ISO 3166-1 alpha-2
+  timezone: string | null;     // IANA timezone e.g. "Asia/Bangkok"
 }
 
 export interface FlightRow {
-  id: string;               // UUID PRIMARY KEY
-  flight_number: string;    // e.g. "XFA001" — UNIQUE
-  origin_code: string;      // FK → airport.id
-  destination_code: string; // FK → airport.id
-  departure_at: string;     // ISO 8601 with timezone
-  arrival_at: string;       // ISO 8601 with timezone
-  status: FlightStatus;
-  created_at: string;
-  updated_at: string;
+  id: number;                      // integer PRIMARY KEY
+  flight_number: string;
+  origin_airport_id: number | null; // FK → airport.id (integer)
+  destination_airport_id: number | null; // FK → airport.id (integer)
+  aircraft_type_id: number | null;
+  departure_time: string;           // ISO 8601 with timezone
+  arrival_time: string;             // ISO 8601 with timezone
 }
 
 export interface FlightCabinClassRow {
@@ -157,10 +155,11 @@ export interface ETicketRow {
 
 // ─── Insert types (omit server-generated fields) ───────────────────────────
 
-export type AirportInsert = Omit<AirportRow, "created_at">;
+export type AirportInsert = Omit<AirportRow, "id"> & { id?: number };
 
-export type FlightInsert = Omit<FlightRow, "created_at" | "updated_at"> & {
-  id?: string;
+export type FlightInsert = Omit<FlightRow, "id" | "aircraft_type_id"> & {
+  id?: number;
+  aircraft_type_id?: number | null;
 };
 
 export type FlightCabinClassInsert = Omit<FlightCabinClassRow, "created_at"> & {

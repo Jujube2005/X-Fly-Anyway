@@ -82,10 +82,10 @@ export async function GET(request: NextRequest) {
     const result = await service.searchFlights(params);
 
     return Response.json(result);
-  } catch (err) {
+  } catch (err: any) {
     console.error("[GET /api/flights]", err);
     return Response.json(
-      { error: "Failed to search flights. Please try again." },
+      { error: "Failed to search flights. Please try again.", details: err.message },
       { status: 500 }
     );
   }

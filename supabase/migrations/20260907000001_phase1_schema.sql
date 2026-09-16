@@ -27,23 +27,24 @@ CREATE TABLE IF NOT EXISTS airport (
 -- 2. flight
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS flight (
-  id               UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  flight_number    TEXT        NOT NULL UNIQUE,    -- e.g. "XFA001"
-  origin_code      TEXT        NOT NULL REFERENCES airport(id),
-  destination_code TEXT        NOT NULL REFERENCES airport(id),
-  departure_at     TIMESTAMPTZ NOT NULL,
-  arrival_at       TIMESTAMPTZ NOT NULL,
-  status           TEXT        NOT NULL DEFAULT 'scheduled'
-                   CHECK (status IN ('scheduled','boarding','departed','arrived','cancelled')),
-  created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+  id                    UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  flight_number         TEXT        NOT NULL UNIQUE,    -- e.g. "XFA001"
+  origin_airport_id     TEXT        NOT NULL REFERENCES airport(id),
+  destination_airport_id TEXT       NOT NULL REFERENCES airport(id),
+  aircraft_type_id      TEXT        NULL,
+  departure_time        TIMESTAMPTZ NOT NULL,
+  arrival_time          TIMESTAMPTZ NOT NULL,
+  status                TEXT        NOT NULL DEFAULT 'scheduled'
+                        CHECK (status IN ('scheduled','boarding','departed','arrived','cancelled')),
+  created_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
 
-  CONSTRAINT chk_flight_diff_airports   CHECK (origin_code <> destination_code),
-  CONSTRAINT chk_flight_arrival_after   CHECK (arrival_at > departure_at)
+  CONSTRAINT chk_flight_diff_airports   CHECK (origin_airport_id <> destination_airport_id),
+  CONSTRAINT chk_flight_arrival_after   CHECK (arrival_time > departure_time)
 );
 
 CREATE INDEX IF NOT EXISTS idx_flight_search
-  ON flight (origin_code, destination_code, departure_at);
+  ON flight (origin_airport_id, destination_airport_id, departure_time);
 
 CREATE INDEX IF NOT EXISTS idx_flight_status
   ON flight (status);

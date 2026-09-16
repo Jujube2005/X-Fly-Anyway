@@ -32,7 +32,7 @@ export interface Flight {
   arrivalAt: string;          // ISO 8601
   durationMinutes: number;    // computed: (arrivalAt - departureAt)
   cabinClasses: FlightCabinClassInfo[];
-  status: FlightStatus;
+  status?: FlightStatus;      // not present in live DB — optional for forward compat
 }
 
 export interface FlightSearchParams {
