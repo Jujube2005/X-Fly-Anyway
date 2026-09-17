@@ -42,3 +42,8 @@ next-env.d.ts
 
 # Project Documentation
 /docs/
+
+# Supabase
+supabase/.temp/
+supabase/seed_generated.sql
+supabase/seed_part*.sql
