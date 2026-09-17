@@ -98,7 +98,7 @@ export default function PaymentPage() {
           email: contact!.email,
           phone: contact!.phone,
         },
-        seatNumbers: selectedLegs.map((_, i) => (selectedSeats[i] || []).map(s => s.seatNumber)),
+        seatNumbers: selectedLegs.map((_, i) => selectedSeats[i] ?? []),
         payment: {
           method: method as PaymentMethod,
           ...(method !== "bitcoin"

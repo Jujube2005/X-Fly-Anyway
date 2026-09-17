@@ -4,24 +4,38 @@ import { SeatService } from "@/lib/services/seat.service";
 import type { CabinClass } from "@/types/flight";
 
 /**
- * GET /api/seats
+ * GET /api/seats?flightId=...&cabin=...
  *
- * Get the seat map for a specific flight and cabin class.
+ * Returns seat layout metadata and the list of occupied/blocked seat numbers
+ * for a specific flight and cabin class.  The frontend derives the full seat
+ * grid from the layout and overlays only the unavailable positions.
+ *
  * FR-CUS-005: Display seat map with available/occupied status.
  *
  * Query params:
- *   flightId    — UUID (required)
- *   cabinClass  — economy | premium_economy | business | first (required)
+ *   flightId — UUID (required)
+ *   cabin    — economy | premium_economy | business | first (required)
+ *
+ * Response:
+ * {
+ *   layout: SeatLayout,
+ *   occupiedSeats: string[]   // e.g. ["12A", "14B"]
+ * }
+ *
+ * NOTE: Parameter is "cabin" (not "cabinClass") to match the frontend hook.
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
 
-  const flightId  = searchParams.get("flightId")?.trim();
-  const cabinClass = searchParams.get("cabinClass") as CabinClass | null;
+  const flightId   = searchParams.get("flightId")?.trim();
+  // Accept "cabin" (primary) for consistency with the frontend hook.
+  // "cabinClass" is accepted as a legacy alias so existing callers are not broken.
+  const cabinParam = (searchParams.get("cabin") ?? searchParams.get("cabinClass"))?.trim();
+  const cabinClass = cabinParam as CabinClass | null;
 
   if (!flightId || !cabinClass) {
     return Response.json(
-      { error: "Missing required parameters: flightId, cabinClass" },
+      { error: "Missing required parameters: flightId, cabin" },
       { status: 400 }
     );
   }
@@ -34,28 +48,28 @@ export async function GET(request: NextRequest) {
   ];
   if (!validClasses.includes(cabinClass)) {
     return Response.json(
-      { error: `Invalid cabinClass. Must be one of: ${validClasses.join(", ")}` },
+      { error: `Invalid cabin. Must be one of: ${validClasses.join(", ")}` },
       { status: 400 }
     );
   }
 
   try {
     const supabase = await createClient();
-    const service = new SeatService(supabase);
-    const seatMap = await service.getSeatMap(flightId, cabinClass);
+    const service  = new SeatService(supabase);
+    const result   = await service.getLayoutAndOccupied(flightId, cabinClass);
 
-    if (!seatMap) {
+    if (!result) {
       return Response.json(
-        { error: "Seat map not found for this flight and cabin class." },
+        { error: "No seat data found for this flight and cabin class." },
         { status: 404 }
       );
     }
 
-    return Response.json({ seatMap });
+    return Response.json(result);
   } catch (err) {
     console.error("[GET /api/seats]", err);
     return Response.json(
-      { error: "Failed to fetch seat map." },
+      { error: "Failed to fetch seat layout." },
       { status: 500 }
     );
   }

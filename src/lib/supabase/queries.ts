@@ -193,6 +193,30 @@ export async function querySeatMap(
   return result as { data: SeatRow[] | null; error: { message: string } | null };
 }
 
+/**
+ * Query minimal seat data needed to derive layout metadata and occupied seats.
+ * Fetches only seat_number, row_number, column_letter, and status — avoids
+ * returning unnecessary columns for the layout-first API approach.
+ * FR-CUS-005: Display seat map with available/occupied status.
+ */
+export async function querySeatLayoutData(
+  supabase: AnySupabaseClient,
+  flightId: string,
+  cabinClass: string
+) {
+  const result = await supabase
+    .from("seat")
+    .select("seat_number, row_number, column_letter, status")
+    .eq("flight_id", flightId)
+    .eq("cabin_class", cabinClass)
+    .order("row_number", { ascending: true })
+    .order("column_letter", { ascending: true });
+  return result as {
+    data: Pick<SeatRow, "seat_number" | "row_number" | "column_letter" | "status">[] | null;
+    error: { message: string } | null;
+  };
+}
+
 export async function querySeatByNumber(
   supabase: AnySupabaseClient,
   flightId: string,

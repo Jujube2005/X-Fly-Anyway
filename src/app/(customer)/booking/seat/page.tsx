@@ -9,84 +9,133 @@ import { LoadingState, ErrorState, EmptyState } from "@/components/ui/States";
 import { useBookingContext } from "@/components/booking/BookingProvider";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSeats } from "@/hooks/use-seats";
-import type { Seat } from "@/types/seat";
 import "./page.css";
 
-function SeatCell({ seat, isSelected, onClick, t }: { seat: Seat; isSelected: boolean; onClick: () => void; t: ReturnType<typeof useTranslation>['t'] }) {
+// ─── Aisle split helper ──────────────────────────────────────────────────────
+/**
+ * Compute the column index after which an aisle gap should be drawn.
+ *
+ * Layout rules (derived from column count, not cabin name):
+ *   6 columns  →  A B C | D E F  (split after index 2)
+ *   4 columns  →  A B | C D      (split after index 1)
+ *   other      →  split after Math.floor(len/2) - 1  (graceful fallback)
+ */
+function aisleAfterIndex(columns: string[]): number {
+  const len = columns.length;
+  if (len === 6) return 2;
+  if (len === 4) return 1;
+  return Math.floor(len / 2) - 1;
+}
+
+// ─── SeatCell ────────────────────────────────────────────────────────────────
+
+interface SeatCellProps {
+  seatNumber: string;
+  columnLetter: string;
+  isOccupied: boolean;
+  isSelected: boolean;
+  onClick: () => void;
+  t: ReturnType<typeof useTranslation>["t"];
+}
+
+function SeatCell({
+  seatNumber,
+  columnLetter,
+  isOccupied,
+  isSelected,
+  onClick,
+  t,
+}: SeatCellProps) {
   const getStyle = (): { bg: string; border: string; cursor: string; label: string } => {
-    if (seat.status === "occupied") return { bg: "#374151", border: "#374151", cursor: "cursor-not-allowed", label: t.booking.seat.status.occupied };
-    if (seat.status === "blocked") return { bg: "#6b7280", border: "#6b7280", cursor: "cursor-not-allowed", label: t.booking.seat.status.blocked };
-    if (isSelected) return { bg: "#f5c800", border: "#c9a200", cursor: "cursor-pointer", label: t.booking.seat.status.selected };
-    return { bg: "#f9fafb", border: "#e5e7eb", cursor: "cursor-pointer", label: t.booking.seat.status.available };
+    if (isOccupied)  return { bg: "#374151", border: "#374151", cursor: "cursor-not-allowed", label: t.booking.seat.status.occupied };
+    if (isSelected)  return { bg: "#f5c800", border: "#c9a200", cursor: "cursor-pointer",    label: t.booking.seat.status.selected };
+    return            { bg: "#f9fafb", border: "#e5e7eb", cursor: "cursor-pointer",           label: t.booking.seat.status.available };
   };
 
   const { bg, border, cursor, label } = getStyle();
-  const isDisabled = seat.status === "occupied" || seat.status === "blocked";
 
   return (
     <button
-      onClick={isDisabled ? undefined : onClick}
-      disabled={isDisabled}
-      title={`Seat ${seat.seatNumber} — ${label}`}
-      aria-label={`Seat ${seat.seatNumber} ${label}`}
+      onClick={isOccupied ? undefined : onClick}
+      disabled={isOccupied}
+      title={`Seat ${seatNumber} — ${label}`}
+      aria-label={`Seat ${seatNumber} ${label}`}
       className={`w-8 h-8 rounded-md text-xs font-semibold transition-all duration-150 ${cursor} ${
-        isDisabled ? "opacity-50" : "hover:opacity-90 hover:scale-105"
+        isOccupied ? "opacity-50" : "hover:opacity-90 hover:scale-105"
       }`}
-      style={{ background: bg, border: `1.5px solid ${border}`, color: isSelected ? "#111827" : isDisabled ? "#9ca3af" : "#374151" }}
+      style={{
+        background: bg,
+        border: `1.5px solid ${border}`,
+        color: isSelected ? "#111827" : isOccupied ? "#9ca3af" : "#374151",
+      }}
     >
-      {seat.columnLetter}
+      {columnLetter}
     </button>
   );
 }
 
+// ─── Page ────────────────────────────────────────────────────────────────────
+
 export default function SeatSelectionPage() {
   const router = useRouter();
-  const { selectedLegs, cabinClass, selectedSeats, setSelectedSeats, passengerCount } = useBookingContext();
-  const { seatMap, isLoading, error, fetchSeatMap, toggleSeat } = useSeats();
+  const { selectedLegs, cabinClass, selectedSeats, setSelectedSeats, passengerCount } =
+    useBookingContext();
+  const { layout, occupiedSeats, isLoading, error, fetchSeatMap } = useSeats();
   const { t } = useTranslation();
 
   const [currentLegIndex, setCurrentLegIndex] = useState(0);
 
+  // Fetch seat layout when the leg or cabin changes
   useEffect(() => {
-    if (!selectedLegs || selectedLegs.length === 0 || !cabinClass) { router.replace("/"); return; }
+    if (!selectedLegs || selectedLegs.length === 0 || !cabinClass) {
+      router.replace("/");
+      return;
+    }
     fetchSeatMap(selectedLegs[currentLegIndex].id, cabinClass);
   }, [selectedLegs, cabinClass, fetchSeatMap, router, currentLegIndex]);
 
-  // Sync useSeats selected with context for current leg
-  const currentLegSeats = selectedSeats[currentLegIndex] || [];
-  
-  function handleToggle(seat: Seat) {
-    const alreadySelected = currentLegSeats.some((s) => s.id === seat.id);
+  // Current leg's selected seat numbers (string[])
+  const currentLegSeats: string[] = selectedSeats[currentLegIndex] ?? [];
+
+  function handleToggle(seatNumber: string) {
+    const alreadySelected = currentLegSeats.includes(seatNumber);
     if (!alreadySelected && currentLegSeats.length >= passengerCount) return; // max reached
-    toggleSeat(seat);
-    
+
     const newLegSeats = alreadySelected
-      ? currentLegSeats.filter((s) => s.id !== seat.id)
-      : [...currentLegSeats, seat];
-      
-    const newSelectedSeats = [...selectedSeats];
-    newSelectedSeats[currentLegIndex] = newLegSeats;
-    setSelectedSeats(newSelectedSeats);
+      ? currentLegSeats.filter((s) => s !== seatNumber)
+      : [...currentLegSeats, seatNumber];
+
+    const updated = [...selectedSeats];
+    updated[currentLegIndex] = newLegSeats;
+    setSelectedSeats(updated);
   }
 
   function handleConfirm() {
     if (currentLegSeats.length === 0) return;
     if (currentLegIndex < selectedLegs.length - 1) {
-      setCurrentLegIndex(currentLegIndex + 1);
+      setCurrentLegIndex((i) => i + 1);
     } else {
       router.push("/booking/passenger");
     }
   }
 
-  const groupedByRow = seatMap
-    ? seatMap.seats.reduce<Record<number, Seat[]>>((acc, seat) => {
-        if (!acc[seat.rowNumber]) acc[seat.rowNumber] = [];
-        acc[seat.rowNumber].push(seat);
-        return acc;
-      }, {})
-    : {};
+  function handleClearSelection() {
+    const updated = [...selectedSeats];
+    updated[currentLegIndex] = [];
+    setSelectedSeats(updated);
+  }
 
-  const totalSeats = selectedSeats.length;
+  // Build the row list from the layout once it arrives
+  const rowNumbers: number[] = [];
+  if (layout) {
+    for (let r = layout.firstRow; r <= layout.lastRow; r++) {
+      rowNumbers.push(r);
+    }
+  }
+
+  const aisleIdx = layout ? aisleAfterIndex(layout.columns) : 2;
+  const leftCols  = layout?.columns.slice(0, aisleIdx + 1) ?? [];
+  const rightCols = layout?.columns.slice(aisleIdx + 1) ?? [];
 
   return (
     <div className="min-h-dvh flex flex-col seat-page-container">
@@ -96,7 +145,12 @@ export default function SeatSelectionPage() {
         {/* Title + stepper */}
         <div className="text-center mb-6 px-8 py-4 rounded-2xl seat-title-card">
           <h1 className="text-xl font-bold text-[#111827]">X-Fly Anyway</h1>
-          <p className="text-sm text-[#6b7280] mb-2">{t.booking.seat.seatSelection} {selectedLegs.length > 1 ? `(Leg ${currentLegIndex + 1} of ${selectedLegs.length})` : ''}</p>
+          <p className="text-sm text-[#6b7280] mb-2">
+            {t.booking.seat.seatSelection}{" "}
+            {selectedLegs.length > 1
+              ? `(Leg ${currentLegIndex + 1} of ${selectedLegs.length})`
+              : ""}
+          </p>
           <BookingStepper currentLabel={t.booking.seat.seatsCurrent} variant="light" />
         </div>
 
@@ -104,56 +158,89 @@ export default function SeatSelectionPage() {
           {/* Seat map */}
           <div className="flex-1 rounded-3xl p-6 overflow-auto seat-map-container">
             {isLoading && <LoadingState message={t.booking.seat.loading} />}
-            {!isLoading && error && <ErrorState message={error} onRetry={() => selectedLegs && cabinClass && fetchSeatMap(selectedLegs[currentLegIndex].id, cabinClass)} />}
-            {!isLoading && !error && !seatMap && <EmptyState message={t.booking.seat.noSeats} />}
+            {!isLoading && error && (
+              <ErrorState
+                message={error}
+                onRetry={() =>
+                  selectedLegs &&
+                  cabinClass &&
+                  fetchSeatMap(selectedLegs[currentLegIndex].id, cabinClass)
+                }
+              />
+            )}
+            {!isLoading && !error && !layout && (
+              <EmptyState message={t.booking.seat.noSeats} />
+            )}
 
-            {seatMap && (
+            {layout && (
               <>
-                {/* Column headers */}
+                {/* Column headers — left block */}
                 <div className="flex items-center gap-1 mb-3 justify-center">
-                  <div className="w-10 shrink-0" /> {/* row number */}
-                  {seatMap.columns.slice(0, 3).map((col) => (
-                    <div key={`h-${col}`} className="w-8 text-center text-xs font-bold text-[#6b7280]">{col}</div>
+                  <div className="w-10 shrink-0" /> {/* row-number gutter */}
+                  {leftCols.map((col) => (
+                    <div
+                      key={`h-${col}`}
+                      className="w-8 text-center text-xs font-bold text-[#6b7280]"
+                    >
+                      {col}
+                    </div>
                   ))}
                   <div className="w-4" /> {/* aisle gap */}
-                  {seatMap.columns.slice(3).map((col) => (
-                    <div key={`h-${col}`} className="w-8 text-center text-xs font-bold text-[#6b7280]">{col}</div>
+                  {rightCols.map((col) => (
+                    <div
+                      key={`h-${col}`}
+                      className="w-8 text-center text-xs font-bold text-[#6b7280]"
+                    >
+                      {col}
+                    </div>
                   ))}
                 </div>
 
+                {/* Seat rows */}
                 <div className="flex flex-col gap-1.5">
-                  {Object.entries(groupedByRow)
-                    .sort(([a], [b]) => Number(a) - Number(b))
-                    .map(([rowNum, seats]) => {
-                      const sorted = [...seats].sort((a, b) => a.columnLetter.localeCompare(b.columnLetter));
-                      const left = sorted.filter((s) => ["A", "B", "C"].includes(s.columnLetter));
-                      const right = sorted.filter((s) => ["D", "E", "F"].includes(s.columnLetter));
+                  {rowNumbers.map((rowNum) => (
+                    <div key={rowNum} className="flex items-center gap-1 justify-center">
+                      {/* Row number label */}
+                      <div className="w-10 text-right text-xs text-[#9ca3af] pr-2 shrink-0">
+                        {rowNum}
+                      </div>
 
-                      return (
-                        <div key={rowNum} className="flex items-center gap-1 justify-center">
-                          <div className="w-10 text-right text-xs text-[#9ca3af] pr-2 shrink-0">{rowNum}</div>
-                          {left.map((seat) => (
-                            <SeatCell
-                              key={seat.id}
-                              seat={seat}
-                              isSelected={currentLegSeats.some((s) => s.id === seat.id)}
-                              onClick={() => handleToggle(seat)}
-                              t={t}
-                            />
-                          ))}
-                          <div className="w-4" />
-                          {right.map((seat) => (
-                            <SeatCell
-                              key={seat.id}
-                              seat={seat}
-                              isSelected={currentLegSeats.some((s) => s.id === seat.id)}
-                              onClick={() => handleToggle(seat)}
-                              t={t}
-                            />
-                          ))}
-                        </div>
-                      );
-                    })}
+                      {/* Left columns */}
+                      {leftCols.map((col) => {
+                        const seatNumber = `${rowNum}${col}`;
+                        return (
+                          <SeatCell
+                            key={seatNumber}
+                            seatNumber={seatNumber}
+                            columnLetter={col}
+                            isOccupied={occupiedSeats.has(seatNumber)}
+                            isSelected={currentLegSeats.includes(seatNumber)}
+                            onClick={() => handleToggle(seatNumber)}
+                            t={t}
+                          />
+                        );
+                      })}
+
+                      {/* Aisle gap */}
+                      <div className="w-4" />
+
+                      {/* Right columns */}
+                      {rightCols.map((col) => {
+                        const seatNumber = `${rowNum}${col}`;
+                        return (
+                          <SeatCell
+                            key={seatNumber}
+                            seatNumber={seatNumber}
+                            columnLetter={col}
+                            isOccupied={occupiedSeats.has(seatNumber)}
+                            isSelected={currentLegSeats.includes(seatNumber)}
+                            onClick={() => handleToggle(seatNumber)}
+                            t={t}
+                          />
+                        );
+                      })}
+                    </div>
+                  ))}
                 </div>
 
                 {/* Legend */}
@@ -162,7 +249,6 @@ export default function SeatSelectionPage() {
                     { color: "#f9fafb", border: "#e5e7eb", label: t.booking.seat.legend.available },
                     { color: "#f5c800", border: "#c9a200", label: t.booking.seat.legend.selected },
                     { color: "#374151", border: "#374151", label: t.booking.seat.legend.occupied },
-                    { color: "#6b7280", border: "#6b7280", label: t.booking.seat.legend.blocked },
                   ].map(({ color, border, label }) => (
                     <div key={label} className="flex items-center gap-1.5">
                       <div
@@ -179,18 +265,23 @@ export default function SeatSelectionPage() {
 
           {/* Selection panel */}
           <div className="w-64 shrink-0 rounded-3xl p-5 sticky top-24 seat-selection-panel">
-            <h2 className="text-base font-bold text-[#111827] mb-4">{t.booking.seat.yourSelection}</h2>
+            <h2 className="text-base font-bold text-[#111827] mb-4">
+              {t.booking.seat.yourSelection}
+            </h2>
 
             {currentLegSeats.length === 0 ? (
               <p className="text-sm text-[#9ca3af] mb-6">
-                {t.booking.seat.selectUpTo} {passengerCount} {t.booking.seat.seat}{passengerCount > 1 ? "s" : ""}
+                {t.booking.seat.selectUpTo} {passengerCount} {t.booking.seat.seat}
+                {passengerCount > 1 ? "s" : ""}
               </p>
             ) : (
               <ul className="flex flex-col gap-2 mb-4">
-                {currentLegSeats.map((seat) => (
-                  <li key={seat.id} className="flex justify-between text-sm">
-                    <span className="font-semibold text-[#111827]">{t.booking.seat.seat} {seat.seatNumber}</span>
-                    <span className="text-[#6b7280] capitalize">{seat.cabinClass}</span>
+                {currentLegSeats.map((seatNumber) => (
+                  <li key={seatNumber} className="flex justify-between text-sm">
+                    <span className="font-semibold text-[#111827]">
+                      {t.booking.seat.seat} {seatNumber}
+                    </span>
+                    <span className="text-[#6b7280] capitalize">{cabinClass}</span>
                   </li>
                 ))}
               </ul>
@@ -211,15 +302,13 @@ export default function SeatSelectionPage() {
                 disabled={currentLegSeats.length === 0}
                 fullWidth
               >
-                {currentLegIndex < selectedLegs.length - 1 ? "Next Flight →" : t.booking.seat.confirmSeats}
+                {currentLegIndex < selectedLegs.length - 1
+                  ? "Next Flight →"
+                  : t.booking.seat.confirmSeats}
               </Button>
               <Button
                 variant="ghost"
-                onClick={() => {
-                  const newSelectedSeats = [...selectedSeats];
-                  newSelectedSeats[currentLegIndex] = [];
-                  setSelectedSeats(newSelectedSeats);
-                }}
+                onClick={handleClearSelection}
                 fullWidth
                 className="text-[#6b7280] text-sm"
               >

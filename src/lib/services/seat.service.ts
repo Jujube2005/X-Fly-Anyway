@@ -1,9 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { SeatRow } from "@/types/database";
-import type { Seat, SeatMap } from "@/types/seat";
+import type { Seat, SeatMap, SeatLayout, SeatAvailabilityResponse } from "@/types/seat";
 import type { CabinClass } from "@/types/flight";
 import {
   querySeatMap,
+  querySeatLayoutData,
   querySeatByNumber,
   querySeatsByNumbers,
   updateSeatStatus,
@@ -54,6 +55,7 @@ export class SeatService {
   /**
    * Get the seat map for a specific flight and cabin class.
    * FR-CUS-005: Display seat map with available/occupied status.
+   * @deprecated Use getLayoutAndOccupied() for the layout-first API.
    */
   async getSeatMap(
     flightId: string,
@@ -68,6 +70,63 @@ export class SeatService {
     const columns = CABIN_COLUMNS[cabinClass];
 
     return { flightId, cabinClass, rows, columns, seats };
+  }
+
+  /**
+   * Get layout metadata and occupied seat numbers for a flight + cabin class.
+   *
+   * Uses a single query (Option A from the design doc) — fetches only the
+   * minimal seat columns needed, derives layout in application code, and
+   * returns only non-available seat numbers so the frontend can generate the
+   * full grid itself.
+   *
+   * FR-CUS-005: Display seat map with available/occupied status.
+   */
+  async getLayoutAndOccupied(
+    flightId: string,
+    cabinClass: CabinClass
+  ): Promise<SeatAvailabilityResponse | null> {
+    const { data, error } = await querySeatLayoutData(
+      this.supabase,
+      flightId,
+      cabinClass
+    );
+    if (error) throw new Error(`Seat layout fetch failed: ${error.message}`);
+    if (!data || data.length === 0) return null;
+
+    // Derive layout from the seat rows ─────────────────────────────────────
+    let firstRow = Infinity;
+    let lastRow = -Infinity;
+    const colSet = new Set<string>();
+
+    for (const row of data) {
+      if (row.row_number < firstRow) firstRow = row.row_number;
+      if (row.row_number > lastRow) lastRow = row.row_number;
+      colSet.add(row.column_letter);
+    }
+
+    // Sort columns alphabetically so layout order is deterministic
+    const COLUMN_ORDER = ["A", "B", "C", "D", "E", "F", "G", "H"];
+    const columns = [...colSet].sort(
+      (a, b) => COLUMN_ORDER.indexOf(a) - COLUMN_ORDER.indexOf(b)
+    );
+
+    const layout: SeatLayout = {
+      flightId,
+      cabinClass,
+      firstRow,
+      lastRow,
+      rows: lastRow - firstRow + 1,
+      columns,
+    };
+
+    // Collect seats that are NOT available ─────────────────────────────────
+    // Both 'occupied' and 'blocked' seats must be shown as unavailable in the UI.
+    const occupiedSeats: string[] = data
+      .filter((row) => row.status !== "available")
+      .map((row) => row.seat_number);
+
+    return { layout, occupiedSeats };
   }
 
   /**

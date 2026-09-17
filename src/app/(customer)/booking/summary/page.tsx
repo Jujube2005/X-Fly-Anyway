@@ -183,15 +183,13 @@ export default function BookingSummaryPage() {
                       <div key={leg.id} className="rounded-xl p-4 bg-white/5 border border-white/10">
                         <p className="text-sm font-bold text-[#f5c800] mb-2">{leg.origin.airport_code} to {leg.destination.airport_code}</p>
                         {passengers.map((p, pIdx) => {
-                          const seat = legSeats[pIdx];
-                          return seat ? (
+                          const seatNumber = legSeats[pIdx];
+                          return seatNumber ? (
                             <p key={pIdx} className="text-sm text-white/80 mb-1">
                               <span className="font-bold text-white">
                                 {p.firstName} {p.lastName}
                               </span>
-                              : Seat {seat.seatNumber} (
-                              {seat.isWindow ? "Window" : seat.isAisle ? "Aisle" : "Middle"},{" "}
-                              {cabinClass})
+                              : Seat {seatNumber} ({cabinClass})
                             </p>
                           ) : null;
                         })}
@@ -201,6 +199,7 @@ export default function BookingSummaryPage() {
                 </div>
               </div>
             )}
+
           </div>
 
           {/* Right — price + CTA */}

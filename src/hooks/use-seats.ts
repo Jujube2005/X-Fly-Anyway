@@ -1,26 +1,34 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import type { SeatMap, Seat } from "@/types/seat";
+import type { SeatLayout, SeatAvailabilityResponse } from "@/types/seat";
 import type { CabinClass } from "@/types/flight";
 
 interface UseSeatsReturn {
-  seatMap: SeatMap | null;
-  selectedSeats: Seat[];
+  layout: SeatLayout | null;
+  /** Set of seat numbers (e.g. "12A") that are occupied or blocked. */
+  occupiedSeats: Set<string>;
   isLoading: boolean;
   error: string | null;
   fetchSeatMap: (flightId: string, cabinClass: CabinClass) => Promise<void>;
-  toggleSeat: (seat: Seat) => void;
-  clearSelection: () => void;
 }
 
 /**
- * useSeats — manages seat map loading and seat selection state.
- * Client-side hook; calls the /api/seats endpoint.
+ * useSeats — manages seat layout and occupied-seat state.
+ *
+ * Calls GET /api/seats?flightId=...&cabin=... which returns:
+ *   { layout: SeatLayout, occupiedSeats: string[] }
+ *
+ * The hook converts occupiedSeats to a Set for O(1) lookup.
+ *
+ * Seat *selection* state is NOT managed here — that belongs to BookingProvider.
+ * This hook only answers:
+ *   - What is the layout (rows, columns, firstRow)?
+ *   - Which seats are occupied/blocked?
  */
 export function useSeats(): UseSeatsReturn {
-  const [seatMap, setSeatMap] = useState<SeatMap | null>(null);
-  const [selectedSeats, setSelectedSeats] = useState<Seat[]>([]);
+  const [layout, setLayout] = useState<SeatLayout | null>(null);
+  const [occupiedSeats, setOccupiedSeats] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,12 +40,19 @@ export function useSeats(): UseSeatsReturn {
         const res = await fetch(
           `/api/seats?flightId=${encodeURIComponent(flightId)}&cabin=${cabinClass}`
         );
-        if (!res.ok) throw new Error("Failed to fetch seat map");
-        const data: SeatMap = await res.json();
-        setSeatMap(data);
-        setSelectedSeats([]);
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(
+            (body as { error?: string }).error ?? "Failed to fetch seat layout"
+          );
+        }
+        const data: SeatAvailabilityResponse = await res.json();
+        setLayout(data.layout);
+        setOccupiedSeats(new Set(data.occupiedSeats));
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error");
+        setLayout(null);
+        setOccupiedSeats(new Set());
       } finally {
         setIsLoading(false);
       }
@@ -45,25 +60,11 @@ export function useSeats(): UseSeatsReturn {
     []
   );
 
-  const toggleSeat = useCallback((seat: Seat) => {
-    if (seat.status === "occupied" || seat.status === "blocked") return;
-    setSelectedSeats((prev) => {
-      const exists = prev.some((s) => s.id === seat.id);
-      return exists ? prev.filter((s) => s.id !== seat.id) : [...prev, seat];
-    });
-  }, []);
-
-  const clearSelection = useCallback(() => {
-    setSelectedSeats([]);
-  }, []);
-
   return {
-    seatMap,
-    selectedSeats,
+    layout,
+    occupiedSeats,
     isLoading,
     error,
     fetchSeatMap,
-    toggleSeat,
-    clearSelection,
   };
 }

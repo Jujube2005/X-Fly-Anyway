@@ -9,7 +9,6 @@ import {
   type ReactNode,
 } from "react";
 import type { Flight, CabinClass } from "@/types/flight";
-import type { Seat } from "@/types/seat";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -34,7 +33,8 @@ export interface ContactInput {
 export interface BookingState {
   selectedLegs: Flight[]; // 1 for direct, 2 for connecting
   cabinClass: CabinClass | null;
-  selectedSeats: Seat[][]; // Index matches selectedLegs
+  /** Seat numbers per leg, e.g. [["12A","12B"],["7C"]]. Index matches selectedLegs. */
+  selectedSeats: string[][];
   passengers: PassengerInput[];
   contact: ContactInput | null;
   bookingRef: string | null;
@@ -44,7 +44,7 @@ export interface BookingState {
 interface BookingContextValue extends BookingState {
   setSelectedLegs: (legs: Flight[]) => void;
   setCabinClass: (c: CabinClass) => void;
-  setSelectedSeats: (seats: Seat[][]) => void;
+  setSelectedSeats: (seats: string[][]) => void;
   setPassengers: (p: PassengerInput[]) => void;
   setContact: (c: ContactInput) => void;
   setBookingRef: (ref: string) => void;
