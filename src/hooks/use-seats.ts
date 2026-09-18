@@ -6,8 +6,8 @@ import type { CabinClass } from "@/types/flight";
 
 interface UseSeatsReturn {
   layout: SeatLayout | null;
-  /** Set of seat numbers (e.g. "12A") that are occupied or blocked. */
-  occupiedSeats: Set<string>;
+  /** Detailed info for all seats. */
+  seatsInfo: Record<string, { status: string; isExitRow: boolean; isWindow: boolean; isAisle: boolean }>;
   isLoading: boolean;
   error: string | null;
   fetchSeatMap: (flightId: string, cabinClass: CabinClass) => Promise<void>;
@@ -17,18 +17,18 @@ interface UseSeatsReturn {
  * useSeats — manages seat layout and occupied-seat state.
  *
  * Calls GET /api/seats?flightId=...&cabin=... which returns:
- *   { layout: SeatLayout, occupiedSeats: string[] }
+ *   { layout: SeatLayout, seatsInfo: Record<string, {...}> }
  *
- * The hook converts occupiedSeats to a Set for O(1) lookup.
+ * The hook exposes seatsInfo for rendering seat types and status.
  *
  * Seat *selection* state is NOT managed here — that belongs to BookingProvider.
  * This hook only answers:
  *   - What is the layout (rows, columns, firstRow)?
- *   - Which seats are occupied/blocked?
+ *   - What are the detailed states and types of the seats?
  */
 export function useSeats(): UseSeatsReturn {
   const [layout, setLayout] = useState<SeatLayout | null>(null);
-  const [occupiedSeats, setOccupiedSeats] = useState<Set<string>>(new Set());
+  const [seatsInfo, setSeatsInfo] = useState<SeatAvailabilityResponse['seatsInfo']>({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,12 +47,12 @@ export function useSeats(): UseSeatsReturn {
           );
         }
         const data: SeatAvailabilityResponse = await res.json();
-        setLayout(data.layout);
-        setOccupiedSeats(new Set(data.occupiedSeats));
+        setLayout(data.layout || null);
+        setSeatsInfo(data.seatsInfo);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error");
         setLayout(null);
-        setOccupiedSeats(new Set());
+        setSeatsInfo({});
       } finally {
         setIsLoading(false);
       }
@@ -62,7 +62,7 @@ export function useSeats(): UseSeatsReturn {
 
   return {
     layout,
-    occupiedSeats,
+    seatsInfo,
     isLoading,
     error,
     fetchSeatMap,
