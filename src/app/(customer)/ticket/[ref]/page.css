@@ -1,11 +1,101 @@
 .ticket-page-container {
   background: radial-gradient(ellipse at bottom, #1e3a5f 0%, #0d1b2a 60%, #000 100%);
+  min-height: 100dvh;
 }
 
 .ticket-card-glass {
   background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 16px 64px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.ticket-perforation {
+  position: relative;
+}
+
+.ticket-perforation::before,
+.ticket-perforation::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  background-color: #0e1c2d;
+  border-radius: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+}
+
+.ticket-perforation::before {
+  left: -10px;
+}
+
+.ticket-perforation::after {
+  right: -10px;
+}
+
+/* ─── Print Styles ─────────────────────────────────────────────── */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #111827 !important;
+  }
+
+  .ticket-page-container {
+    background: #ffffff !important;
+    padding: 0 !important;
+    min-height: auto !important;
+  }
+
+  .ticket-card-glass {
+    background: #ffffff !important;
+    color: #111827 !important;
+    border: 1.5px solid #e5e7eb !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    page-break-after: always;
+    break-after: page;
+    margin-bottom: 2rem;
+  }
+
+  .ticket-card-glass * {
+    color: #111827 !important;
+  }
+
+  .ticket-card-glass .text-white\/40,
+  .ticket-card-glass .text-white\/50,
+  .ticket-card-glass .text-white\/60,
+  .ticket-card-glass .text-white\/70,
+  .ticket-card-glass .text-white\/80 {
+    color: #4b5563 !important;
+  }
+
+  .ticket-card-glass .text-\[\#f5c800\],
+  .ticket-card-glass .text-amber-400 {
+    color: #92400e !important;
+  }
+
+  .ticket-card-glass .border-white\/10,
+  .ticket-card-glass .border-white\/20,
+  .ticket-card-glass .border-white\/15 {
+    border-color: #e5e7eb !important;
+  }
+
+  .ticket-card-glass .bg-white\/5,
+  .ticket-card-glass .bg-white\/10 {
+    background-color: #f9fafb !important;
+  }
+
+  .ticket-perforation::before,
+  .ticket-perforation::after {
+    background-color: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+  }
+
+  .print\:hidden {
+    display: none !important;
+  }
 }

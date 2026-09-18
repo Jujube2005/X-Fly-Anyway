@@ -19,7 +19,7 @@ export async function GET(
 ) {
   const { ref } = await params;
 
-  if (!/^XFA-\d{8}-[A-Z2-9]{4}$/.test(ref?.toUpperCase() ?? "")) {
+  if (!ref || ref === "undefined" || !/^XFA-\d{8}-[A-Z0-9]{4}$/i.test(ref)) {
     return Response.json({ error: "Invalid booking reference" }, { status: 400 });
   }
 
@@ -41,19 +41,48 @@ export async function GET(
       );
     }
 
-    const [payment, flights] = await Promise.all([
+    const [payment, flights, eTicketRes] = await Promise.all([
       paymentService.getPaymentByBookingId(booking.id),
-      Promise.all(booking.flightIds.map(id => flightService.getFlightById(id))),
+      Promise.all(booking.flightIds.map((id) => flightService.getFlightById(id))),
+      supabase.from("e_ticket").select("id, issued_at").eq("booking_id", booking.id).maybeSingle(),
     ]);
 
+    const firstFlight = flights[0];
+    const ticketBooking = {
+      reference: booking.reference,
+      cabinClass: booking.cabinClass,
+      passengers: booking.passengers,
+      flight: firstFlight
+        ? {
+            flightNumber: firstFlight.flightNumber,
+            originCode: firstFlight.origin?.airport_code ?? "—",
+            originCity: firstFlight.origin?.city ?? "—",
+            originName: firstFlight.origin?.name ?? "—",
+            destinationCode: firstFlight.destination?.airport_code ?? "—",
+            destinationCity: firstFlight.destination?.city ?? "—",
+            destinationName: firstFlight.destination?.name ?? "—",
+            departureAt: firstFlight.departureAt,
+            arrivalAt: firstFlight.arrivalAt,
+          }
+        : null,
+      seats: (booking.seatNumbers.flat() || []).map((seatNumber) => ({ seatNumber })),
+      seatNumbers: booking.seatNumbers,
+      flightIds: booking.flightIds,
+    };
+
+    const eTicketData = eTicketRes.data as { id?: string; issued_at?: string } | null;
+
     // Return ticket data for client-side rendering / print view
-    // PDF generation will be added in Step 7 (PDF library install)
     return Response.json({
       ticket: {
-        booking,
-        payment,
+        id: eTicketData?.id ?? booking.id,
+        ticketCode: `ETK-${booking.reference}`,
+        eTicketId: eTicketData?.id ?? null,
+        bookingId: booking.id,
+        issuedAt: eTicketData?.issued_at ?? booking.createdAt ?? new Date().toISOString(),
+        booking: ticketBooking,
         flights,
-        issuedAt: new Date().toISOString(),
+        payment,
       },
     });
   } catch (err) {

@@ -21,7 +21,14 @@ export default function ConfirmationPage() {
     if (!bookingRef) { router.replace("/"); return; }
     fetch(`/api/bookings/${encodeURIComponent(bookingRef)}`)
       .then((r) => r.json())
-      .then((data) => { setBooking(data); setIsLoading(false); })
+      .then((data) => {
+        if (data.error) {
+          setError(data.error);
+        } else {
+          setBooking(data.booking ?? data);
+        }
+        setIsLoading(false);
+      })
       .catch(() => { setError("Could not load booking."); setIsLoading(false); });
   }, [bookingRef, router]);
 
@@ -116,7 +123,7 @@ export default function ConfirmationPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <Link href={`/ticket/${encodeURIComponent(booking.reference)}`} className="block">
+                <Link href={`/ticket/${encodeURIComponent(booking?.reference || bookingRef)}`} className="block">
                   <Button variant="secondary" fullWidth>
                     ⬇ Download E-Ticket
                   </Button>

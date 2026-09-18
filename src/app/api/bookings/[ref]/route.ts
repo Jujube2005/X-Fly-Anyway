@@ -18,7 +18,7 @@ export async function GET(
   }
 
   // Validate reference format: XFA-YYYYMMDD-XXXX
-  if (!/^XFA-\d{8}-[A-Z2-9]{4}$/.test(ref.toUpperCase())) {
+  if (!/^XFA-\d{8}-[A-Z0-9]{4}$/i.test(ref)) {
     return Response.json(
       { error: "Invalid booking reference format" },
       { status: 400 }
