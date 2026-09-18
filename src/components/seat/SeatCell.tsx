@@ -31,8 +31,8 @@ export function SeatCell({
   const getSeatConfig = () => {
     if (isOccupied) {
       return {
-        base: "bg-slate-200 border-slate-300 text-slate-400 cursor-not-allowed opacity-80",
-        seatBack: "bg-slate-300 border-l border-slate-400/50",
+        base: "bg-[#27272a] border-[#3f3f46] text-zinc-400 cursor-not-allowed opacity-90",
+        seatBack: "bg-[#3f3f46] border-l border-zinc-700",
         label: t.booking.seat.status.occupied,
       };
     }
@@ -91,15 +91,21 @@ export function SeatCell({
         <span className="absolute top-1 left-1 w-1.5 h-1.5 rounded-full bg-sky-600" />
       )}
 
-      {/* Seat Cushion & Column Letter (Upright, facing Nose to the left) */}
-      <span className="text-[11px] sm:text-xs font-bold z-10 pr-2">
-        {columnLetter}
-      </span>
+      {/* Seat Cushion & Column Letter / Checkmark (Upright, facing Nose to the left) */}
+      {isSelected ? (
+        <span className="text-xs font-black z-10 pr-2 text-slate-950 flex items-center justify-center">
+          ✓
+        </span>
+      ) : (
+        <span className={`text-[11px] sm:text-xs font-bold z-10 pr-2 ${isOccupied ? "text-zinc-400" : ""}`}>
+          {columnLetter}
+        </span>
+      )}
 
       {/* Occupied X indicator */}
       {isOccupied && (
         <svg
-          className="absolute inset-0 m-auto w-4 h-4 text-slate-400 opacity-60 z-20"
+          className="absolute inset-0 m-auto w-3.5 h-3.5 text-zinc-500 opacity-60 z-20"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"

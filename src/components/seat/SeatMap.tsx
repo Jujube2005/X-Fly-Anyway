@@ -67,9 +67,9 @@ export function SeatMap({
   }, [rowNumbers, layout.columns, seatsInfo]);
 
   return (
-    <div className="flex flex-col items-start select-none relative py-2">
+    <div className="flex flex-col items-start select-none relative my-auto py-2">
       {/* Top Header: Row Numbers (X-axis: 1 .. N progressing Left to Right) */}
-      <div className="flex flex-row items-end mb-3">
+      <div className="flex flex-row items-end mb-2.5">
         {/* Top-left spacer for Y-axis seat letter labels */}
         <div className="w-7 sm:w-8 shrink-0" />
 
@@ -81,11 +81,11 @@ export function SeatMap({
               className="w-10 sm:w-11 flex flex-col items-center justify-end shrink-0"
             >
               {isExit && (
-                <span className="text-[9px] font-extrabold text-sky-600 uppercase tracking-tighter mb-0.5">
+                <span className="text-[8px] font-extrabold text-amber-600 uppercase tracking-tighter mb-0.5">
                   EXIT
                 </span>
               )}
-              <span className="text-xs sm:text-sm font-bold text-slate-500">
+              <span className="text-xs sm:text-sm font-semibold text-slate-400">
                 {rowNum}
               </span>
             </div>
@@ -147,13 +147,13 @@ export function SeatMap({
                 })}
               </div>
 
-              {/* Aisle Row: Consistent horizontal gap between seat groups */}
+              {/* Aisle Row: Clean horizontal gap between seat groups */}
               {aisleAfterColIndices.has(colIdx) && (
-                <div className="flex flex-row items-center h-8 sm:h-9 my-1">
+                <div className="flex flex-row items-center h-7 sm:h-8 my-1">
                   {/* Left spacer matching letter column */}
                   <div className="w-7 sm:w-8 shrink-0" />
 
-                  {/* Aisle space for each row, showing inline EXIT indicator if exit row */}
+                  {/* Aisle space for each row */}
                   {rowNumbers.map((rowNum) => {
                     const isExit = exitRows.has(rowNum);
                     return (
@@ -162,11 +162,11 @@ export function SeatMap({
                         className="w-10 sm:w-11 flex items-center justify-center shrink-0 relative"
                       >
                         {isExit ? (
-                          <div className="bg-sky-100/90 text-sky-800 border border-sky-300 px-1 py-0.5 rounded text-[9px] font-black tracking-tight whitespace-nowrap shadow-xs z-10 animate-pulse">
-                            ← EXIT →
+                          <div className="bg-amber-50 text-amber-700 border border-amber-300 px-1 py-0.5 rounded text-[8px] font-black tracking-tight whitespace-nowrap shadow-2xs z-10">
+                            « EXIT »
                           </div>
                         ) : (
-                          <div className="w-full h-[1px] bg-slate-200/70 border-b border-dashed border-slate-300" />
+                          <div className="w-full h-[1px] bg-slate-200/50" />
                         )}
                       </div>
                     );
