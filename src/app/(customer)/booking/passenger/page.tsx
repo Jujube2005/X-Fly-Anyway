@@ -43,13 +43,7 @@ export default function PassengerPage() {
   const { passengerCount, passengers, setPassengers } = useBookingContext();
 
   const [forms, setForms] = useState<PassengerInput[]>(
-    passengers?.length > 0 ? passengers : Array(passengerCount).fill(null).map(() => ({
-      title: "Mr",
-      firstName: "",
-      lastName: "",
-      gender: "M",
-      dateOfBirth: "",
-    }))
+    passengers?.length > 0 ? passengers : Array.from({ length: passengerCount }, () => emptyPassenger())
   );
 
   // Maximum allowed Date of Birth (must be at least 14 days old to fly)

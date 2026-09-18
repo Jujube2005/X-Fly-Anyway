@@ -382,6 +382,7 @@ export function FlightSearchForm({
             airports={airports}
             placeholder={t.search.from}
             className={errors.origin || errors.sameAirport ? inputError : inputBase}
+            align="left"
           />
           {errors.origin && (
             <p className={errorMsg} role="alert">
@@ -420,6 +421,7 @@ export function FlightSearchForm({
             airports={airports}
             placeholder={t.search.to}
             className={errors.destination || errors.sameAirport ? inputError : inputBase}
+            align="right"
           />
           {errors.destination && (
             <p className={errorMsg} role="alert">
