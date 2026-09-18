@@ -84,6 +84,40 @@ export interface FlightCabinClassRow {
   created_at: string;
 }
 
+export interface AircraftTypeRow {
+  id: string; // TEXT PRIMARY KEY
+  name: string;
+}
+
+export interface CabinLayoutRow {
+  id: string;
+  aircraft_type_id: string;
+  cabin_class: CabinClassValue;
+}
+
+export interface SeatDefinitionRow {
+  id: string;
+  cabin_layout_id: string;
+  aircraft_type_id: string;
+  row_number: number;
+  column_letter: string;
+  seat_number: string;
+  is_window: boolean;
+  is_aisle: boolean;
+  is_exit_row: boolean;
+}
+
+export interface FlightSeatOverrideRow {
+  id: string;
+  flight_id: string;
+  seat_definition_id: string;
+  aircraft_type_id: string;
+  status: "held" | "blocked";
+  reason: string | null;
+  expires_at: string | null;
+  created_at: string;
+}
+
 export interface SeatRow {
   id: string;            // UUID PRIMARY KEY
   flight_id: string;     // FK → flight.id
@@ -139,7 +173,9 @@ export interface PassengerRow {
 export interface BookingSeatRow {
   id: string;         // UUID PRIMARY KEY
   booking_id: string; // FK → booking.id
-  seat_id: string;    // FK → seat.id — UNIQUE: prevents double-booking
+  flight_id: string;
+  seat_definition_id: string;
+  aircraft_type_id: string;
   created_at: string;
 }
 
