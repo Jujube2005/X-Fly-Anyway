@@ -189,7 +189,9 @@ export function ConnectingFlightCard({ connecting, onSelect, isSelected = false 
                   <PlaneIcon />
                 </div>
               </div>
-              <p className="text-xs font-medium text-[#f5c800]">1 Stop {connecting.via.airport_code} ({layoverDisplay})</p>
+              <p className="text-xs font-medium text-[#f5c800]">
+                {((t.flights as any)?.oneStop ?? "1 Stop").replace("1 Stop", "1 จุดแวะพัก").replace("Stop", "แวะพัก")} {connecting.via.airport_code} ({layoverDisplay})
+              </p>
             </div>
 
             {/* Destination */}

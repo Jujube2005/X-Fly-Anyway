@@ -40,11 +40,22 @@ const inputCls = "w-full bg-white/10 border border-white/30 text-white placehold
 export default function PassengerPage() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { passengerCount, setPassengers } = useBookingContext();
+  const { passengerCount, passengers, setPassengers } = useBookingContext();
 
   const [forms, setForms] = useState<PassengerInput[]>(
-    Array.from({ length: passengerCount }, emptyPassenger)
+    passengers?.length > 0 ? passengers : Array(passengerCount).fill(null).map(() => ({
+      title: "Mr",
+      firstName: "",
+      lastName: "",
+      gender: "M",
+      dateOfBirth: "",
+    }))
   );
+
+  // Maximum allowed Date of Birth (must be at least 14 days old to fly)
+  const maxDobDate = new Date();
+  maxDobDate.setDate(maxDobDate.getDate() - 14);
+  const maxDobString = maxDobDate.toISOString().split("T")[0];
 
   function updateField(idx: number, field: keyof PassengerInput, value: string) {
     setForms((prev) => prev.map((p, i) => (i === idx ? { ...p, [field]: value } : p)));
@@ -114,15 +125,20 @@ export default function PassengerPage() {
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    <input
-                      type="date"
-                      value={passenger.dateOfBirth}
-                      onChange={(e) => updateField(idx, "dateOfBirth", e.target.value)}
-                      required
-                      className={inputCls}
-                      max={new Date().toISOString().split("T")[0]}
-                      aria-label={`${t.booking?.passenger?.dateOfBirth ?? "Date of birth"} for passenger ${idx + 1}`}
-                    />
+                    <div className="flex flex-col gap-1 relative">
+                      <label className="text-[10px] font-medium text-white/60 ml-2 absolute -top-2 left-2 bg-[#1a1b26] px-1 z-10">
+                        {t.booking?.passenger?.dateOfBirth ?? "Date of birth"}
+                      </label>
+                      <input
+                        type="date"
+                        value={passenger.dateOfBirth}
+                        onChange={(e) => updateField(idx, "dateOfBirth", e.target.value)}
+                        required
+                        className={`${inputCls} relative pt-2`}
+                        max={maxDobString}
+                        aria-label={`${t.booking?.passenger?.dateOfBirth ?? "Date of birth"} for passenger ${idx + 1}`}
+                      />
+                    </div>
                     <input
                       value={passenger.passportNumber ?? ""}
                       onChange={(e) => updateField(idx, "passportNumber", e.target.value)}
