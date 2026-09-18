@@ -41,9 +41,19 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/admin") &&
     !request.nextUrl.pathname.startsWith("/admin/login");
 
+  // Protect all /account routes
+  const isAccountRoute = request.nextUrl.pathname.startsWith("/account");
+
   if (isAdminRoute && !user) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/admin/login";
+    return NextResponse.redirect(loginUrl);
+  }
+
+  if (isAccountRoute && !user) {
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = "/login";
+    loginUrl.searchParams.set("redirect", request.nextUrl.pathname);
     return NextResponse.redirect(loginUrl);
   }
 

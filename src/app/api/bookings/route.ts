@@ -72,6 +72,13 @@ export async function POST(request: Request) {
   }
 
   const supabase = await createClient();
+
+  // Detect authenticated session for Phase 2 optional accounts
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    bookingPayload.customerId = user.id;
+  }
+
   const bookingService = new BookingService(supabase);
   const seatService = new SeatService(supabase);
   const paymentService = new PaymentService(supabase);

@@ -15,6 +15,7 @@ export interface BookingContact {
 
 export interface Booking {
   id: string;
+  customerId?: string | null;
   reference: string;         // e.g. "XFA-20260907-A1B2"
   flightIds: string[];       // 1 for direct, 2 for connecting
   cabinClass: CabinClass;
@@ -29,6 +30,7 @@ export interface Booking {
 }
 
 export interface CreateBookingPayload {
+  customerId?: string | null;
   flightIds: string[];
   cabinClass: CabinClass;
   passengers: Passenger[];
