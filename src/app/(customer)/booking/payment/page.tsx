@@ -79,26 +79,30 @@ export default function PaymentPage() {
       const { month: expiryMonth, year: expiryYear } = parseExpiry(expiry);
 
       const bookingPayload = {
-        flightIds: selectedLegs.map(l => l.id),
-        cabinClass,
-        passengers: passengers.map((p) => ({
-          type: "adult" as const,
-          title: p.title,
-          firstName: p.firstName,
-          lastName: p.lastName,
-          dateOfBirth: p.dateOfBirth,
-          gender: p.gender,
-          nationality: p.nationality,
-          passportNumber: p.passportNumber,
-          passportExpiry: p.passportExpiry,
-        })),
-        contact: {
-          firstName: contact!.firstName,
-          lastName: contact!.lastName,
-          email: contact!.email,
-          phone: contact!.phone,
+        booking: {
+          flightIds: selectedLegs.map((l) => l.id),
+          cabinClass: cabinClass!,
+          passengers: passengers.map((p) => ({
+            type: "adult" as const,
+            title: p.title,
+            firstName: p.firstName,
+            lastName: p.lastName,
+            dateOfBirth: p.dateOfBirth,
+            gender: p.gender,
+            nationality: p.nationality,
+            passportNumber: p.passportNumber,
+            passportExpiry: p.passportExpiry,
+          })),
+          contact: {
+            firstName: contact!.firstName,
+            lastName: contact!.lastName,
+            email: contact!.email,
+            phone: contact!.phone,
+          },
+          seatNumbers: selectedLegs.map((_, i) =>
+            (selectedSeats[i] ?? []).filter(Boolean)
+          ),
         },
-        seatNumbers: selectedLegs.map((_, i) => selectedSeats[i] ?? []),
         payment: {
           method: method as PaymentMethod,
           ...(method !== "bitcoin"
@@ -165,7 +169,7 @@ export default function PaymentPage() {
                 <span className="text-[#f5c800] text-xl">✈</span>
               </div>
               <div className="flex flex-col gap-4 mb-4">
-                {selectedLegs.map((leg, idx) => (
+                {selectedLegs.map((leg) => (
                   <div key={leg.id}>
                     <p className="text-white font-bold text-sm mb-1">
                       Flight {leg.flightNumber} — {leg.origin.airport_code} to {leg.destination.airport_code}

@@ -26,8 +26,13 @@ import type { MockPaymentPayload } from "@/types/payment";
  */
 export async function POST(request: Request) {
   let body: {
-    booking: CreateBookingPayload;
-    payment: Pick<MockPaymentPayload, "method" | "card">;
+    booking?: CreateBookingPayload;
+    flightIds?: string[];
+    cabinClass?: CreateBookingPayload["cabinClass"];
+    passengers?: CreateBookingPayload["passengers"];
+    contact?: CreateBookingPayload["contact"];
+    seatNumbers?: CreateBookingPayload["seatNumbers"];
+    payment?: Pick<MockPaymentPayload, "method" | "card">;
   };
 
   try {
@@ -36,7 +41,15 @@ export async function POST(request: Request) {
     return Response.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { booking: bookingPayload, payment: paymentInput } = body;
+  // Handle both nested { booking: {...}, payment: {...} } and flat { flightIds, cabinClass, ..., payment: {...} }
+  const bookingPayload: CreateBookingPayload = body.booking ?? {
+    flightIds: body.flightIds!,
+    cabinClass: body.cabinClass!,
+    passengers: body.passengers!,
+    contact: body.contact!,
+    seatNumbers: body.seatNumbers!,
+  };
+  const paymentInput = body.payment;
 
   // Validate required fields
   if (
