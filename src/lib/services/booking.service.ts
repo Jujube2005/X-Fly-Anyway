@@ -198,7 +198,9 @@ export class BookingService {
       }
     }
     
-    const flightIds = (legResult.data ?? []).map((l) => l.flight_id);
+    const flightIds = (legResult.data && legResult.data.length > 0)
+      ? legResult.data.map((l) => l.flight_id)
+      : (bookingRow.flight_id ? [bookingRow.flight_id] : []);
     const seatNumbers = flightIds.map((fid) => seatsByFlight.get(fid) ?? []);
 
     const booking = toBooking(bookingRow, passengers, seatNumbers);

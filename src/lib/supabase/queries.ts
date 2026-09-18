@@ -389,14 +389,57 @@ export async function queryBookingSeatsWithSeat(
   supabase: AnySupabaseClient,
   bookingId: string
 ) {
-  const result = await supabase
+  const { data: bookingSeats, error: bsError } = await supabase
     .from("booking_seat")
-    .select("seat_definition_id, flight_id, seat_definition:seat_definition_id(seat_number)")
+    .select("seat_definition_id, flight_id")
     .eq("booking_id", bookingId);
-  return result as {
-    data: { seat_definition_id: string; flight_id: string; seat_definition: { seat_number: string } | null }[] | null;
-    error: { message: string } | null;
-  };
+
+  if (bsError) {
+    return { data: null, error: bsError as { message: string } };
+  }
+
+  if (!bookingSeats || bookingSeats.length === 0) {
+    return { data: [], error: null };
+  }
+
+  const seatDefIds = [
+    ...new Set(bookingSeats.map((bs: { seat_definition_id: string }) => bs.seat_definition_id).filter(Boolean)),
+  ];
+
+  if (seatDefIds.length === 0) {
+    return {
+      data: bookingSeats.map((bs: { seat_definition_id: string; flight_id: string }) => ({
+        seat_definition_id: bs.seat_definition_id,
+        flight_id: bs.flight_id,
+        seat_definition: null,
+      })),
+      error: null,
+    };
+  }
+
+  const { data: seatDefs, error: sdError } = await supabase
+    .from("seat_definition")
+    .select("id, seat_number")
+    .in("id", seatDefIds);
+
+  if (sdError) {
+    return { data: null, error: sdError as { message: string } };
+  }
+
+  const seatNumberMap = new Map<string, string>();
+  for (const sd of (seatDefs ?? []) as { id: string; seat_number: string }[]) {
+    seatNumberMap.set(sd.id, sd.seat_number);
+  }
+
+  const data = (bookingSeats as { seat_definition_id: string; flight_id: string }[]).map((bs) => ({
+    seat_definition_id: bs.seat_definition_id,
+    flight_id: bs.flight_id,
+    seat_definition: seatNumberMap.has(bs.seat_definition_id)
+      ? { seat_number: seatNumberMap.get(bs.seat_definition_id)! }
+      : null,
+  }));
+
+  return { data, error: null };
 }
 
 export async function deleteBookingSeats(
