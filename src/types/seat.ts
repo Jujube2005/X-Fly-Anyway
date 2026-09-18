@@ -1,29 +1,13 @@
-/** Seat domain types */
-
 import type { CabinClass } from "./flight";
 import type { SeatStatusValue } from "./database";
 
 /**
- * Seat status at database level: available | occupied | blocked
- * "selected" is a transient UI-only state — never persisted to database.
+ * Seat status at database level: available | occupied | blocked | held
  */
-export type SeatStatus = SeatStatusValue;
+export type SeatStatus = SeatStatusValue | "held";
 
 /** UI-only extended status (adds "selected" for seat map display) */
 export type SeatDisplayStatus = SeatStatus | "selected";
-
-export interface Seat {
-  id: string;
-  flightId: string;
-  seatNumber: string;   // e.g. "12A"
-  rowNumber: number;
-  columnLetter: string; // e.g. "A"
-  cabinClass: CabinClass;
-  isWindow: boolean;
-  isAisle: boolean;
-  isExitRow: boolean;
-  status: SeatStatus;   // DB status
-}
 
 /**
  * Layout metadata derived from the seat table for a given flight + cabin class.
@@ -39,26 +23,23 @@ export interface SeatLayout {
   columns: string[];  // Distinct, sorted column letters e.g. ["A","B","C","D","E","F"]
 }
 
+export interface SeatInfo {
+  status: SeatStatus;
+  rowNumber: number;
+  columnLetter: string;
+  isWindow: boolean;
+  isAisle: boolean;
+  isExitRow: boolean;
+  priceModifier: number;
+}
+
 /**
- * Response shape for GET /api/seats.
- * Contains layout metadata and only the seats that are occupied —
- * the frontend generates the full grid from layout and overlays occupiedSeats.
+ * Standardized response shape for GET /api/seats.
  */
 export interface SeatAvailabilityResponse {
-  layout: SeatLayout;
-  /** Seat numbers (e.g. "12A") whose status is 'occupied' or 'blocked'. */
-  occupiedSeats: string[];
-}
-
-/**
- * @deprecated Use SeatAvailabilityResponse + SeatLayout instead.
- * Kept for backward compatibility while consumers are migrated.
- */
-export interface SeatMap {
   flightId: string;
+  aircraftType: string;
   cabinClass: CabinClass;
-  rows: number;
-  columns: string[];    // e.g. ["A","B","C","D","E","F"]
-  seats: Seat[];
+  layout?: SeatLayout; // Optional layout metadata for UI grid rendering
+  seatsInfo: Record<string, SeatInfo>;
 }
-

@@ -1,14 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { SeatRow } from "@/types/database";
-import type { Seat, SeatMap, SeatLayout, SeatAvailabilityResponse } from "@/types/seat";
+import type { SeatLayout, SeatAvailabilityResponse, SeatStatus } from "@/types/seat";
 import type { CabinClass } from "@/types/flight";
 import {
-  querySeatMap,
-  querySeatLayoutData,
-  querySeatByNumber,
-  querySeatsByNumbers,
-  updateSeatStatus,
-  updateSeatStatusUnrestricted,
+  querySeatDefinitions,
+  queryBookedSeats,
+  queryFlightSeatOverrides,
+  querySeatDefinitionsByNumbers,
   insertBookingSeats,
   queryBookingSeatsByBooking,
   deleteBookingSeats,
@@ -19,94 +16,42 @@ import {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnySupabaseClient = SupabaseClient<any, any, any>;
 
-// ─── Row → Domain mapper ────────────────────────────────────────────────────
-
-function toSeat(row: SeatRow): Seat {
-  return {
-    id:           row.id,
-    flightId:     row.flight_id,
-    seatNumber:   row.seat_number,
-    rowNumber:    row.row_number,
-    columnLetter: row.column_letter,
-    cabinClass:   row.cabin_class,
-    isWindow:     row.is_window,
-    isAisle:      row.is_aisle,
-    isExitRow:    row.is_exit_row,
-    status:       row.status,
-  };
-}
-
-// ─── Column layouts by cabin class ─────────────────────────────────────────
-const CABIN_COLUMNS: Record<CabinClass, string[]> = {
-  economy:         ["A", "B", "C", "D", "E", "F"],
-  premium_economy: ["A", "B", "C", "D", "E", "F"],
-  business:        ["A", "B", "C", "D"],
-  first:           ["A", "B", "C", "D"],
-};
-
-// ─── SeatService ────────────────────────────────────────────────────────────
-
-/**
- * SeatService — seat map retrieval and seat reservation operations.
- */
 export class SeatService {
   constructor(private readonly supabase: AnySupabaseClient) {}
 
   /**
-   * Get the seat map for a specific flight and cabin class.
-   * FR-CUS-005: Display seat map with available/occupied status.
-   * @deprecated Use getLayoutAndOccupied() for the layout-first API.
-   */
-  async getSeatMap(
-    flightId: string,
-    cabinClass: CabinClass
-  ): Promise<SeatMap | null> {
-    const { data, error } = await querySeatMap(this.supabase, flightId, cabinClass);
-    if (error) throw new Error(`Seat map fetch failed: ${error.message}`);
-    if (!data || data.length === 0) return null;
-
-    const seats = data.map(toSeat);
-    const rows = Math.max(...seats.map((s) => s.rowNumber));
-    const columns = CABIN_COLUMNS[cabinClass];
-
-    return { flightId, cabinClass, rows, columns, seats };
-  }
-
-  /**
    * Get layout metadata and occupied seat numbers for a flight + cabin class.
-   *
-   * Uses a single query (Option A from the design doc) — fetches only the
-   * minimal seat columns needed, derives layout in application code, and
-   * returns only non-available seat numbers so the frontend can generate the
-   * full grid itself.
-   *
-   * FR-CUS-005: Display seat map with available/occupied status.
+   * Derives seat status dynamically from seat_definition + booking_seat + flight_seat_override.
    */
   async getLayoutAndOccupied(
     flightId: string,
     cabinClass: CabinClass
   ): Promise<SeatAvailabilityResponse | null> {
-    const { data, error } = await querySeatLayoutData(
-      this.supabase,
-      flightId,
-      cabinClass
-    );
-    if (error) throw new Error(`Seat layout fetch failed: ${error.message}`);
-    if (!data || data.length === 0) return null;
+    
+    // 1. Fetch reusable seat definitions for this aircraft's cabin
+    const { data: seatDefs, error: defsError } = await querySeatDefinitions(this.supabase, flightId, cabinClass);
+    if (defsError || !seatDefs || seatDefs.length === 0) return null;
 
-    // Derive layout from the seat rows ─────────────────────────────────────
+    // 2. Fetch booked seats for the flight
+    const { data: booked, error: bookedError } = await queryBookedSeats(this.supabase, flightId);
+    if (bookedError) throw new Error(`Booked seats fetch failed: ${bookedError.message}`);
+
+    // 3. Fetch seat overrides (held, blocked)
+    const { data: overrides, error: overridesError } = await queryFlightSeatOverrides(this.supabase, flightId);
+    if (overridesError) throw new Error(`Seat overrides fetch failed: ${overridesError.message}`);
+
+    // Derive Layout Meta
     let firstRow = Infinity;
     let lastRow = -Infinity;
     const colSet = new Set<string>();
 
-    for (const row of data) {
-      if (row.row_number < firstRow) firstRow = row.row_number;
-      if (row.row_number > lastRow) lastRow = row.row_number;
-      colSet.add(row.column_letter);
+    for (const def of seatDefs) {
+      if (def.row_number < firstRow) firstRow = def.row_number;
+      if (def.row_number > lastRow) lastRow = def.row_number;
+      colSet.add(def.column_letter);
     }
 
-    // Sort columns alphabetically so layout order is deterministic
-    const COLUMN_ORDER = ["A", "B", "C", "D", "E", "F", "G", "H"];
+    const COLUMN_ORDER = ["A", "B", "C", "D", "E", "F", "G", "H", "J", "K"];
     const columns = [...colSet].sort(
       (a, b) => COLUMN_ORDER.indexOf(a) - COLUMN_ORDER.indexOf(b)
     );
@@ -120,61 +65,124 @@ export class SeatService {
       columns,
     };
 
-    // Collect seats that are NOT available ─────────────────────────────────
-    // Both 'occupied' and 'blocked' seats must be shown as unavailable in the UI.
-    const occupiedSeats: string[] = data
-      .filter((row) => row.status !== "available")
-      .map((row) => row.seat_number);
+    // Calculate Statuses
+    const bookedIds = new Set(booked?.map(b => b.seat_definition_id) || []);
+    const overrideMap = new Map<string, { status: SeatStatus; expires_at: string | null }>();
+    if (overrides) {
+      for (const ov of overrides) {
+        overrideMap.set(ov.seat_definition_id, { status: ov.status, expires_at: ov.expires_at });
+      }
+    }
 
-    return { layout, occupiedSeats };
+    const seatsInfo: Record<string, {
+      status: SeatStatus;
+      isExitRow: boolean;
+      isWindow: boolean;
+      isAisle: boolean;
+      rowNumber: number;
+      columnLetter: string;
+      priceModifier: number;
+    }> = {};
+
+    const now = new Date();
+
+    for (const def of seatDefs) {
+      let status: SeatStatus = "available";
+      
+      const ov = overrideMap.get(def.id);
+      const isBooked = bookedIds.has(def.id);
+
+      if (ov && ov.status === "blocked") {
+        status = "blocked";
+      } else if (ov && ov.status === "held") {
+        if (!ov.expires_at || new Date(ov.expires_at) > now) {
+          status = "held";
+        } else if (isBooked) {
+          status = "occupied";
+        }
+      } else if (isBooked) {
+        status = "occupied";
+      }
+
+      // Calculate price modifier: Exit Row > Front Row > Standard
+      let priceModifier = 0;
+      if (def.is_exit_row) {
+        priceModifier = 700;
+      } else if (def.row_number === firstRow) {
+        priceModifier = 300;
+      }
+
+      seatsInfo[def.seat_number] = {
+        status,
+        isExitRow: def.is_exit_row,
+        isWindow: def.is_window,
+        isAisle: def.is_aisle,
+        rowNumber: def.row_number,
+        columnLetter: def.column_letter,
+        priceModifier
+      };
+    }
+
+    return { 
+      flightId,
+      aircraftType: seatDefs[0].aircraft_type_id,
+      cabinClass,
+      layout, 
+      seatsInfo 
+    } as unknown as SeatAvailabilityResponse;
   }
 
   /**
-   * Get a single seat by flight + seat number.
-   */
-  async getSeatByNumber(
-    flightId: string,
-    seatNumber: string
-  ): Promise<Seat | null> {
-    const { data, error } = await querySeatByNumber(this.supabase, flightId, seatNumber);
-    if (error || !data) return null;
-    return toSeat(data);
-  }
-
-  /**
-   * Reserve specific seats — marks as 'occupied' and inserts booking_seat records.
-   * FR-CUS-006: Seat availability validated server-side.
-   * Race condition protection via UNIQUE (seat_id) on booking_seat.
+   * Reserve specific seats — inserts booking_seat records.
+   * Race condition protection via UNIQUE (flight_id, seat_definition_id) on booking_seat.
    */
   async reserveSeats(
     flightId: string,
     seatNumbers: string[],
-    bookingId: string
+    bookingId: string,
+    cabinClass: CabinClass
   ): Promise<{ seatIds: string[] }> {
-    const { data: seats, error: fetchError } = await querySeatsByNumbers(
-      this.supabase, flightId, seatNumbers
+    
+    // 1. Get the seat definitions by number
+    const { data: seatDefs, error: fetchError } = await querySeatDefinitionsByNumbers(
+      this.supabase, flightId, cabinClass, seatNumbers
     );
 
     if (fetchError) throw new Error(`Seat fetch failed: ${fetchError.message}`);
-    if (!seats || seats.length !== seatNumbers.length) {
-      throw new Error(`One or more seats not found: ${seatNumbers.join(", ")}`);
+    if (!seatDefs || seatDefs.length !== seatNumbers.length) {
+      throw new Error(`One or more seats not found in this cabin layout.`);
     }
 
-    const unavailable = seats.filter((s) => s.status !== "available");
-    if (unavailable.length > 0) {
-      throw new Error(
-        `Seats not available: ${unavailable.map((s) => s.seat_number).join(", ")}`
-      );
+    // 2. Validate availability (Check booking_seat and active overrides)
+    const defIds = seatDefs.map(d => d.id);
+    const { data: booked } = await queryBookedSeats(this.supabase, flightId);
+    const { data: overrides } = await queryFlightSeatOverrides(this.supabase, flightId);
+
+    const bookedIds = new Set(booked?.map(b => b.seat_definition_id) || []);
+    const now = new Date();
+
+    for (const def of seatDefs) {
+      if (bookedIds.has(def.id)) {
+        throw new Error(`Seat ${def.seat_number} is already occupied.`);
+      }
+      const ov = overrides?.find(o => o.seat_definition_id === def.id);
+      if (ov) {
+        if (ov.status === "blocked") {
+          throw new Error(`Seat ${def.seat_number} is blocked.`);
+        }
+        if (ov.status === "held" && (!ov.expires_at || new Date(ov.expires_at) > now)) {
+          throw new Error(`Seat ${def.seat_number} is currently held by another user.`);
+        }
+      }
     }
 
-    const seatIds = seats.map((s) => s.id);
-
-    const { error: updateError } = await updateSeatStatus(this.supabase, seatIds, "occupied");
-    if (updateError) throw new Error(`Seat reservation failed: ${updateError.message}`);
-
-    const bookingSeatRecords = seatIds.map((seatId) => ({
+    // 3. Insert into booking_seat
+    const aircraftTypeId = seatDefs[0].aircraft_type_id;
+    const bookingSeatRecords = seatDefs.map((def) => ({
       booking_id: bookingId,
-      seat_id:    seatId,
+      flight_id: flightId,
+      seat_definition_id: def.id,
+      aircraft_type_id: aircraftTypeId
     }));
 
     const { error: bsError } = await insertBookingSeats(this.supabase, bookingSeatRecords);
@@ -185,33 +193,17 @@ export class SeatService {
       throw new Error(`Booking seat record failed: ${bsError.message}`);
     }
 
-    return { seatIds };
+    return { seatIds: defIds };
   }
 
   /**
-   * Release seats for a cancelled booking — marks back as 'available'.
+   * Release seats for a cancelled booking.
    */
   async releaseSeats(bookingId: string): Promise<void> {
-    const { data: bsRows, error: bsError } = await queryBookingSeatsByBooking(
-      this.supabase, bookingId
-    );
-    if (bsError) throw new Error(`Seat release fetch failed: ${bsError.message}`);
-    if (!bsRows || bsRows.length === 0) return;
-
-    const seatIds = bsRows.map((r) => r.seat_id);
-
-    const { error: updateError } = await updateSeatStatusUnrestricted(
-      this.supabase, seatIds, "available"
-    );
-    if (updateError) throw new Error(`Seat release update failed: ${updateError.message}`);
-
     const { error: deleteError } = await deleteBookingSeats(this.supabase, bookingId);
     if (deleteError) throw new Error(`Booking seat delete failed: ${deleteError.message}`);
   }
 
-  /**
-   * Decrement available_seats count for a cabin class after booking.
-   */
   async decrementAvailableSeats(
     flightId: string,
     cabinClass: CabinClass,
@@ -233,9 +225,6 @@ export class SeatService {
     }
   }
 
-  /**
-   * Increment available_seats count for a cabin class after booking cancellation.
-   */
   async incrementAvailableSeats(
     flightId: string,
     cabinClass: import("@/types/flight").CabinClass,
@@ -244,7 +233,7 @@ export class SeatService {
     const { data, error: fetchError } = await queryCabinClassPrice(
       this.supabase, flightId, cabinClass
     );
-    if (fetchError || !data) return; // Silent fail on rollback
+    if (fetchError || !data) return; 
 
     const newAvailable = data.available_seats + count;
     await updateCabinClassAvailableSeats(this.supabase, data.id, newAvailable);

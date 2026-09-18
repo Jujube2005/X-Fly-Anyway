@@ -176,97 +176,89 @@ export async function updateCabinClassAvailableSeats(
   return result as { error: { message: string } | null };
 }
 
-// ─── Seat ────────────────────────────────────────────────────────────────────
+// ─── Seat Architecture (New) ──────────────────────────────────────────────────
 
-export async function querySeatMap(
+export async function querySeatDefinitions(
   supabase: AnySupabaseClient,
   flightId: string,
   cabinClass: string
 ) {
-  const result = await supabase
-    .from("seat")
-    .select("*")
-    .eq("flight_id", flightId)
+  const flightResult = await supabase
+    .from("flight")
+    .select("aircraft_type_id")
+    .eq("id", flightId)
+    .single();
+    
+  if (flightResult.error || !flightResult.data?.aircraft_type_id) {
+    return { data: null, error: flightResult.error || new Error("Flight not found") };
+  }
+  const aircraftTypeId = flightResult.data.aircraft_type_id;
+
+  const cabinResult = await supabase
+    .from("cabin_layout")
+    .select("id")
+    .eq("aircraft_type_id", aircraftTypeId)
     .eq("cabin_class", cabinClass)
+    .single();
+
+  if (cabinResult.error || !cabinResult.data) {
+    return { data: null, error: cabinResult.error || new Error("Cabin layout not found") };
+  }
+
+  const result = await supabase
+    .from("seat_definition")
+    .select("*")
+    .eq("cabin_layout_id", cabinResult.data.id)
     .order("row_number", { ascending: true })
     .order("column_letter", { ascending: true });
-  return result as { data: SeatRow[] | null; error: { message: string } | null };
+
+  return result as { data: import("@/types/database").SeatDefinitionRow[] | null; error: { message: string } | null };
 }
 
-/**
- * Query minimal seat data needed to derive layout metadata and occupied seats.
- * Fetches only seat_number, row_number, column_letter, and status — avoids
- * returning unnecessary columns for the layout-first API approach.
- * FR-CUS-005: Display seat map with available/occupied status.
- */
-export async function querySeatLayoutData(
+export async function queryBookedSeats(
   supabase: AnySupabaseClient,
-  flightId: string,
-  cabinClass: string
+  flightId: string
 ) {
   const result = await supabase
-    .from("seat")
-    .select("seat_number, row_number, column_letter, status")
-    .eq("flight_id", flightId)
-    .eq("cabin_class", cabinClass)
-    .order("row_number", { ascending: true })
-    .order("column_letter", { ascending: true });
-  return result as {
-    data: Pick<SeatRow, "seat_number" | "row_number" | "column_letter" | "status">[] | null;
-    error: { message: string } | null;
+    .from("booking_seat")
+    .select("seat_definition_id")
+    .eq("flight_id", flightId);
+  return result as { data: { seat_definition_id: string }[] | null; error: { message: string } | null };
+}
+
+export async function queryFlightSeatOverrides(
+  supabase: AnySupabaseClient,
+  flightId: string
+) {
+  const result = await supabase
+    .from("flight_seat_override")
+    .select("seat_definition_id, status, expires_at")
+    .eq("flight_id", flightId);
+  return result as { 
+    data: { seat_definition_id: string; status: "held" | "blocked"; expires_at: string | null }[] | null; 
+    error: { message: string } | null 
   };
 }
 
-export async function querySeatByNumber(
+export async function querySeatDefinitionsByNumbers(
   supabase: AnySupabaseClient,
   flightId: string,
-  seatNumber: string
-) {
-  const result = await supabase
-    .from("seat")
-    .select("*")
-    .eq("flight_id", flightId)
-    .eq("seat_number", seatNumber)
-    .single();
-  return result as { data: SeatRow | null; error: { message: string } | null };
-}
-
-export async function querySeatsByNumbers(
-  supabase: AnySupabaseClient,
-  flightId: string,
+  cabinClass: string,
   seatNumbers: string[]
 ) {
+  const flightResult = await supabase.from("flight").select("aircraft_type_id").eq("id", flightId).single();
+  if (flightResult.error || !flightResult.data) return { data: null, error: flightResult.error || new Error("Flight not found") };
+
+  const cabinResult = await supabase.from("cabin_layout").select("id").eq("aircraft_type_id", flightResult.data.aircraft_type_id).eq("cabin_class", cabinClass).single();
+  if (cabinResult.error || !cabinResult.data) return { data: null, error: cabinResult.error || new Error("Cabin not found") };
+
   const result = await supabase
-    .from("seat")
-    .select("id, seat_number, status")
-    .eq("flight_id", flightId)
+    .from("seat_definition")
+    .select("*")
+    .eq("cabin_layout_id", cabinResult.data.id)
     .in("seat_number", seatNumbers);
-  return result as {
-    data: Pick<SeatRow, "id" | "seat_number" | "status">[] | null;
-    error: { message: string } | null;
-  };
-}
 
-export async function updateSeatStatus(
-  supabase: AnySupabaseClient,
-  seatIds: string[],
-  status: string
-) {
-  const result = await supabase
-    .from("seat")
-    .update({ status })
-    .in("id", seatIds)
-    .eq("status", "available");
-  return result as { error: { message: string } | null };
-}
-
-export async function updateSeatStatusUnrestricted(
-  supabase: AnySupabaseClient,
-  seatIds: string[],
-  status: string
-) {
-  const result = await supabase.from("seat").update({ status }).in("id", seatIds);
-  return result as { error: { message: string } | null };
+  return result as { data: import("@/types/database").SeatDefinitionRow[] | null; error: { message: string } | null };
 }
 
 // ─── Booking ─────────────────────────────────────────────────────────────────
@@ -385,10 +377,10 @@ export async function queryBookingSeatsByBooking(
 ) {
   const result = await supabase
     .from("booking_seat")
-    .select("seat_id")
+    .select("*")
     .eq("booking_id", bookingId);
   return result as {
-    data: Pick<BookingSeatRow, "seat_id">[] | null;
+    data: BookingSeatRow[] | null;
     error: { message: string } | null;
   };
 }
@@ -399,10 +391,10 @@ export async function queryBookingSeatsWithSeat(
 ) {
   const result = await supabase
     .from("booking_seat")
-    .select("seat_id, seat:seat_id(seat_number, flight_id)")
+    .select("seat_definition_id, flight_id, seat_definition:seat_definition_id(seat_number)")
     .eq("booking_id", bookingId);
   return result as {
-    data: { seat_id: string; seat: { seat_number: string; flight_id: string } | null }[] | null;
+    data: { seat_definition_id: string; flight_id: string; seat_definition: { seat_number: string } | null }[] | null;
     error: { message: string } | null;
   };
 }
