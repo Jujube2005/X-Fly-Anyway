@@ -1,6 +1,7 @@
 "use client";
 
 import { PassengerInput } from "@/components/booking/BookingProvider";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface PassengerSelectorProps {
   passengers: PassengerInput[]; // Or just passenger count if details are not ready
