@@ -16,16 +16,18 @@ export function PassengerSelector({
   onSelectPassenger,
   selectedSeats,
 }: PassengerSelectorProps) {
+  const { t } = useTranslation();
+
   if (passengerCount <= 1) return null;
 
-  const passengers = Array.from({ length: passengerCount }).map((_, i) => ({
+  const passengersList = Array.from({ length: passengerCount }).map((_, i) => ({
     id: i,
-    name: `Passenger ${i + 1}`,
+    name: `${t.booking?.passenger?.passengerN ?? "Passenger"} ${i + 1}`,
   }));
 
   return (
     <div className="flex gap-2 overflow-x-auto pb-4 mb-2 scrollbar-hide">
-      {passengers.map((p, index) => {
+      {passengersList.map((p, index) => {
         const isActive = activePassengerIndex === index;
         const hasSeat = !!selectedSeats[index];
 
@@ -43,7 +45,7 @@ export function PassengerSelector({
               {p.name}
             </span>
             <span className={`text-sm mt-1 ${hasSeat ? "text-[#111827] font-semibold" : "text-[#9ca3af]"}`}>
-              {hasSeat ? `Seat ${selectedSeats[index]}` : "Select seat"}
+              {hasSeat ? `${t.booking?.seat?.seat ?? "Seat"} ${selectedSeats[index]}` : (t.booking?.seat?.seatSelection ?? "Select seat")}
             </span>
           </button>
         );

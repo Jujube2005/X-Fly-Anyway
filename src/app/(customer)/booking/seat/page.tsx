@@ -97,12 +97,12 @@ export default function SeatSelectionPage() {
         {/* Title + Stepper */}
         <div className="text-center mb-8 w-full max-w-4xl mx-auto">
           <h1 className="text-3xl font-bold text-[#111827] mb-2 font-display">
-            Select Your Seats
+            {t.booking?.seat?.title ?? "Select Your Seats"}
           </h1>
           <p className="text-base text-[#6b7280] mb-6">
             {selectedLegs.length > 1
-              ? `Flight ${currentLegIndex + 1} of ${selectedLegs.length}`
-              : "Choose the perfect spot for your journey"}
+              ? `${t.booking?.summary?.flight ?? "Flight"} ${currentLegIndex + 1} / ${selectedLegs.length}`
+              : ((t.booking?.seat as any)?.subtitle ?? "Choose the perfect spot for your journey")}
           </p>
           <div className="bg-white p-4 rounded-3xl shadow-sm border border-slate-100">
             <BookingStepper

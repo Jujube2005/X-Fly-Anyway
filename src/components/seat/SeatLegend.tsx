@@ -1,8 +1,10 @@
 "use client";
 
 import React from "react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export function SeatLegend() {
+  const { t } = useTranslation();
   return (
     <div className="w-full bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5 mt-4">
       <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
@@ -15,7 +17,7 @@ export function SeatLegend() {
           <div className="w-6 h-6 rounded-md bg-white border border-slate-300 shadow-sm flex items-center justify-center shrink-0">
             <div className="w-1.5 h-3 bg-slate-200 rounded-r-xs ml-auto" />
           </div>
-          <span className="text-slate-700 font-medium">Available</span>
+          <span className="text-slate-700 font-medium">{t.booking?.seat?.legend?.available ?? "Available"}</span>
         </div>
 
         {/* Selected */}
@@ -23,7 +25,7 @@ export function SeatLegend() {
           <div className="w-6 h-6 rounded-md bg-[#f5c800] border border-[#d9af00] shadow-sm flex items-center justify-center shrink-0">
             <div className="w-1.5 h-3 bg-[#d9af00] rounded-r-xs ml-auto" />
           </div>
-          <span className="text-slate-800 font-semibold">Selected</span>
+          <span className="text-slate-800 font-semibold">{t.booking?.seat?.legend?.selected ?? "Selected"}</span>
         </div>
 
         {/* Occupied */}
@@ -33,7 +35,7 @@ export function SeatLegend() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </div>
-          <span className="text-slate-500 font-medium">Occupied</span>
+          <span className="text-slate-500 font-medium">{t.booking?.seat?.legend?.occupied ?? "Occupied"}</span>
         </div>
 
         {/* Premium */}

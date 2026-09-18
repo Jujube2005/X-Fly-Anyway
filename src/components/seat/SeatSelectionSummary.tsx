@@ -4,6 +4,7 @@ import React from "react";
 import { Button } from "@/components/ui/Button";
 import { CabinClass } from "@/types/flight";
 import { SeatInfo } from "@/types/seat";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface SeatSelectionSummaryProps {
   passengerCount: number;
@@ -26,6 +27,8 @@ export function SeatSelectionSummary({
   onClear,
   isNextFlight,
 }: SeatSelectionSummaryProps) {
+  const { t } = useTranslation();
+  
   const assignedCount = selectedSeats.filter(Boolean).length;
   const isComplete = assignedCount === passengerCount;
 
@@ -64,19 +67,19 @@ export function SeatSelectionSummary({
       {/* Top Header matching reference pill design */}
       <div>
         <div className="bg-slate-100 rounded-xl py-2.5 px-4 text-center font-bold text-slate-800 text-lg mb-5 shadow-2xs">
-          Your Selection
+          {t.booking?.seat?.yourSelection ?? "Your Selection"}
         </div>
 
         {/* Selected List */}
         <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
-          Selected:
+          {t.booking?.seat?.selected ?? "Selected"}:
         </h3>
 
         {assignedCount === 0 ? (
           <div className="text-sm text-slate-500 py-8 px-4 bg-slate-50/80 rounded-2xl border border-dashed border-slate-200 flex flex-col items-center justify-center text-center">
-            <p className="font-medium text-slate-700">No seats selected</p>
+            <p className="font-medium text-slate-700">{t.booking?.seat?.noSeats ?? "No seats selected"}</p>
             <p className="text-xs text-slate-400 mt-1">
-              Select {passengerCount} seat{passengerCount > 1 ? "s" : ""} from the aircraft map
+              {t.booking?.seat?.selectUpTo ?? "Select up to"} {passengerCount} {(t.booking?.seat?.seat ?? "seat").toLowerCase()}{passengerCount > 1 ? "s" : ""}
             </p>
           </div>
         ) : (
@@ -88,8 +91,8 @@ export function SeatSelectionSummary({
                     key={`unassigned-${i}`}
                     className="py-3 flex items-center justify-between text-slate-400 opacity-60 text-xs"
                   >
-                    <span>Passenger {i + 1}</span>
-                    <span className="italic">No seat assigned</span>
+                    <span>{t.booking?.passenger?.passengerN ?? "Passenger"} {i + 1}</span>
+                    <span className="italic">{t.booking?.seat?.noSeats ?? "No seat assigned"}</span>
                   </div>
                 );
               }
@@ -100,7 +103,7 @@ export function SeatSelectionSummary({
                   className="py-3 flex items-center justify-between text-sm"
                 >
                   <div className="flex items-center gap-1.5 font-medium text-slate-800">
-                    <span className="font-bold">Seat {detail.seatNumber}</span>
+                    <span className="font-bold">{t.booking?.seat?.seat ?? "Seat"} {detail.seatNumber}</span>
                     <span className="text-xs text-slate-500">
                       ({detail.cabinName}, {detail.position})
                     </span>
@@ -120,7 +123,7 @@ export function SeatSelectionSummary({
       <div className="pt-4 border-t border-slate-200 mt-6">
         <div className="flex justify-between items-center mb-2">
           <span className="text-sm font-semibold text-slate-600">
-            Total Seat Selection:
+            {t.booking?.summary?.total ?? "Total"}:
           </span>
           <span className="text-xl font-black text-slate-900">
             ${totalPrice.toLocaleString()}
@@ -128,7 +131,7 @@ export function SeatSelectionSummary({
         </div>
 
         <div className="flex justify-between items-center text-xs font-medium text-slate-500 mb-5">
-          <span>Seats Assigned</span>
+          <span>{t.booking?.seat?.seatsCurrent ?? "Seats Assigned"}</span>
           <span
             className={
               isComplete ? "text-emerald-600 font-bold" : "text-slate-600"
@@ -145,14 +148,14 @@ export function SeatSelectionSummary({
             disabled={assignedCount === 0}
             className="w-full h-11 rounded-xl text-sm font-semibold bg-slate-200/80 hover:bg-slate-300 border-0 text-slate-700 transition-colors"
           >
-            Change Selection
+            {t.booking?.seat?.changeSelection ?? "Change Selection"}
           </Button>
           <Button
             onClick={onConfirm}
             disabled={!isComplete}
             className="w-full h-11 rounded-xl text-sm font-bold bg-[#f5c800] text-slate-950 hover:bg-[#e6bb00] shadow-md transition-all disabled:opacity-50"
           >
-            {isNextFlight ? "Next Flight" : "Confirm Seats"}
+            {isNextFlight ? "Next Flight" : (t.booking?.seat?.confirmSeats ?? "Confirm Seats")}
           </Button>
         </div>
       </div>
