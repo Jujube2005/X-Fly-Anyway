@@ -103,7 +103,7 @@ export default function SeatSelectionPage() {
 
         <div className="flex flex-col lg:flex-row gap-8 w-full items-start justify-center">
           {/* Main Seat Map Area */}
-          <div className="flex-1 w-full max-w-3xl flex flex-col">
+          <div className="flex-1 w-full max-w-3xl flex flex-col min-w-0">
             
             {/* Passenger Selector */}
             {layout && !isLoading && !error && (
