@@ -176,7 +176,10 @@ export default function TicketPage() {
       const res = await fetch(`/api/bookings/${encodeURIComponent(ref)}/cancel`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reason: "Customer requested cancellation via ticket page" })
+        body: JSON.stringify({ 
+          reason: "Customer requested cancellation via ticket page",
+          lastName: ticket?.booking?.contact?.lastName || ticket?.booking?.passengers?.[0]?.lastName
+        })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to cancel booking");

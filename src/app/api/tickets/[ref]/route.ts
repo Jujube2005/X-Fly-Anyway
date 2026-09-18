@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { BookingService } from "@/lib/services/booking.service";
 import { PaymentService } from "@/lib/services/payment.service";
 import { FlightService } from "@/lib/services/flight.service";
@@ -24,15 +24,26 @@ export async function GET(
   }
 
   try {
-    const supabase = await createClient();
-    const bookingService = new BookingService(supabase);
-    const paymentService = new PaymentService(supabase);
-    const flightService = new FlightService(supabase);
+    const supabaseService = createServiceRoleClient();
+    const bookingService = new BookingService(supabaseService);
+    const paymentService = new PaymentService(supabaseService);
+    const flightService = new FlightService(supabaseService);
 
     const booking = await bookingService.getBookingByReference(ref.toUpperCase());
     if (!booking) {
       return Response.json({ error: "Booking not found" }, { status: 404 });
     }
+
+    // Authorization: 
+    // If booking belongs to a customer, only that customer can view it.
+    if (booking.customerId) {
+      const supabaseAuth = await createClient();
+      const { data: { user } } = await supabaseAuth.auth.getUser();
+      if (!user || user.id !== booking.customerId) {
+        return Response.json({ error: "Unauthorized" }, { status: 401 });
+      }
+    }
+    // If booking.customerId is null (Guest), we allow access via PNR (Phase 1 behavior)
 
     if (booking.status !== "confirmed" && booking.status !== "cancelled") {
       return Response.json(
@@ -44,7 +55,7 @@ export async function GET(
     const [payment, flights, eTicketRes] = await Promise.all([
       paymentService.getPaymentByBookingId(booking.id),
       Promise.all(booking.flightIds.map((id) => flightService.getFlightById(id))),
-      supabase.from("e_ticket").select("id, issued_at").eq("booking_id", booking.id).maybeSingle(),
+      supabaseService.from("e_ticket").select("id, issued_at").eq("booking_id", booking.id).maybeSingle(),
     ]);
 
     const firstFlight = flights[0];

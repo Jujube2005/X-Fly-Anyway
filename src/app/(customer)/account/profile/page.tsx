@@ -6,11 +6,15 @@ export default async function AccountProfilePage() {
 
   // In a real app we would fetch from the `customer` table to show updated info, 
   // but for Phase 2 we use the user metadata as a starting point.
-  const { data: customer } = await supabase
+  const { data: customerData } = await supabase
     .from("customer")
     .select("*")
-    .eq("id", user?.id)
+    .eq("id", user?.id || "")
     .single();
+    
+  // Force cast to any because supabase infer might still fail if not fully generated
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const customer = customerData as any;
 
   const firstName = customer?.first_name || user?.user_metadata?.first_name || "";
   const lastName = customer?.last_name || user?.user_metadata?.last_name || "";

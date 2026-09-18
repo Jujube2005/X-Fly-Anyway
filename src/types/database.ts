@@ -134,6 +134,7 @@ export interface SeatRow {
 
 export interface BookingRow {
   id: string;                  // UUID PRIMARY KEY
+  customer_id: string | null;  // UUID FK to customer
   reference: string;           // e.g. "XFA-20260907-A1B2" — UNIQUE
   flight_id: string | null;    // FK → flight.id (nullable for connecting flights)
   cabin_class: CabinClassValue;

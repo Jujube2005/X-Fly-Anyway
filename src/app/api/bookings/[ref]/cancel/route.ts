@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { BookingService } from "@/lib/services/booking.service";
 import { NextResponse } from "next/server";
 
@@ -31,10 +31,47 @@ export async function POST(
   try {
     const body = await request.json().catch(() => ({}));
     const reason = body.reason;
+    const lastName = body.lastName;
 
-    const supabase = await createClient();
-    const service = new BookingService(supabase);
+    const supabaseService = createServiceRoleClient();
+    const service = new BookingService(supabaseService);
     
+    // 1. Fetch booking to check ownership
+    const booking = await service.getBookingByReference(ref.toUpperCase());
+    if (!booking) {
+      return NextResponse.json({ error: "Booking not found" }, { status: 404 });
+    }
+
+    // 2. Authorization
+    if (booking.customerId) {
+      // Authenticated booking: Must be logged in as the owner
+      const supabaseAuth = await createClient();
+      const { data: { user } } = await supabaseAuth.auth.getUser();
+      if (!user || user.id !== booking.customerId) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+    } else {
+      // Guest booking: Must provide correct lastName
+      if (!lastName) {
+        return NextResponse.json({ error: "Last name is required for guest cancellation" }, { status: 400 });
+      }
+      
+      const normalizedLastName = lastName.trim().toLowerCase();
+      const isContactMatch = booking.contact.lastName.trim().toLowerCase() === normalizedLastName;
+      
+      let isPassengerMatch = false;
+      if (!isContactMatch && booking.passengers) {
+        isPassengerMatch = booking.passengers.some(
+          (p) => p.lastName.trim().toLowerCase() === normalizedLastName
+        );
+      }
+      
+      if (!isContactMatch && !isPassengerMatch) {
+        return NextResponse.json({ error: "Booking Reference or Last Name is incorrect." }, { status: 401 });
+      }
+    }
+    
+    // 3. Process cancellation
     const result = await service.cancelBookingWithRefund(ref, reason);
 
     return NextResponse.json(result);

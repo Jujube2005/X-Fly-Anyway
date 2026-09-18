@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { queryBookingByRef, queryPassengersByBooking } from "@/lib/supabase/queries";
 import { z } from "zod";
 
@@ -30,10 +30,10 @@ export async function POST(request: Request) {
     const normalizedRef = reference.toUpperCase();
     const normalizedLastName = lastName.toLowerCase();
 
-    const supabase = await createClient();
+    const supabaseService = createServiceRoleClient();
 
     // 1. Check if booking exists
-    const { data: booking, error: bookingError } = await queryBookingByRef(supabase, normalizedRef);
+    const { data: booking, error: bookingError } = await queryBookingByRef(supabaseService, normalizedRef);
 
     if (bookingError || !booking) {
       // GENERIC ERROR: PNR not found
@@ -43,13 +43,26 @@ export async function POST(request: Request) {
       );
     }
 
+    // 1.5 Authorization: If this is an authenticated customer's booking, 
+    // it cannot be looked up via the Guest flow (or the user must be logged in as that customer).
+    if (booking.customer_id) {
+      const supabaseAuth = await createClient();
+      const { data: { user } } = await supabaseAuth.auth.getUser();
+      if (!user || user.id !== booking.customer_id) {
+        return NextResponse.json(
+          { error: "Booking Reference or Last Name is incorrect." },
+          { status: 401 }
+        );
+      }
+    }
+
     // 2. Booking exists. Check if last name matches Contact
     const isContactMatch = booking.contact_last_name.trim().toLowerCase() === normalizedLastName;
 
     // 3. If not contact, check if last name matches any Passenger
     let isPassengerMatch = false;
     if (!isContactMatch) {
-      const { data: passengers, error: passengerError } = await queryPassengersByBooking(supabase, booking.id);
+      const { data: passengers, error: passengerError } = await queryPassengersByBooking(supabaseService, booking.id);
       
       if (!passengerError && passengers) {
         isPassengerMatch = passengers.some(

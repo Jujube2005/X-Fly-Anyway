@@ -44,7 +44,7 @@ export default async function AccountBookingsPage() {
                 <div className="px-4 py-4 sm:px-6 flex items-center justify-between">
                   <div className="flex flex-col">
                     <p className="text-sm font-medium text-yellow-600 truncate">
-                      {booking.booking_reference}
+                      {booking.reference}
                     </p>
                     <p className="mt-1 text-sm text-gray-500">
                       Date: {new Date(booking.created_at).toLocaleDateString()}
@@ -64,7 +64,7 @@ export default async function AccountBookingsPage() {
                   </div>
                   <div className="ml-4 flex-shrink-0">
                     <Link
-                      href={`/manage?pnr=${booking.booking_reference}&lastName=${booking.contact_last_name}`}
+                      href={`/manage?pnr=${booking.reference}&lastName=${booking.contact_last_name}`}
                       className="font-medium text-blue-600 hover:text-blue-500"
                     >
                       View Details

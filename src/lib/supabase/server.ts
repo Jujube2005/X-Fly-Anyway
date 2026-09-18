@@ -36,3 +36,24 @@ export async function createClient() {
     },
   });
 }
+
+/**
+ * Supabase Service Role client — ONLY for server-side trusted execution.
+ * Bypasses RLS. NEVER expose this to the client.
+ */
+export function createServiceRoleClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    throw new Error("Missing Supabase URL or Service Role Key.");
+  }
+
+  // We do not pass cookies here because this client bypasses RLS anyway.
+  return createServerClient<Database>(supabaseUrl, serviceRoleKey, {
+    cookies: {
+      getAll() { return []; },
+      setAll() {},
+    },
+  });
+}

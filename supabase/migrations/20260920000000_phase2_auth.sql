@@ -61,13 +61,9 @@ CREATE POLICY "Anyone can update a booking"
     ON public.booking FOR UPDATE
     USING (true);
 
--- To support Guest Lookup, we can allow SELECT on all bookings (since UUIDs are secure and API handles PNR matching)
--- Alternatively, rely on Service Role key in the backend. 
--- For now, to not break Phase 1, we allow SELECT on all bookings. UUIDs are impossible to guess.
--- (This acts just like Phase 1, but allows the authenticated policy to also work in JS client)
-CREATE POLICY "Anyone can select a booking by UUID"
-    ON public.booking FOR SELECT
-    USING (true);
+-- NOTE: Guest bookings (customer_id IS NULL) and Authenticated bookings 
+-- are managed by the backend using the Service Role key to enforce 
+-- PNR + Last Name rules securely, bypassing RLS.
 
 -- 3. Create public.admin_roles table for secure role-based access
 CREATE TABLE public.admin_roles (
