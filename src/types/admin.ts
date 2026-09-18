@@ -7,18 +7,27 @@ export interface AdminUser {
   createdAt: string;
 }
 
-export interface DashboardStats {
-  totalBookings: number;
-  totalRevenue: number;
-  totalFlights: number;
-  bookingsToday: number;
-  revenueToday: number;
-  occupancyRate: number; // 0–1
-}
-
-export interface RevenueByPeriod {
-  period: string; // e.g. "2026-08"
-  revenue: number;
-  currency: string;
-  bookingCount: number;
+export interface AnalyticsResponse {
+  overview: {
+    totalBookings: number;
+    totalPassengers: number;
+    totalRevenue: number;
+    averageOccupancy: number; // 0-100
+  };
+  bookingVolume: {
+    date: string; // YYYY-MM-DD
+    count: number;
+  }[];
+  occupancyByFlight: {
+    flightNumber: string;
+    occupancy: number; // 0-100
+  }[];
+  destinations: {
+    city: string;
+    count: number;
+  }[];
+  nationalities: {
+    nationality: string;
+    count: number;
+  }[];
 }
