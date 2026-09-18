@@ -96,7 +96,7 @@ export const zhCN = {
       subtitle: "您的航班已准备就绪，收拾行李出发吧！",
       reference: "预订参考号",
       downloadTicket: "⬇ 下载电子机票",
-      backHome: "🏠 返回首页",
+      backHome: "返回首页",
     },
   },
   common: {

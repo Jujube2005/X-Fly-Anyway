@@ -19,7 +19,7 @@ export const vi = {
     contact: { title: "Thông tin liên hệ", subtitle: "Xác nhận đặt chỗ sẽ được gửi đến liên hệ này.", firstName: "Tên", lastName: "Họ", email: "Địa chỉ email", phone: "Số điện thoại" },
     summary: { title: "Tóm tắt đặt chỗ", flight: "Chuyến bay", cabin: "Hạng ghế", seat: "Ghế", passenger: "Hành khách", contact: "Liên hệ", total: "Tổng cộng", confirmAndPay: "Xác nhận & Thanh toán" },
     payment: { title: "Thanh toán", cardNumber: "Số thẻ", expiry: "Ngày hết hạn", cvv: "CVV", name: "Tên chủ thẻ", payNow: "Thanh toán ngay", processing: "Đang xử lý..." },
-    confirmation: { title: "Đặt chỗ đã được xác nhận!", subtitle: "Chuyến bay của bạn đã sẵn sàng. Hãy chuẩn bị hành lý!", reference: "Mã đặt chỗ", downloadTicket: "⬇ Tải vé điện tử", backHome: "🏠 Về trang chủ" },
+    confirmation: { title: "Đặt chỗ đã được xác nhận!", subtitle: "Chuyến bay của bạn đã sẵn sàng. Hãy chuẩn bị hành lý!", reference: "Mã đặt chỗ", downloadTicket: "⬇ Tải vé điện tử", backHome: "Về trang chủ" },
   },
   common: { back: "← Quay lại", next: "Tiếp theo →", loading: "Đang tải...", error: "Đã xảy ra lỗi", close: "Đóng" },
   locale: { language: "Ngôn ngữ", currency: "Tiền tệ", currentLanguage: "Ngôn ngữ hiện tại", allLanguages: "Tất cả ngôn ngữ", popularCurrencies: "Tiền tệ phổ biến", allCurrencies: "Tất cả tiền tệ" },

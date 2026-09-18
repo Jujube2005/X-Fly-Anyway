@@ -19,7 +19,7 @@ export const ru = {
     contact: { title: "Контактная информация", subtitle: "Подтверждение будет отправлено на этот контакт.", firstName: "Имя", lastName: "Фамилия", email: "Эл. почта", phone: "Номер телефона" },
     summary: { title: "Итог бронирования", flight: "Рейс", cabin: "Класс", seat: "Место", passenger: "Пассажир", contact: "Контакт", total: "Итого", confirmAndPay: "Подтвердить и оплатить" },
     payment: { title: "Оплата", cardNumber: "Номер карты", expiry: "Срок действия", cvv: "CVV", name: "Имя на карте", payNow: "Оплатить сейчас", processing: "Обработка..." },
-    confirmation: { title: "Бронирование подтверждено!", subtitle: "Ваш рейс готов. Собирайте чемоданы!", reference: "Номер бронирования", downloadTicket: "⬇ Скачать электронный билет", backHome: "🏠 На главную" },
+    confirmation: { title: "Бронирование подтверждено!", subtitle: "Ваш рейс готов. Собирайте чемоданы!", reference: "Номер бронирования", downloadTicket: "⬇ Скачать электронный билет", backHome: "На главную" },
   },
   common: { back: "← Назад", next: "Далее →", loading: "Загрузка...", error: "Произошла ошибка", close: "Закрыть" },
   locale: { language: "Язык", currency: "Валюта", currentLanguage: "Текущий язык", allLanguages: "Все языки", popularCurrencies: "Популярные валюты", allCurrencies: "Все валюты" },

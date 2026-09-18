@@ -19,7 +19,7 @@ export const nl = {
     contact: { title: "Contactinformatie", subtitle: "De bevestiging wordt naar dit contact gestuurd.", firstName: "Voornaam", lastName: "Achternaam", email: "E-mailadres", phone: "Telefoonnummer" },
     summary: { title: "Boekingsoverzicht", flight: "Vlucht", cabin: "Klasse", seat: "Stoel", passenger: "Passagier", contact: "Contact", total: "Totaal", confirmAndPay: "Bevestigen & betalen" },
     payment: { title: "Betaling", cardNumber: "Kaartnummer", expiry: "Vervaldatum", cvv: "CVV", name: "Naam kaarthouder", payNow: "Nu betalen", processing: "Verwerken..." },
-    confirmation: { title: "Boeking bevestigd!", subtitle: "Uw vlucht is klaar. Pak uw koffers!", reference: "Boekingsnummer", downloadTicket: "⬇ E-ticket downloaden", backHome: "🏠 Terug naar home" },
+    confirmation: { title: "Boeking bevestigd!", subtitle: "Uw vlucht is klaar. Pak uw koffers!", reference: "Boekingsnummer", downloadTicket: "⬇ E-ticket downloaden", backHome: "Terug naar home" },
   },
   common: { back: "← Terug", next: "Volgende →", loading: "Laden...", error: "Er is een fout opgetreden", close: "Sluiten" },
   locale: { language: "Taal", currency: "Valuta", currentLanguage: "Huidige taal", allLanguages: "Alle talen", popularCurrencies: "Populaire valuta", allCurrencies: "Alle valuta" },

@@ -19,7 +19,7 @@ export const hi = {
     contact: { title: "संपर्क जानकारी", subtitle: "बुकिंग पुष्टि इस संपर्क पर भेजी जाएगी।", firstName: "पहला नाम", lastName: "अंतिम नाम", email: "ईमेल पता", phone: "फोन नंबर" },
     summary: { title: "बुकिंग सारांश", flight: "उड़ान", cabin: "केबिन", seat: "सीट", passenger: "यात्री", contact: "संपर्क", total: "कुल", confirmAndPay: "पुष्टि करें और भुगतान करें" },
     payment: { title: "भुगतान", cardNumber: "कार्ड नंबर", expiry: "समाप्ति", cvv: "CVV", name: "कार्डधारक का नाम", payNow: "अभी भुगतान करें", processing: "प्रसंस्करण..." },
-    confirmation: { title: "बुकिंग की पुष्टि हो गई!", subtitle: "आपकी उड़ान तैयार है। बैग पैक करें!", reference: "बुकिंग संदर्भ", downloadTicket: "⬇ ई-टिकट डाउनलोड करें", backHome: "🏠 होम पर वापस जाएं" },
+    confirmation: { title: "बुकिंग की पुष्टि हो गई!", subtitle: "आपकी उड़ान तैयार है। बैग पैक करें!", reference: "बुकिंग संदर्भ", downloadTicket: "⬇ ई-टिकट डाउनलोड करें", backHome: "होम पर वापस जाएं" },
   },
   common: { back: "← वापस", next: "आगे →", loading: "लोड हो रहा है...", error: "एक त्रुटि हुई", close: "बंद करें" },
   locale: { language: "भाषा", currency: "मुद्रा", currentLanguage: "वर्तमान भाषा", allLanguages: "सभी भाषाएं", popularCurrencies: "लोकप्रिय मुद्राएं", allCurrencies: "सभी मुद्राएं" },

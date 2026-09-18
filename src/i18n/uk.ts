@@ -19,7 +19,7 @@ export const uk = {
     contact: { title: "Контактна інформація", subtitle: "Підтвердження буде надіслано на цей контакт.", firstName: "Ім'я", lastName: "Прізвище", email: "Ел. пошта", phone: "Номер телефону" },
     summary: { title: "Підсумок бронювання", flight: "Рейс", cabin: "Клас", seat: "Місце", passenger: "Пасажир", contact: "Контакт", total: "Разом", confirmAndPay: "Підтвердити та оплатити" },
     payment: { title: "Оплата", cardNumber: "Номер картки", expiry: "Термін дії", cvv: "CVV", name: "Ім'я на картці", payNow: "Оплатити зараз", processing: "Обробка..." },
-    confirmation: { title: "Бронювання підтверджено!", subtitle: "Ваш рейс готовий. Збирайте валізи!", reference: "Номер бронювання", downloadTicket: "⬇ Завантажити електронний квиток", backHome: "🏠 На головну" },
+    confirmation: { title: "Бронювання підтверджено!", subtitle: "Ваш рейс готовий. Збирайте валізи!", reference: "Номер бронювання", downloadTicket: "⬇ Завантажити електронний квиток", backHome: "На головну" },
   },
   common: { back: "← Назад", next: "Далі →", loading: "Завантаження...", error: "Сталася помилка", close: "Закрити" },
   locale: { language: "Мова", currency: "Валюта", currentLanguage: "Поточна мова", allLanguages: "Всі мови", popularCurrencies: "Популярні валюти", allCurrencies: "Всі валюти" },

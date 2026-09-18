@@ -96,7 +96,7 @@ export const ja = {
       subtitle: "フライトの準備が整いました。荷物をまとめましょう！",
       reference: "予約番号",
       downloadTicket: "⬇ eチケットをダウンロード",
-      backHome: "🏠 ホームに戻る",
+      backHome: "ホームに戻る",
     },
   },
   common: {

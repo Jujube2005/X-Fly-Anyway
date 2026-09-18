@@ -96,7 +96,7 @@ export const ko = {
       subtitle: "항공편이 준비되었습니다. 짐을 챙기세요!",
       reference: "예약 번호",
       downloadTicket: "⬇ 전자항공권 다운로드",
-      backHome: "🏠 홈으로 돌아가기",
+      backHome: "홈으로 돌아가기",
     },
   },
   common: {

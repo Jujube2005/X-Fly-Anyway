@@ -19,7 +19,7 @@ export const it = {
     contact: { title: "Informazioni di contatto", subtitle: "La conferma sarà inviata a questo contatto.", firstName: "Nome", lastName: "Cognome", email: "Indirizzo e-mail", phone: "Numero di telefono" },
     summary: { title: "Riepilogo prenotazione", flight: "Volo", cabin: "Classe", seat: "Posto", passenger: "Passeggero", contact: "Contatto", total: "Totale", confirmAndPay: "Conferma e paga" },
     payment: { title: "Pagamento", cardNumber: "Numero carta", expiry: "Scadenza", cvv: "CVV", name: "Intestatario", payNow: "Paga ora", processing: "Elaborazione..." },
-    confirmation: { title: "Prenotazione confermata!", subtitle: "Il tuo volo è pronto. Fai i bagagli!", reference: "Numero prenotazione", downloadTicket: "⬇ Scarica e-ticket", backHome: "🏠 Torna alla home" },
+    confirmation: { title: "Prenotazione confermata!", subtitle: "Il tuo volo è pronto. Fai i bagagli!", reference: "Numero prenotazione", downloadTicket: "⬇ Scarica e-ticket", backHome: "Torna alla home" },
   },
   common: { back: "← Indietro", next: "Avanti →", loading: "Caricamento...", error: "Si è verificato un errore", close: "Chiudi" },
   locale: { language: "Lingua", currency: "Valuta", currentLanguage: "Lingua corrente", allLanguages: "Tutte le lingue", popularCurrencies: "Valute popolari", allCurrencies: "Tutte le valute" },

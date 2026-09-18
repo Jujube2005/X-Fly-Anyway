@@ -131,7 +131,7 @@ export default function ConfirmationPage() {
               <div className="grid grid-cols-2 gap-3">
                 <Link href={`/ticket/${encodeURIComponent(booking?.reference || bookingRef)}`} className="block">
                   <Button variant="secondary" fullWidth>
-                    {t.booking?.confirmation?.downloadTicket ?? "⬇ Download E-Ticket"}
+                    {t.booking?.confirmation?.downloadTicket ?? "Download E-Ticket"}
                   </Button>
                 </Link>
                 <Button
@@ -140,7 +140,7 @@ export default function ConfirmationPage() {
                   className="text-white/80"
                   onClick={() => { resetBooking(); router.push("/"); }}
                 >
-                  {t.booking?.confirmation?.backHome ?? "🏠 Back to Home"}
+                  {t.booking?.confirmation?.backHome ?? "Back to Home"}
                 </Button>
               </div>
             </div>

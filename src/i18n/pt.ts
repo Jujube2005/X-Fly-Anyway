@@ -19,7 +19,7 @@ export const ptBR = {
     contact: { title: "Informações de contato", subtitle: "A confirmação será enviada para este contato.", firstName: "Nome", lastName: "Sobrenome", email: "Endereço de e-mail", phone: "Número de telefone" },
     summary: { title: "Resumo da reserva", flight: "Voo", cabin: "Classe", seat: "Assento", passenger: "Passageiro", contact: "Contato", total: "Total", confirmAndPay: "Confirmar e pagar" },
     payment: { title: "Pagamento", cardNumber: "Número do cartão", expiry: "Validade", cvv: "CVV", name: "Nome no cartão", payNow: "Pagar agora", processing: "Processando..." },
-    confirmation: { title: "Reserva confirmada!", subtitle: "Seu voo está pronto. Faça as malas!", reference: "Referência da reserva", downloadTicket: "⬇ Baixar e-ticket", backHome: "🏠 Voltar ao início" },
+    confirmation: { title: "Reserva confirmada!", subtitle: "Seu voo está pronto. Faça as malas!", reference: "Referência da reserva", downloadTicket: "⬇ Baixar e-ticket", backHome: "Voltar ao início" },
   },
   common: { back: "← Voltar", next: "Próximo →", loading: "Carregando...", error: "Ocorreu um erro", close: "Fechar" },
   locale: { language: "Idioma", currency: "Moeda", currentLanguage: "Idioma atual", allLanguages: "Todos os idiomas", popularCurrencies: "Moedas populares", allCurrencies: "Todas as moedas" },

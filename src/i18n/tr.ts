@@ -19,7 +19,7 @@ export const tr = {
     contact: { title: "İletişim bilgileri", subtitle: "Rezervasyon onayı bu kişiye gönderilecek.", firstName: "Ad", lastName: "Soyad", email: "E-posta adresi", phone: "Telefon numarası" },
     summary: { title: "Rezervasyon özeti", flight: "Uçuş", cabin: "Kabin", seat: "Koltuk", passenger: "Yolcu", contact: "İletişim", total: "Toplam", confirmAndPay: "Onayla & Öde" },
     payment: { title: "Ödeme", cardNumber: "Kart numarası", expiry: "Son kullanma tarihi", cvv: "CVV", name: "Kart sahibi adı", payNow: "Şimdi öde", processing: "İşleniyor..." },
-    confirmation: { title: "Rezervasyon onaylandı!", subtitle: "Uçuşunuz hazır. Bavullarınızı hazırlayın!", reference: "Rezervasyon referansı", downloadTicket: "⬇ E-bilet indir", backHome: "🏠 Ana sayfaya dön" },
+    confirmation: { title: "Rezervasyon onaylandı!", subtitle: "Uçuşunuz hazır. Bavullarınızı hazırlayın!", reference: "Rezervasyon referansı", downloadTicket: "⬇ E-bilet indir", backHome: "Ana sayfaya dön" },
   },
   common: { back: "← Geri", next: "İleri →", loading: "Yükleniyor...", error: "Bir hata oluştu", close: "Kapat" },
   locale: { language: "Dil", currency: "Para birimi", currentLanguage: "Geçerli dil", allLanguages: "Tüm diller", popularCurrencies: "Popüler para birimleri", allCurrencies: "Tüm para birimleri" },

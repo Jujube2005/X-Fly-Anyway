@@ -96,7 +96,7 @@ export const zhTW = {
       subtitle: "您的航班已準備就緒，收拾行李出發吧！",
       reference: "預訂參考號",
       downloadTicket: "⬇ 下載電子機票",
-      backHome: "🏠 返回首頁",
+      backHome: "返回首頁",
     },
   },
   common: {
