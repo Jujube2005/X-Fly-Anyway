@@ -1,14 +1,15 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const STEPS = [
-  { label: "Flight", path: "/flights" },
-  { label: "Passengers", path: "/booking/passenger" },
-  { label: "Seats", path: "/booking/seat" },
-  { label: "Payment", path: "/booking/payment" },
-  { label: "Confirmation", path: "/booking/confirmation" },
-];
+  { key: "flight", path: "/flights" },
+  { key: "passengers", path: "/booking/passenger" },
+  { key: "seats", path: "/booking/seat" },
+  { key: "payment", path: "/booking/payment" },
+  { key: "confirmation", path: "/booking/confirmation" },
+] as const;
 
 function getActiveIndex(pathname: string) {
   const idx = STEPS.findIndex((s) => pathname.startsWith(s.path));
@@ -23,7 +24,16 @@ interface BookingStepperProps {
 
 export function BookingStepper({ currentLabel, variant = "light" }: BookingStepperProps) {
   const pathname = usePathname();
+  const { t } = useTranslation();
   const activeIdx = getActiveIndex(pathname);
+
+  const stepLabels: Record<string, string> = {
+    flight: t.booking?.stepper?.flight ?? "Flight",
+    passengers: t.booking?.stepper?.passengers ?? "Passengers",
+    seats: t.booking?.stepper?.seats ?? "Seats",
+    payment: t.booking?.stepper?.payment ?? "Payment",
+    confirmation: t.booking?.stepper?.confirmation ?? "Confirmation",
+  };
 
   const textBase = variant === "dark" ? "text-white/60" : "text-[#6b7280]";
   const textActive = "text-[#f5c800] font-semibold";
@@ -38,7 +48,8 @@ export function BookingStepper({ currentLabel, variant = "light" }: BookingStepp
       {STEPS.map((step, idx) => {
         const isActive = idx === activeIdx;
         const isDone = idx < activeIdx;
-        const label = isActive && currentLabel ? currentLabel : step.label;
+        const baseLabel = stepLabels[step.key] ?? step.key;
+        const label = isActive && currentLabel ? currentLabel : baseLabel;
 
         return (
           <span key={step.path} className="flex items-center gap-1">

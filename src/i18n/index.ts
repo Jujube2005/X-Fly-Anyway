@@ -105,20 +105,35 @@ const translationsMap: Record<string, any> = {
   gl,
 };
 
+function deepMerge(target: any, source: any): any {
+  if (!source) return target;
+  const output = { ...target };
+  for (const key of Object.keys(source)) {
+    if (
+      source[key] &&
+      typeof source[key] === "object" &&
+      !Array.isArray(source[key]) &&
+      target[key] &&
+      typeof target[key] === "object" &&
+      !Array.isArray(target[key])
+    ) {
+      output[key] = deepMerge(target[key], source[key]);
+    } else {
+      output[key] = source[key];
+    }
+  }
+  return output;
+}
+
 /**
  * Returns the translation dictionary for the given BCP-47 language code.
- * Falls back to English for any language without a dedicated translation.
+ * Falls back to English for any language without a dedicated translation or missing keys.
  */
-export function getTranslations(language: string) {
-  if (translationsMap[language]) {
-    return translationsMap[language];
-  }
-  const prefix = language.split("-")[0];
-  if (translationsMap[prefix]) {
-    return translationsMap[prefix];
-  }
-  // All other languages → English as fallback
-  return en;
+export function getTranslations(language: string): import("./th").Translations {
+  const dict = translationsMap[language] || translationsMap[language.split("-")[0]];
+  if (!dict || dict === en) return en;
+  if (dict === th) return th;
+  return deepMerge(en, dict);
 }
 
 export {

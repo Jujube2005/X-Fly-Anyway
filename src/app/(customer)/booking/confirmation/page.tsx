@@ -7,11 +7,13 @@ import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/ui/States";
 import { useBookingContext } from "@/components/booking/BookingProvider";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { Booking } from "@/types/booking";
 import "./page.css";
 
 export default function ConfirmationPage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { bookingRef, resetBooking } = useBookingContext();
   const [booking, setBooking] = useState<Booking | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,8 +31,8 @@ export default function ConfirmationPage() {
         }
         setIsLoading(false);
       })
-      .catch(() => { setError("Could not load booking."); setIsLoading(false); });
-  }, [bookingRef, router]);
+      .catch(() => { setError(t.booking?.confirmation?.notFound ?? "Could not load booking."); setIsLoading(false); });
+  }, [bookingRef, router, t]);
 
   if (!bookingRef) return null;
 
@@ -44,13 +46,13 @@ export default function ConfirmationPage() {
       <Header variant="transparent" />
 
       <main className="flex-1 flex items-center justify-center px-4 py-16">
-        {isLoading && <LoadingState message="Loading your booking..." />}
+        {isLoading && <LoadingState message={t.booking?.confirmation?.loading ?? "Loading your booking..."} />}
 
         {!isLoading && (error || !booking) && (
           <div className="text-center">
-            <p className="text-red-300 mb-4">{error ?? "Booking not found."}</p>
+            <p className="text-red-300 mb-4">{error ?? (t.booking?.confirmation?.notFound ?? "Booking not found.")}</p>
             <Button onClick={() => router.push("/")} variant="secondary">
-              Back to Home
+              {t.booking?.confirmation?.backHome ?? "Back to Home"}
             </Button>
           </div>
         )}
@@ -80,16 +82,16 @@ export default function ConfirmationPage() {
             </div>
 
             <h1 className="text-4xl md:text-5xl font-bold text-white text-center mb-2">
-              Booking <span className="text-[#f5c800]">Confirmed!</span>
+              {t.booking?.confirmation?.title ?? "Booking Confirmed!"}
             </h1>
             <p className="text-center text-white/60 mb-8">
-              Your flight is all set. Pack your bags, adventurer!
+              {t.booking?.confirmation?.subtitle ?? "Your flight is all set. Pack your bags, adventurer!"}
             </p>
 
             {/* Reference card */}
             <div className="rounded-3xl p-8 confirmation-card-glass">
               <p className="text-center text-xs text-white/50 uppercase tracking-widest mb-2">
-                Booking Reference
+                {t.booking?.confirmation?.reference ?? "Booking Reference"}
               </p>
               <p className="text-center text-3xl font-bold text-[#f5c800] tracking-wider mb-6">
                 {booking.reference}
@@ -97,21 +99,25 @@ export default function ConfirmationPage() {
 
               <div className="flex flex-col gap-2 text-sm text-white/80 mb-6">
                 <div className="flex justify-between">
-                  <span className="text-white/50">Passenger:</span>
+                  <span className="text-white/50">{t.booking?.confirmation?.passenger ?? "Passenger"}:</span>
                   <span className="font-semibold text-white">{passengerName}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-white/50">Flights:</span>
-                  <span className="font-semibold text-white">{booking.flightIds?.length > 1 ? "Connecting (1 Stop)" : booking.flightIds?.[0]}</span>
+                  <span className="text-white/50">{t.booking?.confirmation?.flights ?? "Flights"}:</span>
+                  <span className="font-semibold text-white">
+                    {booking.flightIds?.length > 1
+                      ? (t.booking?.confirmation?.connectingOneStop ?? "Connecting (1 Stop)")
+                      : booking.flightIds?.[0]}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-white/50">Class:</span>
+                  <span className="text-white/50">{t.booking?.confirmation?.cabinClass ?? "Class"}:</span>
                   <span className="font-semibold text-white capitalize">
                     {booking.cabinClass?.replace("_", " ")}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-white/50">Total Paid:</span>
+                  <span className="text-white/50">{t.booking?.confirmation?.totalPaid ?? "Total Paid"}:</span>
                   <span className="font-bold text-white">
                     {new Intl.NumberFormat("en-US", {
                       style: "currency",
@@ -125,7 +131,7 @@ export default function ConfirmationPage() {
               <div className="grid grid-cols-2 gap-3">
                 <Link href={`/ticket/${encodeURIComponent(booking?.reference || bookingRef)}`} className="block">
                   <Button variant="secondary" fullWidth>
-                    ⬇ Download E-Ticket
+                    {t.booking?.confirmation?.downloadTicket ?? "⬇ Download E-Ticket"}
                   </Button>
                 </Link>
                 <Button
@@ -134,7 +140,7 @@ export default function ConfirmationPage() {
                   className="text-white/80"
                   onClick={() => { resetBooking(); router.push("/"); }}
                 >
-                  🏠 Back to Home
+                  {t.booking?.confirmation?.backHome ?? "🏠 Back to Home"}
                 </Button>
               </div>
             </div>

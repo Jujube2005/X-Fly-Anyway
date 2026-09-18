@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/Button";
 import { useBookingContext } from "@/components/booking/BookingProvider";
+import { useTranslation } from "@/hooks/useTranslation";
 import "./page.css";
 
 function formatDate(iso: string) {
@@ -23,16 +24,17 @@ function formatTime(iso: string) {
   });
 }
 
-function formatDuration(dep: string, arr: string) {
+function formatDuration(dep: string, arr: string, directLabel: string = "Direct") {
   const diff = (new Date(arr).getTime() - new Date(dep).getTime()) / 60000;
   const h = Math.floor(diff / 60);
   const m = diff % 60;
-  return `${h}h ${m}m, Direct`;
+  return `${h}h ${m}m, ${directLabel}`;
 }
 
 
 export default function BookingSummaryPage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { selectedLegs, cabinClass, selectedSeats, passengers, contact } =
     useBookingContext();
 
@@ -78,27 +80,27 @@ export default function BookingSummaryPage() {
           {/* Left — booking details */}
           <div className="flex-1 min-w-0 flex flex-col gap-4">
             <h1 className="text-2xl font-bold text-white uppercase tracking-wide">
-              Booking Summary
+              {t.booking?.summary?.title ?? "Booking Summary"}
             </h1>
 
             {/* Flight details */}
             <div className="rounded-2xl p-5 summary-glass-card">
               <h2 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">
-                Flight Details
+                {t.booking?.summary?.flightDetails ?? "Flight Details"}
               </h2>
               <div className="flex flex-col gap-4">
-                {selectedLegs.map((leg, legIndex) => (
+                {selectedLegs.map((leg) => (
                   <div key={leg.id} className="rounded-xl p-4 bg-white/5 border border-white/10">
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-sm font-bold text-white">
-                        Flight{" "}
+                        {t.booking?.summary?.flight ?? "Flight"}{" "}
                         <span className="text-[#f5c800]">
                           {leg.flightNumber}
                         </span>
-                        : {leg.origin.airport_code} to{" "}
+                        : {leg.origin.airport_code} {t.booking?.summary?.to ?? "to"}{" "}
                         {leg.destination.airport_code}
                       </span>
-                      <span className="text-xs text-white/50">
+                      <span className="text-xs text-white/50 capitalize">
                         {cabinClass?.replace("_", " ")}
                       </span>
                     </div>
@@ -115,7 +117,8 @@ export default function BookingSummaryPage() {
                         <p className="text-xs text-white/50">
                           {formatDuration(
                             leg.departureAt,
-                            leg.arrivalAt
+                            leg.arrivalAt,
+                            t.booking?.summary?.direct ?? "Direct"
                           )}
                         </p>
                         <div className="w-full flex items-center gap-1 mt-1">
@@ -141,7 +144,7 @@ export default function BookingSummaryPage() {
             {/* Passenger info */}
             <div className="rounded-2xl p-5 summary-glass-card">
               <h2 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">
-                Passenger Information
+                {t.booking?.summary?.passengerInfo ?? "Passenger Information"}
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {passengers.map((p, i) => (
@@ -155,19 +158,19 @@ export default function BookingSummaryPage() {
                       </div>
                       <div>
                         <p className="text-sm font-bold text-white">
-                          Passenger {i + 1}:
+                          {t.booking?.summary?.passenger ?? "Passenger"} {i + 1}:
                         </p>
                         <p className="text-sm text-white/80">
-                          {p.title} {p.firstName} {p.lastName}, Adult
+                          {p.title} {p.firstName} {p.lastName}, {t.booking?.passenger?.adult ?? "Adult"}
                         </p>
                       </div>
                     </div>
                     <p className="text-xs text-white/50 ml-9">
-                      DOB: {p.dateOfBirth}
+                      {t.booking?.passenger?.dateOfBirth ?? "DOB"}: {p.dateOfBirth}
                     </p>
                     {p.passportNumber && (
                       <p className="text-xs text-white/50 ml-9">
-                        Passport: *****{p.passportNumber.slice(-4)}
+                        {t.booking?.passenger?.passportNumber ?? "Passport"}: *****{p.passportNumber.slice(-4)}
                       </p>
                     )}
                   </div>
@@ -179,7 +182,7 @@ export default function BookingSummaryPage() {
             {selectedSeats.length > 0 && (
               <div className="rounded-2xl p-5 summary-glass-card">
                 <h2 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">
-                  Seat Choice
+                  {t.booking?.summary?.seatChoice ?? "Seat Choice"}
                 </h2>
                 <div className="flex flex-col gap-4">
                   {selectedLegs.map((leg, legIdx) => {
@@ -187,7 +190,7 @@ export default function BookingSummaryPage() {
                     if (legSeats.length === 0) return null;
                     return (
                       <div key={leg.id} className="rounded-xl p-4 bg-white/5 border border-white/10">
-                        <p className="text-sm font-bold text-[#f5c800] mb-2">{leg.origin.airport_code} to {leg.destination.airport_code}</p>
+                        <p className="text-sm font-bold text-[#f5c800] mb-2">{leg.origin.airport_code} {t.booking?.summary?.to ?? "to"} {leg.destination.airport_code}</p>
                         {passengers.map((p, pIdx) => {
                           const seatNumber = legSeats[pIdx];
                           return seatNumber ? (
@@ -195,7 +198,7 @@ export default function BookingSummaryPage() {
                               <span className="font-bold text-white">
                                 {p.firstName} {p.lastName}
                               </span>
-                              : Seat {seatNumber} ({cabinClass})
+                              : {t.booking?.summary?.seat ?? "Seat"} {seatNumber} ({cabinClass})
                             </p>
                           ) : null;
                         })}
@@ -212,25 +215,25 @@ export default function BookingSummaryPage() {
           <div className="w-full lg:w-72 shrink-0">
             <div className="rounded-2xl p-6 summary-price-card">
               <h2 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">
-                Price Breakdown
+                {t.booking?.summary?.priceBreakdown ?? "Price Breakdown"}
               </h2>
 
               <div className="flex flex-col gap-3 text-sm mb-5">
                 <div className="flex justify-between text-white/80">
-                  <span>Base Fare</span>
+                  <span>{t.booking?.summary?.baseFare ?? "Base Fare"}</span>
                   <span>{fmt(basePrice)}</span>
                 </div>
                 <div className="flex justify-between text-white/80">
-                  <span>Passengers</span>
+                  <span>{t.booking?.summary?.passengersCount ?? "Passengers"}</span>
                   <span>× {passengers.length}</span>
                 </div>
                 <div className="flex justify-between text-white/80">
-                  <span>Baggage Fees</span>
-                  <span>$0.00 (Included)</span>
+                  <span>{t.booking?.summary?.baggageFees ?? "Baggage Fees"}</span>
+                  <span>{t.booking?.summary?.baggageIncluded ?? "$0.00 (Included)"}</span>
                 </div>
                 <div className="border-t border-white/20 pt-3">
                   <p className="text-xs text-white/50 mb-1 uppercase tracking-wide">
-                    Total Amount
+                    {t.booking?.summary?.totalAmount ?? "Total Amount"}
                   </p>
                   <p className="text-3xl font-bold text-white">
                     {fmt(totalAmount)}
@@ -239,10 +242,10 @@ export default function BookingSummaryPage() {
               </div>
 
               <Button fullWidth onClick={() => router.push("/booking/payment")}>
-                PROCEED TO PAYMENT →
+                {t.booking?.summary?.proceedToPayment ?? "PROCEED TO PAYMENT →"}
               </Button>
               <p className="text-center text-xs text-white/40 mt-3">
-                Secure transaction guaranteed.
+                {t.booking?.summary?.secureTransaction ?? "Secure transaction guaranteed."}
               </p>
             </div>
           </div>

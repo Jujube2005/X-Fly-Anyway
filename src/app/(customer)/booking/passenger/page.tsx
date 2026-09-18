@@ -6,6 +6,7 @@ import { Header } from "@/components/layout/Header";
 import { BookingStepper } from "@/components/booking/BookingStepper";
 import { Button } from "@/components/ui/Button";
 import { useBookingContext, type PassengerInput } from "@/components/booking/BookingProvider";
+import { useTranslation } from "@/hooks/useTranslation";
 import "./page.css";
 
 const TITLE_OPTIONS = [
@@ -13,12 +14,6 @@ const TITLE_OPTIONS = [
   { value: "Mrs", label: "Mrs" },
   { value: "Ms", label: "Ms" },
   { value: "Master", label: "Master" },
-];
-
-const GENDER_OPTIONS = [
-  { value: "male", label: "Male" },
-  { value: "female", label: "Female" },
-  { value: "unspecified", label: "Prefer not to say" },
 ];
 
 const COMMON_NATIONALITIES = [
@@ -44,6 +39,7 @@ const inputCls = "w-full bg-white/10 border border-white/30 text-white placehold
 
 export default function PassengerPage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { passengerCount, setPassengers } = useBookingContext();
 
   const [forms, setForms] = useState<PassengerInput[]>(
@@ -62,13 +58,21 @@ export default function PassengerPage() {
     router.push("/booking/contact");
   }
 
+  const genderOptions = [
+    { value: "male", label: t.booking?.passenger?.male ?? "Male" },
+    { value: "female", label: t.booking?.passenger?.female ?? "Female" },
+    { value: "unspecified", label: t.booking?.passenger?.unspecified ?? "Prefer not to say" },
+  ];
+
   return (
     <div className="min-h-dvh flex flex-col passenger-page-container">
       <Header variant="transparent" />
 
       <main className="flex-1 flex items-center justify-center px-4 pt-24 pb-12">
         <div className="w-full max-w-2xl rounded-3xl px-8 py-10 passenger-card-glass">
-          <h1 className="text-3xl font-bold text-white mb-2">Passenger Information</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">
+            {t.booking?.passenger?.title ?? "Passenger Information"}
+          </h1>
 
           <div className="mb-6">
             <BookingStepper currentLabel="Passenger" variant="dark" />
@@ -78,7 +82,7 @@ export default function PassengerPage() {
             {forms.map((passenger, idx) => (
               <div key={idx}>
                 <h2 className="text-sm font-semibold text-white/70 mb-4 uppercase tracking-wide">
-                  Passenger {idx + 1} (Adult)
+                  {t.booking?.passenger?.passengerN ?? "Passenger"} {idx + 1} ({t.booking?.passenger?.adult ?? "Adult"})
                 </h2>
                 <div className="flex flex-col gap-3">
                   <div className="grid grid-cols-3 gap-3">
@@ -86,7 +90,7 @@ export default function PassengerPage() {
                       value={passenger.title}
                       onChange={(e) => updateField(idx, "title", e.target.value)}
                       className={inputCls}
-                      aria-label={`Title for passenger ${idx + 1}`}
+                      aria-label={`${t.booking?.passenger?.title_field ?? "Title"} for passenger ${idx + 1}`}
                     >
                       {TITLE_OPTIONS.map((o) => (
                         <option key={o.value} value={o.value} className="bg-gray-900">{o.label}</option>
@@ -95,18 +99,18 @@ export default function PassengerPage() {
                     <input
                       value={passenger.firstName}
                       onChange={(e) => updateField(idx, "firstName", e.target.value)}
-                      placeholder="First Name"
+                      placeholder={t.booking?.passenger?.firstName ?? "First Name"}
                       required
                       className={inputCls}
-                      aria-label={`First name for passenger ${idx + 1}`}
+                      aria-label={`${t.booking?.passenger?.firstName ?? "First name"} for passenger ${idx + 1}`}
                     />
                     <input
                       value={passenger.lastName}
                       onChange={(e) => updateField(idx, "lastName", e.target.value)}
-                      placeholder="Last Name"
+                      placeholder={t.booking?.passenger?.lastName ?? "Last Name"}
                       required
                       className={inputCls}
-                      aria-label={`Last name for passenger ${idx + 1}`}
+                      aria-label={`${t.booking?.passenger?.lastName ?? "Last name"} for passenger ${idx + 1}`}
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
@@ -117,14 +121,14 @@ export default function PassengerPage() {
                       required
                       className={inputCls}
                       max={new Date().toISOString().split("T")[0]}
-                      aria-label={`Date of birth for passenger ${idx + 1}`}
+                      aria-label={`${t.booking?.passenger?.dateOfBirth ?? "Date of birth"} for passenger ${idx + 1}`}
                     />
                     <input
                       value={passenger.passportNumber ?? ""}
                       onChange={(e) => updateField(idx, "passportNumber", e.target.value)}
-                      placeholder="Passport Number (optional)"
+                      placeholder={t.booking?.passenger?.passportOptional ?? "Passport Number (optional)"}
                       className={inputCls}
-                      aria-label={`Passport number for passenger ${idx + 1}`}
+                      aria-label={`${t.booking?.passenger?.passportNumber ?? "Passport number"} for passenger ${idx + 1}`}
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
@@ -132,9 +136,9 @@ export default function PassengerPage() {
                       value={passenger.gender}
                       onChange={(e) => updateField(idx, "gender", e.target.value)}
                       className={inputCls}
-                      aria-label={`Gender for passenger ${idx + 1}`}
+                      aria-label={`${t.booking?.passenger?.gender ?? "Gender"} for passenger ${idx + 1}`}
                     >
-                      {GENDER_OPTIONS.map((o) => (
+                      {genderOptions.map((o) => (
                         <option key={o.value} value={o.value} className="bg-gray-900">{o.label}</option>
                       ))}
                     </select>
@@ -142,7 +146,7 @@ export default function PassengerPage() {
                       value={passenger.nationality}
                       onChange={(e) => updateField(idx, "nationality", e.target.value)}
                       className={inputCls}
-                      aria-label={`Nationality for passenger ${idx + 1}`}
+                      aria-label={`${t.booking?.passenger?.nationality ?? "Nationality"} for passenger ${idx + 1}`}
                     >
                       {COMMON_NATIONALITIES.map((n) => (
                         <option key={n.value} value={n.value} className="bg-gray-900">{n.label}</option>
@@ -155,10 +159,10 @@ export default function PassengerPage() {
 
             <div className="flex items-center justify-between pt-2">
               <Button variant="secondary" onClick={() => router.back()} type="button">
-                ← Back
+                {t.booking?.passenger?.back ?? "← Back"}
               </Button>
               <Button type="submit">
-                Continue →
+                {t.booking?.passenger?.continueToContact ?? "Continue →"}
               </Button>
             </div>
           </form>
@@ -168,9 +172,9 @@ export default function PassengerPage() {
       {/* Footer */}
       <footer className="py-4 px-6 border-t border-white/10">
         <div className="max-w-2xl mx-auto flex items-center justify-center gap-6 text-xs text-white/40">
-          <span>Privacy Policy</span>
-          <span>Terms of Service</span>
-          <span>Contact Us</span>
+          <span>{t.home?.footer?.privacy ?? "Privacy Policy"}</span>
+          <span>{t.home?.footer?.terms ?? "Terms of Service"}</span>
+          <span>{t.home?.footer?.support ?? "Support"}</span>
         </div>
       </footer>
     </div>

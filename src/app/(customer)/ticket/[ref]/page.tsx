@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { LoadingState, ErrorState } from "@/components/ui/States";
 import { Button } from "@/components/ui/Button";
+import { useTranslation } from "@/hooks/useTranslation";
 import QRCode from "qrcode";
 import type { ETicket } from "@/types/ticket";
 import type { Passenger } from "@/types/passenger";
@@ -117,13 +118,14 @@ function getPassengerSeat(ticket: ETicket, pIdx: number): string {
 export default function TicketPage() {
   const { ref } = useParams<{ ref: string }>();
   const router = useRouter();
+  const { t } = useTranslation();
   const [ticket, setTicket] = useState<ETicket | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [selectedPassenger, setSelectedPassenger] = useState<number | "all">("all");
 
   const isInvalidRef = !ref || ref === "undefined";
-  const error = isInvalidRef ? "Invalid booking reference" : fetchError;
+  const error = isInvalidRef ? (t.ticket?.invalidRef ?? "Invalid booking reference") : fetchError;
 
   useEffect(() => {
     if (!ref || ref === "undefined") return;
@@ -132,16 +134,16 @@ export default function TicketPage() {
     fetch(`/api/tickets/${encodeURIComponent(ref)}`)
       .then(async (r) => {
         const json = await r.json();
-        if (!r.ok) throw new Error(json.error || "Ticket not found");
+        if (!r.ok) throw new Error(json.error || (t.ticket?.notFound ?? "Ticket not found"));
         return json;
       })
       .then((data) => {
         if (!isMounted) return;
-        const t: ETicket = data.ticket ?? data;
-        setTicket(t);
+        const tkt: ETicket = data.ticket ?? data;
+        setTicket(tkt);
         setIsLoading(false);
         // Default to "all" if multi-passenger, or index 0 if single passenger
-        if ((t.booking?.passengers?.length ?? 0) <= 1) {
+        if ((tkt.booking?.passengers?.length ?? 0) <= 1) {
           setSelectedPassenger(0);
         } else {
           setSelectedPassenger("all");
@@ -156,7 +158,7 @@ export default function TicketPage() {
     return () => {
       isMounted = false;
     };
-  }, [ref]);
+  }, [ref, t]);
 
   function handlePrint() {
     window.print();
@@ -164,7 +166,10 @@ export default function TicketPage() {
 
   const bookingRef = ticket?.booking?.reference ?? ref ?? "—";
   const ticketCode = ticket?.ticketCode ?? `ETK-${bookingRef}`;
-  const cabinClass = ticket?.booking?.cabinClass?.replace("_", " ") ?? "economy";
+  const rawClass = ticket?.booking?.cabinClass;
+  const cabinClass = (rawClass && t.search?.cabinClass?.[rawClass as keyof typeof t.search.cabinClass])
+    || ticket?.booking?.cabinClass?.replace("_", " ")
+    || "economy";
   const passengers = ticket?.booking?.passengers ?? [];
   const flights = ticket?.flights ?? [];
   const primaryFlight = ticket?.booking?.flight ?? (flights[0] ? {
@@ -187,7 +192,7 @@ export default function TicketPage() {
 
   return (
     <div className="min-h-dvh flex flex-col items-center justify-center px-4 py-12 ticket-page-container">
-      {isPageLoading && <LoadingState message="Loading your e-ticket..." />}
+      {isPageLoading && <LoadingState message={t.ticket?.loading ?? "Loading your e-ticket..."} />}
 
       {!isPageLoading && error && (
         <ErrorState
@@ -210,7 +215,7 @@ export default function TicketPage() {
                     : "bg-white/10 text-white/70 hover:bg-white/20 hover:text-white"
                 }`}
               >
-                All Passengers ({passengers.length})
+                {t.ticket?.allPassengers ?? "All Passengers"} ({passengers.length})
               </button>
               {passengers.map((p, idx) => {
                 const isSelected = selectedPassenger === idx;
@@ -257,17 +262,17 @@ export default function TicketPage() {
                         X-Fly <span className="text-[#f5c800]">Anyway</span>
                       </p>
                       <p className="text-white/50 text-[11px] leading-tight">
-                        Electronic Ticket Receipt
+                        {t.ticket?.receipt ?? "Electronic Ticket Receipt"}
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2">
                     <span className="px-3 py-1 rounded-full text-[11px] font-bold tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 uppercase">
-                      Confirmed
+                      {t.ticket?.confirmed ?? "Confirmed"}
                     </span>
                     <span className="text-white/90 text-sm font-semibold tracking-wide hidden sm:inline">
-                      E-Ticket
+                      {t.ticket?.title ?? "E-Ticket"}
                     </span>
                   </div>
                 </div>
@@ -276,7 +281,7 @@ export default function TicketPage() {
                 <div className="px-6 md:px-8 py-3 bg-white/5 border-b border-white/10 grid grid-cols-2 gap-4 text-xs">
                   <div>
                     <span className="text-white/50 uppercase tracking-wider text-[10px] block mb-0.5">
-                      Booking Reference (PNR)
+                      {t.ticket?.bookingRef ?? "Booking Reference (PNR)"}
                     </span>
                     <span className="text-base md:text-lg font-black text-[#f5c800] font-mono tracking-wider">
                       {bookingRef}
@@ -284,14 +289,14 @@ export default function TicketPage() {
                   </div>
                   <div className="text-right">
                     <span className="text-white/50 uppercase tracking-wider text-[10px] block mb-0.5">
-                      E-Ticket No.
+                      {t.ticket?.ticketNumber ?? "E-Ticket No."}
                     </span>
                     <span className="text-sm font-semibold text-white/90 font-mono">
                       {ticketCode}
                     </span>
                     {ticket.issuedAt && (
                       <span className="text-[10px] text-white/40 block mt-0.5">
-                        Issued: {formatFlightDate(ticket.issuedAt)}
+                        {t.ticket?.issued ?? "Issued"}: {formatFlightDate(ticket.issuedAt)}
                       </span>
                     )}
                   </div>
@@ -303,13 +308,13 @@ export default function TicketPage() {
                     // Connecting flights: display each leg clearly
                     <div className="flex flex-col gap-3">
                       <span className="text-[11px] text-white/50 uppercase tracking-widest font-semibold">
-                        Flight Segments (Connecting Flight)
+                        {t.ticket?.flightSegments ?? "Flight Segments (Connecting Flight)"}
                       </span>
                       {flights.map((leg, legIdx) => {
                         const legDepartureDate = formatFlightDate(leg.departureAt);
                         const legDepTime = formatFlightTime(leg.departureAt);
                         const legArrTime = formatFlightTime(leg.arrivalAt);
-                        const legSeat = ticket.booking?.seatNumbers?.[legIdx]?.[passengerIndex] || "—";
+                        const legSeat = ticket.booking?.seatNumbers?.[legIdx]?.[passengerIndex] || (t.ticket?.unassigned ?? "—");
 
                         return (
                           <div
@@ -318,10 +323,10 @@ export default function TicketPage() {
                           >
                             <div className="flex items-center justify-between text-xs">
                               <span className="font-bold text-[#f5c800]">
-                                Flight {leg.flightNumber}
+                                {t.ticket?.flight ?? "Flight"} {leg.flightNumber}
                               </span>
                               <span className="text-white/60">{legDepartureDate}</span>
-                              <span className="text-white/90 font-mono">Seat: <strong className="text-[#f5c800]">{legSeat}</strong></span>
+                              <span className="text-white/90 font-mono">{t.ticket?.seat ?? "Seat"}: <strong className="text-[#f5c800]">{legSeat}</strong></span>
                             </div>
                             <div className="flex items-center justify-between">
                               <div>
@@ -360,7 +365,7 @@ export default function TicketPage() {
                           {primaryFlight?.originCode ?? "—"}
                         </span>
                         <p className="text-xs text-white/60">
-                          {primaryFlight?.originCity ?? primaryFlight?.originName ?? "Departure"}
+                          {primaryFlight?.originCity ?? primaryFlight?.originName ?? (t.ticket?.departure ?? "Departure")}
                         </p>
                         {primaryFlight?.departureAt && formatFlightTime(primaryFlight.departureAt) && (
                           <p className="text-xs md:text-sm font-bold text-[#f5c800] mt-0.5">
@@ -388,7 +393,7 @@ export default function TicketPage() {
                           {primaryFlight?.destinationCode ?? "—"}
                         </span>
                         <p className="text-xs text-white/60">
-                          {primaryFlight?.destinationCity ?? primaryFlight?.destinationName ?? "Arrival"}
+                          {primaryFlight?.destinationCity ?? primaryFlight?.destinationName ?? (t.ticket?.arrival ?? "Arrival")}
                         </p>
                         {primaryFlight?.arrivalAt && formatFlightTime(primaryFlight.arrivalAt) && (
                           <p className="text-xs md:text-sm font-bold text-[#f5c800] mt-0.5">
@@ -405,21 +410,23 @@ export default function TicketPage() {
                   <div className="flex-1 grid grid-cols-2 gap-4">
                     <div className="col-span-2 sm:col-span-1">
                       <p className="text-[10px] text-white/40 uppercase tracking-widest mb-0.5">
-                        Passenger
+                        {t.ticket?.passenger ?? "Passenger"}
                       </p>
                       <p className="text-base font-bold text-white leading-tight">
                         {passengerName}
                       </p>
                       {passengers.length > 1 && (
                         <p className="text-[10px] text-white/40 mt-0.5">
-                          Passenger {passengerIndex + 1} of {passengers.length}
+                          {(t.ticket?.passengerNOf ?? "Passenger {current} of {total}")
+                            .replace("{current}", String(passengerIndex + 1))
+                            .replace("{total}", String(passengers.length))}
                         </p>
                       )}
                     </div>
 
                     <div>
                       <p className="text-[10px] text-white/40 uppercase tracking-widest mb-0.5">
-                        Seat
+                        {t.ticket?.seat ?? "Seat"}
                       </p>
                       <p className="text-base font-bold text-[#f5c800]">
                         {passengerSeat}
@@ -428,7 +435,7 @@ export default function TicketPage() {
 
                     <div>
                       <p className="text-[10px] text-white/40 uppercase tracking-widest mb-0.5">
-                        Class
+                        {t.ticket?.class ?? "Class"}
                       </p>
                       <p className="text-sm font-bold text-white capitalize">
                         {cabinClass}
@@ -437,7 +444,7 @@ export default function TicketPage() {
 
                     <div>
                       <p className="text-[10px] text-white/40 uppercase tracking-widest mb-0.5">
-                        Flight Date
+                        {t.ticket?.flightDate ?? "Flight Date"}
                       </p>
                       <p className="text-sm font-semibold text-white/90">
                         {formatFlightDate(primaryFlight?.departureAt)}
@@ -455,7 +462,7 @@ export default function TicketPage() {
                         {ticketCode}
                       </span>
                       <span className="text-[9px] text-white/30 block tracking-tight">
-                        Scan to verify electronic ticket
+                        {t.ticket?.scanToVerify ?? "Scan to verify electronic ticket"}
                       </span>
                     </div>
                   </div>
@@ -466,7 +473,7 @@ export default function TicketPage() {
 
                 {/* Ticket Footer / Verification Note */}
                 <div className="px-6 md:px-8 py-3 bg-white/5 flex items-center justify-between text-[11px] text-white/40">
-                  <span>Electronic Ticket • Official X-Fly Anyway Record</span>
+                  <span>{t.ticket?.mockNotice ?? "Electronic Ticket • Official X-Fly Anyway Record"}</span>
                   <span className="font-mono">{bookingRef}</span>
                 </div>
               </div>
@@ -481,16 +488,16 @@ export default function TicketPage() {
               className="flex items-center justify-center gap-2 text-base font-bold py-3.5"
             >
               <span>🖨</span>
-              <span>Download / Print E-Ticket</span>
+              <span>{t.ticket?.downloadPrint ?? "Download / Print E-Ticket"}</span>
             </Button>
             <p className="text-center text-xs text-white/40">
-              Tip: In your browser print dialog, select &quot;Save as PDF&quot; to download a digital copy.
+              {t.ticket?.printTip ?? "Tip: In your browser print dialog, select \"Save as PDF\" to download a digital copy."}
             </p>
             <button
               onClick={() => router.push("/")}
               className="text-sm text-white/60 hover:text-white transition-colors underline text-center mt-2"
             >
-              Back to Home
+              {t.ticket?.backHome ?? "🏠 Back to Home"}
             </button>
           </div>
         </div>
