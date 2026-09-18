@@ -2,7 +2,7 @@
 
 import { useTranslation } from "@/hooks/useTranslation";
 
-export interface SeatCellProps {
+interface SeatCellProps {
   seatNumber: string;
   columnLetter: string;
   isOccupied: boolean;
@@ -11,7 +11,7 @@ export interface SeatCellProps {
   isFrontRow: boolean;
   price: number;
   onClick: () => void;
-  disabled?: boolean;
+  disabled: boolean;
 }
 
 export function SeatCell({
@@ -27,43 +27,74 @@ export function SeatCell({
 }: SeatCellProps) {
   const { t } = useTranslation();
 
-  const getStyle = () => {
-    if (isOccupied) return { bg: "#e5e7eb", border: "#d1d5db", text: "#9ca3af", cursor: "cursor-not-allowed", label: t.booking.seat.status.occupied };
-    if (isSelected) return { bg: "#f5c800", border: "#c9a200", text: "#111827", cursor: "cursor-pointer", label: t.booking.seat.status.selected };
-    if (isExitRow)  return { bg: "#fdf8e6", border: "#f5c800", text: "#b48c00", cursor: "cursor-pointer", label: "Exit Row" };
-    if (isFrontRow) return { bg: "#f3f4f6", border: "#d1d5db", text: "#374151", cursor: "cursor-pointer", label: "Front Row" };
-    return { bg: "#ffffff", border: "#e5e7eb", text: "#374151", cursor: "cursor-pointer", label: t.booking.seat.status.available };
+  const getSeatStyle = () => {
+    if (isOccupied) {
+      return { 
+        base: "bg-[#e5e7eb] border-[#d1d5db] text-[#9ca3af] cursor-not-allowed opacity-80", 
+        seatBack: "bg-[#d1d5db]",
+        label: t.booking.seat.status.occupied 
+      };
+    }
+    if (isSelected) {
+      return { 
+        base: "bg-[#f5c800] border-[#c9a200] text-[#111827] cursor-pointer shadow-md transform scale-105 transition-transform", 
+        seatBack: "bg-[#d9b100]",
+        label: t.booking.seat.status.selected 
+      };
+    }
+    if (isExitRow) {
+      return { 
+        base: "bg-[#fdf8e6] border-[#f5c800] text-[#856600] hover:bg-[#faebb3] cursor-pointer shadow-sm transition-colors", 
+        seatBack: "bg-[#faebb3]",
+        label: "Exit Row" 
+      };
+    }
+    if (isFrontRow) {
+      return { 
+        base: "bg-[#f3f4f6] border-[#d1d5db] text-[#374151] hover:bg-[#e5e7eb] cursor-pointer shadow-sm transition-colors", 
+        seatBack: "bg-[#e5e7eb]",
+        label: "Front Row" 
+      };
+    }
+    
+    return { 
+      base: "bg-white border-[#d1d5db] text-[#374151] hover:bg-gray-50 hover:border-gray-400 cursor-pointer shadow-sm transition-colors", 
+      seatBack: "bg-gray-200",
+      label: t.booking.seat.status.available 
+    };
   };
 
-  const { bg, border, text, cursor, label } = getStyle();
+  const style = getSeatStyle();
+  
+  // Format price if applicable
+  const priceDisplay = price > 0 ? `+฿${price.toLocaleString()}` : "Included";
 
   return (
-    <div className="relative group inline-block">
-      <button
-        onClick={isOccupied || disabled ? undefined : onClick}
-        disabled={isOccupied || disabled}
-        aria-label={`Seat ${seatNumber} ${label}`}
-        className={`flex items-center justify-center w-10 h-10 md:w-11 md:h-11 rounded-t-xl rounded-b-md text-xs font-semibold transition-all duration-200 ${cursor} ${
-          isOccupied ? "opacity-60" : "hover:opacity-90 hover:-translate-y-1 hover:shadow-md"
-        } ${isSelected ? "shadow-md scale-105" : ""}`}
-        style={{
-          background: bg,
-          border: `1.5px solid ${border}`,
-          color: text,
-          borderBottomWidth: "4px", // to simulate seat cushion
-        }}
-      >
-        {isOccupied ? "×" : columnLetter}
-      </button>
-
-      {/* Tooltip */}
-      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-3 py-2 bg-gray-900/90 backdrop-blur-sm text-white text-xs rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 pointer-events-none">
-        <div className="font-bold text-sm mb-1">{seatNumber}</div>
-        <div className="text-gray-300">{label}</div>
-        {!isOccupied && <div className="text-[#f5c800] font-semibold mt-1">฿{price.toLocaleString()}</div>}
-        {/* Tooltip arrow */}
-        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900/90" />
-      </div>
-    </div>
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={isOccupied || disabled}
+      title={`${style.label} ${priceDisplay !== 'Included' ? priceDisplay : ''}`}
+      aria-label={`${seatNumber} - ${style.label}`}
+      className={`relative flex flex-col items-center justify-between w-9 h-11 sm:w-11 sm:h-12 border rounded-t-lg rounded-b-md ${style.base} focus:outline-none focus:ring-2 focus:ring-[#f5c800] focus:ring-offset-1 shrink-0 overflow-hidden group`}
+    >
+      {/* Seat Armrests/Cushion detailing */}
+      <div className="absolute inset-x-0.5 top-0.5 bottom-2 border border-black/5 rounded-t-md rounded-b-sm bg-gradient-to-b from-white/20 to-transparent"></div>
+      
+      {/* Seat Label */}
+      <span className="text-[10px] sm:text-xs font-semibold z-10 mt-1">
+        {columnLetter}
+      </span>
+      
+      {/* Occupied X indicator */}
+      {isOccupied && (
+        <svg className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400 opacity-60 z-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      )}
+      
+      {/* Seat back structure */}
+      <div className={`w-full h-2.5 sm:h-3 ${style.seatBack} rounded-b-sm shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)] border-t border-black/5`} />
+    </button>
   );
 }

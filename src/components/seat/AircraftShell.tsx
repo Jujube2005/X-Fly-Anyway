@@ -8,24 +8,37 @@ interface AircraftShellProps {
 
 export function AircraftShell({ children }: AircraftShellProps) {
   return (
-    <div className="relative w-full max-w-2xl mx-auto py-12 px-6 overflow-hidden select-none">
-      {/* Aircraft Nose */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-32 bg-white rounded-t-full border-t border-l border-r border-[#e5e7eb] shadow-sm z-0" style={{ transform: "translate(-50%, 0) perspective(400px) rotateX(10deg)" }}>
+    <div className="relative w-full overflow-x-auto custom-scrollbar select-none flex flex-row items-center justify-start py-12 px-2 sm:px-6 min-h-[500px] min-w-max">
+      
+      {/* Aircraft Nose (Left) */}
+      <div className="relative w-32 md:w-48 h-[85%] sm:h-[75%] md:h-[65%] min-h-[300px] bg-[#f9fafb] border-t-2 border-b-2 border-l-2 border-[#e5e7eb] rounded-l-[50%] shadow-[inset_10px_0_20px_rgba(0,0,0,0.05)] z-0 flex items-center justify-start pr-8 shrink-0">
         {/* Cockpit Windows */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
-           <div className="w-8 h-4 bg-gray-200/50 rounded-tl-full rounded-bl-sm transform -rotate-12"></div>
-           <div className="w-8 h-4 bg-gray-200/50 rounded-tr-full rounded-br-sm transform rotate-12"></div>
+        <div className="flex flex-col gap-1.5 opacity-60 ml-4">
+           <div className="h-6 w-8 md:h-8 md:w-10 bg-sky-200/40 border border-sky-300 rounded-tl-full rounded-tr-sm transform -rotate-12"></div>
+           <div className="h-10 w-8 md:h-14 md:w-10 bg-sky-200/40 border border-sky-300 rounded-l-xl"></div>
+           <div className="h-6 w-8 md:h-8 md:w-10 bg-sky-200/40 border border-sky-300 rounded-bl-full rounded-br-sm transform rotate-12"></div>
         </div>
       </div>
 
-      {/* Aircraft Body */}
-      <div className="relative z-10 bg-white border border-[#e5e7eb] shadow-xl rounded-[40px] px-4 md:px-8 py-10 min-h-[500px]">
-        {children}
+      {/* Main Fuselage & Cabin (Middle) */}
+      <div className="relative z-10 h-[90%] md:h-[85%] bg-[#f9fafb] border-t-2 border-b-2 border-[#e5e7eb] py-4 md:py-8 min-w-[500px] shrink-0 shadow-[inset_0_15px_20px_-15px_rgba(0,0,0,0.05),inset_0_-15px_20px_-15px_rgba(0,0,0,0.05)]">
+        
+        {/* Subtle fuselage panels/lines */}
+        <div className="absolute left-0 right-0 top-4 h-px bg-gray-200/40" />
+        <div className="absolute left-0 right-0 bottom-4 h-px bg-gray-200/40" />
+        
+        <div className="px-6 flex items-center">
+          {children}
+        </div>
       </div>
 
-      {/* Wing Indications */}
-      <div className="absolute top-[40%] left-0 w-8 h-48 bg-gradient-to-l from-white to-gray-50 border border-r-0 border-[#e5e7eb] rounded-l-full -z-10 shadow-sm opacity-50 transform -skew-y-12"></div>
-      <div className="absolute top-[40%] right-0 w-8 h-48 bg-gradient-to-r from-white to-gray-50 border border-l-0 border-[#e5e7eb] rounded-r-full -z-10 shadow-sm opacity-50 transform skew-y-12"></div>
+      {/* Aircraft Tail (Right) */}
+      <div className="relative w-32 md:w-40 h-[85%] sm:h-[75%] md:h-[65%] min-h-[300px] bg-[#f9fafb] border-t-2 border-b-2 border-r-2 border-[#e5e7eb] rounded-r-[50%] shadow-[inset_-10px_0_20px_rgba(0,0,0,0.05)] z-0 flex items-center shrink-0">
+      </div>
+
+      {/* Wings (Decorative, Top and Bottom) */}
+      <div className="absolute top-0 left-[35%] h-[15%] w-64 bg-gradient-to-br from-gray-200 to-gray-50 border-l-2 border-b-2 border-[#e5e7eb] rounded-bl-[100%] -z-10 shadow-lg transform -skew-x-12 translate-y-2"></div>
+      <div className="absolute bottom-0 left-[35%] h-[15%] w-64 bg-gradient-to-tr from-gray-200 to-gray-50 border-l-2 border-t-2 border-[#e5e7eb] rounded-tl-[100%] -z-10 shadow-lg transform skew-x-12 -translate-y-2"></div>
     </div>
   );
 }
