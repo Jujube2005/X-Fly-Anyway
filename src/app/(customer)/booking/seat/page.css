@@ -24,3 +24,16 @@
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 rgba(226, 232, 240, 0.5);
 }
+
+/* Drag-to-scroll cursor states */
+.cursor-grab {
+  cursor: grab;
+}
+
+.cursor-grabbing,
+.active-drag,
+.active-drag * {
+  cursor: grabbing !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}

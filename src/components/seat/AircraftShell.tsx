@@ -1,12 +1,62 @@
 "use client";
 
-import React, { ReactNode } from "react";
+import React, { ReactNode, useRef, useState, useEffect, useCallback } from "react";
 
 interface AircraftShellProps {
   children: ReactNode;
 }
 
 export function AircraftShell({ children }: AircraftShellProps) {
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const isDownRef = useRef(false);
+  const startXRef = useRef(0);
+  const scrollLeftRef = useRef(0);
+  const hasDraggedRef = useRef(false);
+
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (e.button !== 0) return; // Only left click
+    isDownRef.current = true;
+    hasDraggedRef.current = false;
+    startXRef.current = e.clientX;
+    scrollLeftRef.current = viewportRef.current?.scrollLeft || 0;
+    setIsDragging(true);
+  }, []);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDownRef.current || !viewportRef.current) return;
+      const dx = e.clientX - startXRef.current;
+      if (Math.abs(dx) > 4) {
+        hasDraggedRef.current = true;
+      }
+      viewportRef.current.scrollLeft = scrollLeftRef.current - dx;
+    };
+
+    const handleMouseUp = () => {
+      if (!isDownRef.current) return;
+      isDownRef.current = false;
+      setIsDragging(false);
+      // Small timeout to prevent triggering click on child elements if dragged
+      setTimeout(() => {
+        hasDraggedRef.current = false;
+      }, 60);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, []);
+
+  const handleClickCapture = useCallback((e: React.MouseEvent) => {
+    if (hasDraggedRef.current) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+  }, []);
   return (
     <div className="w-full bg-slate-100/70 rounded-3xl p-3 sm:p-6 border border-slate-200/80 shadow-sm relative overflow-hidden">
       {/* Complete Horizontal Aircraft Structure */}
@@ -70,14 +120,31 @@ export function AircraftShell({ children }: AircraftShellProps) {
               ))}
             </div>
 
-            {/* Overwing Exit Door Marker */}
-            <div className="flex items-center gap-1 bg-sky-50 border border-sky-300 rounded px-1.5 py-0.5 text-[8px] font-extrabold text-sky-700 shadow-2xs">
-              <span>EXIT L</span>
+            {/* Overwing Exit Door Marker & Drag Scroll Hint */}
+            <div className="flex items-center gap-2">
+              <span className="hidden md:inline-flex items-center gap-1 text-[9px] font-semibold text-slate-400">
+                <svg className="w-3 h-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" transform="rotate(90 12 12)" />
+                </svg>
+                Drag to scroll
+              </span>
+              <div className="flex items-center gap-1 bg-sky-50 border border-sky-300 rounded px-1.5 py-0.5 text-[8px] font-extrabold text-sky-700 shadow-2xs">
+                <span>EXIT L</span>
+              </div>
             </div>
           </div>
 
-          {/* Cabin Viewport: dedicated scrollable interior */}
-          <div className="w-full overflow-x-auto custom-scrollbar px-3 sm:px-6 py-4 relative bg-slate-50/40">
+          {/* Cabin Viewport: dedicated scrollable interior with drag-to-scroll */}
+          <div
+            ref={viewportRef}
+            onMouseDown={handleMouseDown}
+            onClickCapture={handleClickCapture}
+            className={`w-full overflow-x-auto custom-scrollbar px-3 sm:px-6 py-4 relative bg-slate-50/40 select-none transition-[cursor] duration-75 ${
+              isDragging
+                ? "cursor-grabbing active-drag"
+                : "cursor-grab"
+            }`}
+          >
             {children}
           </div>
 
