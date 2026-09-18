@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import type { SeatLayout, SeatAvailabilityResponse } from "@/types/seat";
+import type { SeatLayout, SeatAvailabilityResponse, SeatInfo } from "@/types/seat";
 import type { CabinClass } from "@/types/flight";
 
 interface UseSeatsReturn {
   layout: SeatLayout | null;
   /** Detailed info for all seats. */
-  seatsInfo: Record<string, { status: string; isExitRow: boolean; isWindow: boolean; isAisle: boolean }>;
+  seatsInfo: Record<string, SeatInfo>;
   isLoading: boolean;
   error: string | null;
   fetchSeatMap: (flightId: string, cabinClass: CabinClass) => Promise<void>;

@@ -1,25 +1,12 @@
 "use client";
-
+import React from "react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SeatLayout } from "@/types/seat";
+import { SeatLayout, SeatInfo } from "@/types/seat";
 import { SeatCell } from "./SeatCell";
-
-export function getSeatPrice(isExitRow: boolean, isFrontRow: boolean): number {
-  if (isExitRow) return 700;
-  if (isFrontRow) return 300;
-  return 0;
-}
-
-export function aisleAfterIndex(columns: string[]): number {
-  const len = columns.length;
-  if (len === 6) return 2;
-  if (len === 4) return 1;
-  return Math.floor(len / 2) - 1;
-}
 
 interface SeatMapProps {
   layout: SeatLayout;
-  seatsInfo: Record<string, { status: string; isExitRow: boolean; isWindow: boolean; isAisle: boolean }>;
+  seatsInfo: Record<string, SeatInfo>;
   currentLegSeats: string[];
   allSelectedSeats: string[]; // To know if a seat is selected by another passenger
   onSeatClick: (seatNumber: string) => void;
@@ -41,25 +28,33 @@ export function SeatMap({
     rowNumbers.push(r);
   }
 
-  const aisleIdx = aisleAfterIndex(layout.columns);
-  const leftCols  = layout.columns.slice(0, aisleIdx + 1);
-  const rightCols = layout.columns.slice(aisleIdx + 1);
+  // Dynamically find aisles based on API data
+  const aisleIndices = new Set<number>();
+  for (let i = 0; i < layout.columns.length - 1; i++) {
+    const colA = layout.columns[i];
+    const colB = layout.columns[i + 1];
+    for (const rowNum of rowNumbers) {
+      const seatA = seatsInfo[`${rowNum}${colA}`];
+      const seatB = seatsInfo[`${rowNum}${colB}`];
+      if (seatA?.isAisle && seatB?.isAisle) {
+        aisleIndices.add(i);
+        break;
+      }
+    }
+  }
 
   return (
     <div className="w-full">
       {/* Column headers */}
       <div className="flex items-center gap-1.5 mb-4 justify-center">
         <div className="w-8 shrink-0" /> {/* row-number gutter */}
-        {leftCols.map((col) => (
-          <div key={`h-${col}`} className="w-10 md:w-11 text-center text-xs font-bold text-[#6b7280]">
-            {col}
-          </div>
-        ))}
-        <div className="w-6 md:w-8" /> {/* aisle gap */}
-        {rightCols.map((col) => (
-          <div key={`h-${col}`} className="w-10 md:w-11 text-center text-xs font-bold text-[#6b7280]">
-            {col}
-          </div>
+        {layout.columns.map((col, colIdx) => (
+          <React.Fragment key={`h-${col}`}>
+            <div className="w-10 md:w-11 text-center text-xs font-bold text-[#6b7280]">
+              {col}
+            </div>
+            {aisleIndices.has(colIdx) && <div className="w-6 md:w-8" />}
+          </React.Fragment>
         ))}
       </div>
 
@@ -79,63 +74,43 @@ export function SeatMap({
                 {rowNum}
               </div>
 
-              {/* Left columns */}
-              {leftCols.map((col) => {
+              {layout.columns.map((col, colIdx) => {
                 const seatNumber = `${rowNum}${col}`;
-                const info = seatsInfo[seatNumber] || { status: 'available', isExitRow: false, isFrontRow: false };
+                const info = seatsInfo[seatNumber] || { status: 'available', isExitRow: false, priceModifier: 0 };
                 const isSelectedByMe = currentLegSeats.includes(seatNumber);
                 const isSelectedByOther = allSelectedSeats.includes(seatNumber) && !isSelectedByMe;
                 const isOccupied = info.status !== "available" || isSelectedByOther;
-                const isFrontRow = rowNum === layout.firstRow;
+                
+                // We use isFrontRow only for styling (like label Tooltip in SeatCell)
+                // The actual price is driven by info.priceModifier
+                const isFrontRow = info.priceModifier > 0 && !info.isExitRow;
 
                 return (
-                  <SeatCell
-                    key={seatNumber}
-                    seatNumber={seatNumber}
-                    columnLetter={col}
-                    isOccupied={isOccupied}
-                    isSelected={isSelectedByMe}
-                    isExitRow={info.isExitRow}
-                    isFrontRow={isFrontRow}
-                    price={getSeatPrice(info.isExitRow, isFrontRow)}
-                    onClick={() => onSeatClick(seatNumber)}
-                    disabled={!isSelectedByMe && maxSeatsReached}
-                  />
-                );
-              })}
-
-              {/* Aisle gap */}
-              <div className="w-6 md:w-8 flex items-center justify-center relative">
-                {isExitRow && (
-                  <div className="absolute flex flex-col items-center justify-center text-[8px] md:text-[10px] text-red-500 font-bold uppercase w-16">
-                    <span>Exit</span>
-                    <span>→</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Right columns */}
-              {rightCols.map((col) => {
-                const seatNumber = `${rowNum}${col}`;
-                const info = seatsInfo[seatNumber] || { status: 'available', isExitRow: false, isFrontRow: false };
-                const isSelectedByMe = currentLegSeats.includes(seatNumber);
-                const isSelectedByOther = allSelectedSeats.includes(seatNumber) && !isSelectedByMe;
-                const isOccupied = info.status !== "available" || isSelectedByOther;
-                const isFrontRow = rowNum === layout.firstRow;
-
-                return (
-                  <SeatCell
-                    key={seatNumber}
-                    seatNumber={seatNumber}
-                    columnLetter={col}
-                    isOccupied={isOccupied}
-                    isSelected={isSelectedByMe}
-                    isExitRow={info.isExitRow}
-                    isFrontRow={isFrontRow}
-                    price={getSeatPrice(info.isExitRow, isFrontRow)}
-                    onClick={() => onSeatClick(seatNumber)}
-                    disabled={!isSelectedByMe && maxSeatsReached}
-                  />
+                  <React.Fragment key={seatNumber}>
+                    <SeatCell
+                      seatNumber={seatNumber}
+                      columnLetter={col}
+                      isOccupied={isOccupied}
+                      isSelected={isSelectedByMe}
+                      isExitRow={info.isExitRow}
+                      isFrontRow={isFrontRow}
+                      price={info.priceModifier || 0}
+                      onClick={() => onSeatClick(seatNumber)}
+                      disabled={!isSelectedByMe && maxSeatsReached}
+                    />
+                    
+                    {aisleIndices.has(colIdx) && (
+                      <div className="w-6 md:w-8 flex items-center justify-center relative">
+                        {/* Show Exit label only in the very first aisle to avoid clutter */}
+                        {isExitRow && colIdx === Array.from(aisleIndices)[0] && (
+                          <div className="absolute flex flex-col items-center justify-center text-[8px] md:text-[10px] text-red-500 font-bold uppercase w-16">
+                            <span>Exit</span>
+                            <span>→</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </React.Fragment>
                 );
               })}
             </div>

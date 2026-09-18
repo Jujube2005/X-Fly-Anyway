@@ -3,12 +3,12 @@
 import { Button } from "@/components/ui/Button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { CabinClass } from "@/types/flight";
-import { getSeatPrice } from "./SeatMap";
+import { SeatInfo } from "@/types/seat";
 
 interface SeatSelectionSummaryProps {
   passengerCount: number;
   selectedSeats: string[]; // mapped to passenger indices
-  seatsInfo: Record<string, { status: string; isExitRow: boolean; isWindow: boolean; isAisle: boolean }>;
+  seatsInfo: Record<string, SeatInfo>;
   firstRow: number;
   cabinClass: CabinClass;
   onConfirm: () => void;
@@ -31,20 +31,21 @@ export function SeatSelectionSummary({
   const assignedCount = selectedSeats.filter(Boolean).length;
   const isComplete = assignedCount === passengerCount;
 
-  let totalPrice = 0;
   const seatDetails = selectedSeats.map((seatNumber, index) => {
     if (!seatNumber) return null;
-    const info = seatsInfo[seatNumber] || { isExitRow: false };
-    const isFrontRow = parseInt(seatNumber) === firstRow; // approximate
-    const price = getSeatPrice(info.isExitRow, isFrontRow);
-    totalPrice += price;
+    const info = seatsInfo[seatNumber];
+    if (!info) return null;
+    
+    const price = info.priceModifier || 0;
     
     let typeLabel = "Standard";
     if (info.isExitRow) typeLabel = "Exit Row";
-    else if (isFrontRow) typeLabel = "Front Row";
+    else if (info.priceModifier > 0) typeLabel = "Front Row";
 
     return { seatNumber, index, price, typeLabel };
   });
+
+  const totalPrice = seatDetails.reduce((sum, detail) => sum + (detail?.price || 0), 0);
 
   return (
     <div className="w-full lg:w-80 shrink-0 rounded-[32px] p-6 bg-white/70 backdrop-blur-xl border border-white/40 shadow-2xl sticky top-24 seat-selection-panel">
