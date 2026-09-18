@@ -12,12 +12,19 @@ import { AircraftShell } from "@/components/seat/AircraftShell";
 import { SeatMap } from "@/components/seat/SeatMap";
 import { PassengerSelector } from "@/components/seat/PassengerSelector";
 import { SeatSelectionSummary } from "@/components/seat/SeatSelectionSummary";
+import { SeatLegend } from "@/components/seat/SeatLegend";
 import "./page.css";
 
 export default function SeatSelectionPage() {
   const router = useRouter();
-  const { selectedLegs, cabinClass, selectedSeats, setSelectedSeats, passengerCount, passengers } =
-    useBookingContext();
+  const {
+    selectedLegs,
+    cabinClass,
+    selectedSeats,
+    setSelectedSeats,
+    passengerCount,
+    passengers,
+  } = useBookingContext();
   const { layout, seatsInfo, isLoading, error, fetchSeatMap } = useSeats();
   const { t } = useTranslation();
 
@@ -31,24 +38,24 @@ export default function SeatSelectionPage() {
       return;
     }
     fetchSeatMap(selectedLegs[currentLegIndex].id, cabinClass);
-    setActivePassengerIndex(0); // reset passenger index when changing leg
   }, [selectedLegs, cabinClass, fetchSeatMap, router, currentLegIndex]);
 
   // Ensure currentLegSeats is always an array of length passengerCount
-  const currentLegSeats: string[] = selectedSeats[currentLegIndex] || Array(passengerCount).fill("");
+  const currentLegSeats: string[] =
+    selectedSeats[currentLegIndex] || Array(passengerCount).fill("");
 
   function handleSeatClick(seatNumber: string) {
     const isSelectedByMe = currentLegSeats[activePassengerIndex] === seatNumber;
-    
-    let newLegSeats = [...currentLegSeats];
-    
+
+    const newLegSeats = [...currentLegSeats];
+
     if (isSelectedByMe) {
       // Deselect
       newLegSeats[activePassengerIndex] = "";
     } else {
       // Select (or swap)
       newLegSeats[activePassengerIndex] = seatNumber;
-      
+
       // Auto-advance to next passenger without a seat
       const nextUnassigned = newLegSeats.findIndex((s) => !s);
       if (nextUnassigned !== -1) {
@@ -67,6 +74,7 @@ export default function SeatSelectionPage() {
 
     if (currentLegIndex < selectedLegs.length - 1) {
       setCurrentLegIndex((i) => i + 1);
+      setActivePassengerIndex(0);
     } else {
       router.push("/booking/passenger");
     }
@@ -85,8 +93,8 @@ export default function SeatSelectionPage() {
     <div className="min-h-dvh flex flex-col bg-[#f9fafb]">
       <Header variant="glass" />
 
-      <main className="flex-1 flex flex-col items-center pt-24 pb-12 px-4 max-w-7xl mx-auto w-full">
-        {/* Title + stepper */}
+      <main className="flex-1 flex flex-col items-center pt-24 pb-16 px-4 sm:px-6 max-w-7xl mx-auto w-full">
+        {/* Title + Stepper */}
         <div className="text-center mb-8 w-full max-w-4xl mx-auto">
           <h1 className="text-3xl font-bold text-[#111827] mb-2 font-display">
             Select Your Seats
@@ -96,16 +104,19 @@ export default function SeatSelectionPage() {
               ? `Flight ${currentLegIndex + 1} of ${selectedLegs.length}`
               : "Choose the perfect spot for your journey"}
           </p>
-          <div className="bg-white p-4 rounded-[24px] shadow-sm border border-gray-100">
-             <BookingStepper currentLabel={t.booking.seat.seatsCurrent} variant="light" />
+          <div className="bg-white p-4 rounded-3xl shadow-sm border border-slate-100">
+            <BookingStepper
+              currentLabel={t.booking.seat.seatsCurrent}
+              variant="light"
+            />
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8 w-full items-start justify-center">
-          {/* Main Seat Map Area */}
-          <div className="flex-1 w-full max-w-3xl flex flex-col min-w-0">
-            
-            {/* Passenger Selector */}
+        {/* Main Booking Layout: CSS Grid (Aircraft Area 70-75% | Selection Summary 25-30%) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 w-full items-start">
+          {/* Aircraft Area (Left Column: 70-75% on desktop) */}
+          <div className="lg:col-span-8 xl:col-span-9 flex flex-col gap-6 min-w-0 w-full">
+            {/* Passenger Selector (when passengerCount > 1) */}
             {layout && !isLoading && !error && (
               <PassengerSelector
                 passengers={passengers}
@@ -116,50 +127,60 @@ export default function SeatSelectionPage() {
               />
             )}
 
-            {/* Aircraft Map */}
-            <div className="w-full">
-              {isLoading && <LoadingState message={t.booking.seat.loading} />}
-              {!isLoading && error && (
-                <ErrorState
-                  message={error}
-                  onRetry={() =>
-                    selectedLegs &&
-                    cabinClass &&
-                    fetchSeatMap(selectedLegs[currentLegIndex].id, cabinClass)
-                  }
-                />
-              )}
-              {!isLoading && !error && !layout && (
-                <EmptyState message={t.booking.seat.noSeats} />
-              )}
+            {/* Aircraft State Wrappers */}
+            {isLoading && <LoadingState message={t.booking.seat.loading} />}
+            {!isLoading && error && (
+              <ErrorState
+                message={error}
+                onRetry={() =>
+                  selectedLegs &&
+                  cabinClass &&
+                  fetchSeatMap(selectedLegs[currentLegIndex].id, cabinClass)
+                }
+              />
+            )}
+            {!isLoading && !error && !layout && (
+              <EmptyState message={t.booking.seat.noSeats} />
+            )}
 
-              {layout && (
+            {/* Complete Horizontal Aircraft and Legend */}
+            {layout && !isLoading && !error && (
+              <>
                 <AircraftShell>
                   <SeatMap
                     layout={layout}
                     seatsInfo={seatsInfo}
-                    currentLegSeats={currentLegSeats[activePassengerIndex] ? [currentLegSeats[activePassengerIndex]] : []}
+                    currentLegSeats={
+                      currentLegSeats[activePassengerIndex]
+                        ? [currentLegSeats[activePassengerIndex]]
+                        : []
+                    }
                     allSelectedSeats={allSelectedSeats}
                     onSeatClick={handleSeatClick}
-                    maxSeatsReached={false} // UX decision: allow clicking to swap seat instead of disabling
+                    maxSeatsReached={false}
                   />
                 </AircraftShell>
-              )}
-            </div>
+
+                {/* Legend directly underneath AircraftShell */}
+                <SeatLegend />
+              </>
+            )}
           </div>
 
-          {/* Right Summary Panel */}
+          {/* SeatSelectionSummary (Right Column: 25-30% on desktop, normal grid item) */}
           {layout && !isLoading && !error && (
-            <SeatSelectionSummary
-              passengerCount={passengerCount}
-              selectedSeats={currentLegSeats}
-              seatsInfo={seatsInfo}
-              firstRow={layout.firstRow}
-              cabinClass={cabinClass!}
-              onConfirm={handleConfirm}
-              onClear={handleClearSelection}
-              isNextFlight={currentLegIndex < selectedLegs.length - 1}
-            />
+            <div className="lg:col-span-4 xl:col-span-3 min-w-0 w-full sticky top-24">
+              <SeatSelectionSummary
+                passengerCount={passengerCount}
+                selectedSeats={currentLegSeats}
+                seatsInfo={seatsInfo}
+                firstRow={layout.firstRow}
+                cabinClass={cabinClass!}
+                onConfirm={handleConfirm}
+                onClear={handleClearSelection}
+                isNextFlight={currentLegIndex < selectedLegs.length - 1}
+              />
+            </div>
           )}
         </div>
       </main>

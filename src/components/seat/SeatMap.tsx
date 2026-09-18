@@ -1,6 +1,6 @@
 "use client";
-import React from "react";
-import { useTranslation } from "@/hooks/useTranslation";
+
+import React, { useMemo } from "react";
 import { SeatLayout, SeatInfo } from "@/types/seat";
 import { SeatCell } from "./SeatCell";
 
@@ -8,7 +8,7 @@ interface SeatMapProps {
   layout: SeatLayout;
   seatsInfo: Record<string, SeatInfo>;
   currentLegSeats: string[];
-  allSelectedSeats: string[]; 
+  allSelectedSeats: string[];
   onSeatClick: (seatNumber: string) => void;
   maxSeatsReached: boolean;
 }
@@ -19,117 +19,164 @@ export function SeatMap({
   currentLegSeats,
   allSelectedSeats,
   onSeatClick,
-  maxSeatsReached
+  maxSeatsReached,
 }: SeatMapProps) {
-  const { t } = useTranslation();
+  const rowNumbers = useMemo(() => {
+    const list: number[] = [];
+    for (let r = layout.firstRow; r <= layout.lastRow; r++) {
+      list.push(r);
+    }
+    return list;
+  }, [layout.firstRow, layout.lastRow]);
 
-  const rowNumbers: number[] = [];
-  for (let r = layout.firstRow; r <= layout.lastRow; r++) {
-    rowNumbers.push(r);
-  }
-
-  // Which columns have aisles AFTER them
-  const aisleIndices = new Set<number>();
-  for (let i = 0; i < layout.columns.length - 1; i++) {
-    const colA = layout.columns[i];
-    const colB = layout.columns[i + 1];
-    for (const rowNum of rowNumbers) {
-      if (seatsInfo[`${rowNum}${colA}`]?.isAisle && seatsInfo[`${rowNum}${colB}`]?.isAisle) {
-        aisleIndices.add(i);
-        break;
+  // Determine aisle positions dynamically based on seat definitions
+  const aisleAfterColIndices = useMemo(() => {
+    const set = new Set<number>();
+    for (let i = 0; i < layout.columns.length - 1; i++) {
+      const colA = layout.columns[i];
+      const colB = layout.columns[i + 1];
+      let hasAisleBetween = false;
+      for (const rowNum of rowNumbers) {
+        const seatA = seatsInfo[`${rowNum}${colA}`];
+        const seatB = seatsInfo[`${rowNum}${colB}`];
+        if (seatA?.isAisle && seatB?.isAisle) {
+          hasAisleBetween = true;
+          break;
+        }
+      }
+      if (hasAisleBetween) {
+        set.add(i);
       }
     }
-  }
-
-  const exitRows = new Set<number>();
-  rowNumbers.forEach(rowNum => {
-    if (layout.columns.some(col => seatsInfo[`${rowNum}${col}`]?.isExitRow)) {
-      exitRows.add(rowNum);
+    // Fallback: if no adjacent pair found, place aisle in the middle (e.g. 3-3 -> after col index 2)
+    if (set.size === 0 && layout.columns.length > 2) {
+      set.add(Math.floor(layout.columns.length / 2) - 1);
     }
-  });
+    return set;
+  }, [layout.columns, rowNumbers, seatsInfo]);
+
+  // Identify exit rows across the cabin
+  const exitRows = useMemo(() => {
+    const set = new Set<number>();
+    rowNumbers.forEach((rowNum) => {
+      if (layout.columns.some((col) => seatsInfo[`${rowNum}${col}`]?.isExitRow)) {
+        set.add(rowNum);
+      }
+    });
+    return set;
+  }, [rowNumbers, layout.columns, seatsInfo]);
 
   return (
-    <div className="flex flex-col items-start select-none relative">
-      
-      {/* Top Header: Row Numbers (X-axis) */}
-      <div className="flex flex-row items-center mb-4">
-        {/* Top-left corner spacer for the A,B,C labels */}
-        <div className="w-8 sm:w-10 shrink-0" />
-        
-        {rowNumbers.map((rowNum) => (
-          <div key={`h-row-${rowNum}`} className="w-12 sm:w-14 text-center text-xs sm:text-sm font-semibold text-[#9ca3af] shrink-0">
-            {rowNum}
-          </div>
-        ))}
+    <div className="flex flex-col items-start select-none relative py-2">
+      {/* Top Header: Row Numbers (X-axis: 1 .. N progressing Left to Right) */}
+      <div className="flex flex-row items-end mb-3">
+        {/* Top-left spacer for Y-axis seat letter labels */}
+        <div className="w-7 sm:w-8 shrink-0" />
+
+        {rowNumbers.map((rowNum) => {
+          const isExit = exitRows.has(rowNum);
+          return (
+            <div
+              key={`row-header-${rowNum}`}
+              className="w-10 sm:w-11 flex flex-col items-center justify-end shrink-0"
+            >
+              {isExit && (
+                <span className="text-[9px] font-extrabold text-sky-600 uppercase tracking-tighter mb-0.5">
+                  EXIT
+                </span>
+              )}
+              <span className="text-xs sm:text-sm font-bold text-slate-500">
+                {rowNum}
+              </span>
+            </div>
+          );
+        })}
       </div>
 
-      {/* The Rows of Seats (Outer loop: Columns A, B, C; Inner loop: Row Nums 1, 2, 3) */}
+      {/* Seat Rows (Y-axis: A, B, C ... D, E, F progressing Top to Bottom) */}
       <div className="flex flex-col gap-1.5 sm:gap-2">
         {layout.columns.map((col, colIdx) => {
-          
           return (
-            <React.Fragment key={col}>
-              {/* Horizontal line of seats for this column (e.g. all 'A' seats going from nose to tail) */}
+            <React.Fragment key={`col-group-${col}`}>
+              {/* Horizontal line of seats for this column letter across all rows */}
               <div className="flex flex-row items-center">
-                
                 {/* Left Header: Column Letter (Y-axis) */}
-                <div className="w-8 sm:w-10 text-right pr-3 text-xs sm:text-sm font-bold text-[#6b7280] shrink-0">
+                <div className="w-7 sm:w-8 text-right pr-2 text-xs sm:text-sm font-black text-slate-400 shrink-0">
                   {col}
                 </div>
 
-                {/* The Seats for this specific column letter across all rows */}
+                {/* Individual Seat Cells across rows 1 .. N */}
                 {rowNumbers.map((rowNum) => {
                   const seatNumber = `${rowNum}${col}`;
-                  const info = seatsInfo[seatNumber] || { status: 'available', isExitRow: false, priceModifier: 0 };
+                  const info = seatsInfo[seatNumber];
+                  if (!info) {
+                    return (
+                      <div
+                        key={`empty-${seatNumber}`}
+                        className="w-10 sm:w-11 h-9 sm:h-10 flex items-center justify-center shrink-0"
+                      />
+                    );
+                  }
+
                   const isSelectedByMe = currentLegSeats.includes(seatNumber);
-                  const isSelectedByOther = allSelectedSeats.includes(seatNumber) && !isSelectedByMe;
-                  const isOccupied = info.status !== "available" || isSelectedByOther;
-                  const isFrontRow = info.priceModifier > 0 && !info.isExitRow;
+                  const isSelectedByOther =
+                    allSelectedSeats.includes(seatNumber) && !isSelectedByMe;
+                  const isOccupied =
+                    info.status !== "available" || isSelectedByOther;
+                  const isFrontRow =
+                    info.priceModifier > 0 && !info.isExitRow;
 
                   return (
-                    <div key={seatNumber} className="w-12 sm:w-14 flex justify-center shrink-0">
-                      {info.status === 'available' || isOccupied ? (
-                        <SeatCell
-                          seatNumber={seatNumber}
-                          columnLetter={col}
-                          isOccupied={isOccupied}
-                          isSelected={isSelectedByMe}
-                          isExitRow={info.isExitRow}
-                          isFrontRow={isFrontRow}
-                          price={info.priceModifier || 0}
-                          onClick={() => onSeatClick(seatNumber)}
-                          disabled={!isSelectedByMe && maxSeatsReached}
-                        />
-                      ) : (
-                        <div className="w-11 h-9 sm:w-12 sm:h-11" /> /* Empty spacer for non-existent seat */
-                      )}
+                    <div
+                      key={seatNumber}
+                      className="w-10 sm:w-11 flex justify-center shrink-0"
+                    >
+                      <SeatCell
+                        seatNumber={seatNumber}
+                        columnLetter={col}
+                        isOccupied={isOccupied}
+                        isSelected={isSelectedByMe}
+                        isExitRow={info.isExitRow}
+                        isFrontRow={isFrontRow}
+                        price={info.priceModifier || 0}
+                        onClick={() => onSeatClick(seatNumber)}
+                        disabled={!isSelectedByMe && maxSeatsReached}
+                      />
                     </div>
                   );
                 })}
               </div>
 
-              {/* Aisle (Horizontal Gap across the length of the plane) */}
-              {aisleIndices.has(colIdx) && (
-                <div className="flex flex-row items-center h-8 sm:h-10 my-1">
-                  <div className="w-8 sm:w-10 shrink-0" />
-                  
-                  {/* Inside the Aisle, print "EXIT" indicator for exit rows */}
-                  {rowNumbers.map(rowNum => (
-                    <div key={`aisle-${rowNum}`} className="w-12 sm:w-14 flex items-center justify-center shrink-0 text-red-400 font-bold text-[10px] sm:text-xs">
-                      {exitRows.has(rowNum) ? (
-                         <div className="bg-red-50 text-red-500 border border-red-200 px-1.5 py-0.5 rounded shadow-sm whitespace-nowrap z-10 relative">
-                           EXIT
-                         </div>
-                      ) : null}
-                    </div>
-                  ))}
+              {/* Aisle Row: Consistent horizontal gap between seat groups */}
+              {aisleAfterColIndices.has(colIdx) && (
+                <div className="flex flex-row items-center h-8 sm:h-9 my-1">
+                  {/* Left spacer matching letter column */}
+                  <div className="w-7 sm:w-8 shrink-0" />
+
+                  {/* Aisle space for each row, showing inline EXIT indicator if exit row */}
+                  {rowNumbers.map((rowNum) => {
+                    const isExit = exitRows.has(rowNum);
+                    return (
+                      <div
+                        key={`aisle-${rowNum}`}
+                        className="w-10 sm:w-11 flex items-center justify-center shrink-0 relative"
+                      >
+                        {isExit ? (
+                          <div className="bg-sky-100/90 text-sky-800 border border-sky-300 px-1 py-0.5 rounded text-[9px] font-black tracking-tight whitespace-nowrap shadow-xs z-10 animate-pulse">
+                            ← EXIT →
+                          </div>
+                        ) : (
+                          <div className="w-full h-[1px] bg-slate-200/70 border-b border-dashed border-slate-300" />
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </React.Fragment>
           );
         })}
       </div>
-
     </div>
   );
 }

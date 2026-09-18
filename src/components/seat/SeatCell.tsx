@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 
 interface SeatCellProps {
@@ -27,44 +28,44 @@ export function SeatCell({
 }: SeatCellProps) {
   const { t } = useTranslation();
 
-  const getSeatStyle = () => {
+  const getSeatConfig = () => {
     if (isOccupied) {
-      return { 
-        base: "bg-[#e5e7eb] border-[#d1d5db] text-[#9ca3af] cursor-not-allowed opacity-80", 
-        seatBack: "bg-[#d1d5db]",
-        label: t.booking.seat.status.occupied 
+      return {
+        base: "bg-slate-200 border-slate-300 text-slate-400 cursor-not-allowed opacity-80",
+        seatBack: "bg-slate-300 border-l border-slate-400/50",
+        label: t.booking.seat.status.occupied,
       };
     }
     if (isSelected) {
-      return { 
-        base: "bg-[#f5c800] border-[#c9a200] text-[#111827] cursor-pointer shadow-md transform scale-105 transition-transform", 
-        seatBack: "bg-[#d9b100]",
-        label: t.booking.seat.status.selected 
+      return {
+        base: "bg-[#f5c800] border-[#d9af00] text-slate-950 font-bold shadow-md ring-2 ring-[#f5c800]/50 scale-105 z-10",
+        seatBack: "bg-[#d9af00] border-l border-[#b59200]",
+        label: t.booking.seat.status.selected,
       };
     }
     if (isExitRow) {
-      return { 
-        base: "bg-[#fdf8e6] border-[#f5c800] text-[#856600] hover:bg-[#faebb3] cursor-pointer shadow-sm transition-colors", 
-        seatBack: "bg-[#faebb3]",
-        label: "Exit Row" 
+      return {
+        base: "bg-sky-50 border-sky-300 text-sky-900 hover:bg-sky-100 hover:border-sky-400 shadow-sm cursor-pointer",
+        seatBack: "bg-sky-200 border-l border-sky-300",
+        label: "Exit Row",
       };
     }
-    if (isFrontRow) {
-      return { 
-        base: "bg-[#f3f4f6] border-[#d1d5db] text-[#374151] hover:bg-[#e5e7eb] cursor-pointer shadow-sm transition-colors", 
-        seatBack: "bg-[#e5e7eb]",
-        label: "Front Row" 
+    if (isFrontRow || price > 0) {
+      return {
+        base: "bg-amber-50/90 border-amber-300 text-amber-950 hover:bg-amber-100 hover:border-amber-400 shadow-sm cursor-pointer",
+        seatBack: "bg-amber-300 border-l border-amber-400",
+        label: "Premium",
       };
     }
-    
-    return { 
-      base: "bg-white border-[#d1d5db] text-[#374151] hover:bg-gray-50 hover:border-gray-400 cursor-pointer shadow-sm transition-colors", 
-      seatBack: "bg-gray-200",
-      label: t.booking.seat.status.available 
+
+    return {
+      base: "bg-white border-slate-300 text-slate-700 hover:bg-amber-50/40 hover:border-amber-400 shadow-sm cursor-pointer",
+      seatBack: "bg-slate-200 border-l border-slate-300",
+      label: t.booking.seat.status.available,
     };
   };
 
-  const style = getSeatStyle();
+  const config = getSeatConfig();
   const priceDisplay = price > 0 ? `+฿${price.toLocaleString()}` : "Included";
 
   return (
@@ -72,27 +73,45 @@ export function SeatCell({
       type="button"
       onClick={onClick}
       disabled={isOccupied || disabled}
-      title={`${style.label} ${priceDisplay !== 'Included' ? priceDisplay : ''}`}
-      aria-label={`${seatNumber} - ${style.label}`}
-      className={`relative flex items-center justify-center w-11 h-9 sm:w-12 sm:h-11 border rounded-l-lg rounded-r-md ${style.base} focus:outline-none focus:ring-2 focus:ring-[#f5c800] focus:ring-offset-1 shrink-0 overflow-hidden group`}
+      title={`${seatNumber} - ${config.label} (${priceDisplay})`}
+      aria-label={`${seatNumber} - ${config.label}`}
+      className={`relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 border rounded-l-lg rounded-r-md transition-all duration-150 shrink-0 select-none overflow-hidden group ${config.base}`}
     >
-      {/* Seat Armrests/Cushion detailing (Top and Bottom now, since it faces left) */}
-      <div className="absolute inset-y-0.5 left-0.5 right-2 border border-black/5 rounded-l-md rounded-r-sm bg-gradient-to-r from-white/20 to-transparent z-0"></div>
-      
-      {/* Seat Label (Upright) */}
-      <span className="text-[10px] sm:text-xs font-semibold z-10 -ml-1">
+      {/* Armrests simulation (top and bottom subtle horizontal inset lines) */}
+      <div className="absolute top-0 inset-x-1 h-[2px] bg-black/5 rounded-t-sm" />
+      <div className="absolute bottom-0 inset-x-1 h-[2px] bg-black/5 rounded-b-sm" />
+
+      {/* Premium indicator dot */}
+      {(isFrontRow || (price > 0 && !isExitRow)) && !isOccupied && !isSelected && (
+        <span className="absolute top-1 left-1 w-1.5 h-1.5 rounded-full bg-amber-500" />
+      )}
+
+      {/* Exit row indicator dot */}
+      {isExitRow && !isOccupied && !isSelected && (
+        <span className="absolute top-1 left-1 w-1.5 h-1.5 rounded-full bg-sky-600" />
+      )}
+
+      {/* Seat Cushion & Column Letter (Upright, facing Nose to the left) */}
+      <span className="text-[11px] sm:text-xs font-bold z-10 pr-2">
         {columnLetter}
       </span>
-      
+
       {/* Occupied X indicator */}
       {isOccupied && (
-        <svg className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400 opacity-60 z-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        <svg
+          className="absolute inset-0 m-auto w-4 h-4 text-slate-400 opacity-60 z-20"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
         </svg>
       )}
-      
-      {/* Seat back structure (On the RIGHT side, since nose is LEFT) */}
-      <div className={`absolute right-0 top-0 bottom-0 w-2.5 sm:w-3 ${style.seatBack} rounded-r-sm shadow-[inset_2px_0_4px_rgba(0,0,0,0.05)] border-l border-black/5 z-0`} />
+
+      {/* Realistic Headrest / Seat Backrest (Attached to right edge, towards tail) */}
+      <div
+        className={`absolute right-0 top-0 bottom-0 w-2 sm:w-2.5 ${config.seatBack} rounded-r-md shadow-inner`}
+      />
     </button>
   );
 }

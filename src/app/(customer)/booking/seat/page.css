@@ -1,25 +1,26 @@
-.seat-page-container {
-  background: linear-gradient(180deg, #bfdbfe 0%, #dbeafe 40%, #e0f2fe 100%);
+/* Custom scrollbar for CabinViewport */
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
 }
 
-.seat-title-card {
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(226, 232, 240, 0.5);
+  border-radius: 9999px;
 }
 
-.seat-map-container {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+  transition: background 0.2s ease;
 }
 
-.seat-selection-panel {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 2px solid #f5c800;
-  box-shadow: 0 8px 32px rgba(245, 200, 0, 0.15);
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 rgba(226, 232, 240, 0.5);
 }
