@@ -4,6 +4,7 @@ export const en = {
     book: "Book",
     flights: "Flights",
     myBooking: "My Booking",
+    manage: "Manage Booking",
   },
   home: {
     hero: "Your Journey Begins Here.",
@@ -293,6 +294,15 @@ export const en = {
     loading: "Loading your e-ticket...",
     invalidRef: "Invalid booking reference",
     notFound: "Ticket not found",
+  },
+  manage: {
+    subtitle: "View your e-ticket or cancel your booking.",
+    fieldsRequired: "Both fields are required.",
+    reference: "Booking Reference (PNR)",
+    lastName: "Contact or Passenger Last Name",
+    search: "Find My Booking",
+    securityNote: "For your security, we require both the Booking Reference and the Last Name to retrieve your e-ticket.",
+    invalidCredentials: "Booking Reference or Last Name is incorrect."
   },
   common: {
     back: "← Back",

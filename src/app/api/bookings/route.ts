@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { BookingService } from "@/lib/services/booking.service";
 import { SeatService } from "@/lib/services/seat.service";
 import { PaymentService } from "@/lib/services/payment.service";
+import { EmailService } from "@/lib/services/email.service";
 import type { CreateBookingPayload } from "@/types/booking";
 import type { MockPaymentPayload } from "@/types/payment";
 
@@ -118,6 +119,13 @@ export async function POST(request: Request) {
     if (payment.status === "success") {
       // Step 5a: Confirm booking + issue e-ticket
       await bookingService.confirmBooking(booking.id);
+
+      // Trigger Mock Email Notification (non-blocking)
+      EmailService.sendBookingConfirmation(
+        bookingPayload.contact.email,
+        booking.reference,
+        bookingPayload.contact.firstName
+      ).catch((e) => console.error("Email Service Error:", e));
 
       return Response.json(
         {
