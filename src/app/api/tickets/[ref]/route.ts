@@ -34,7 +34,7 @@ export async function GET(
       return Response.json({ error: "Booking not found" }, { status: 404 });
     }
 
-    if (booking.status !== "confirmed") {
+    if (booking.status !== "confirmed" && booking.status !== "cancelled") {
       return Response.json(
         { error: "E-ticket is only available for confirmed bookings." },
         { status: 403 }
@@ -50,6 +50,7 @@ export async function GET(
     const firstFlight = flights[0];
     const ticketBooking = {
       reference: booking.reference,
+      status: booking.status,
       cabinClass: booking.cabinClass,
       passengers: booking.passengers,
       flight: firstFlight

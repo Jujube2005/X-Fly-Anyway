@@ -493,12 +493,42 @@ export async function updatePaymentStatusByBooking(
   supabase: AnySupabaseClient,
   bookingId: string,
   status: string,
-  fromStatus?: string
+  fromStatus?: string,
+  extraFields?: Record<string, unknown>
 ) {
-  let q = supabase.from("payment").update({ status }).eq("booking_id", bookingId);
+  let q = supabase
+    .from("payment")
+    .update({ status, ...extraFields })
+    .eq("booking_id", bookingId);
   if (fromStatus) q = q.eq("status", fromStatus);
   const result = await q;
   return result as { error: { message: string } | null };
+}
+
+// ─── Cancellation ────────────────────────────────────────────────────────────
+
+export async function insertCancellation(
+  supabase: AnySupabaseClient,
+  values: Partial<import("@/types/database").CancellationRow>
+) {
+  const result = await supabase
+    .from("cancellation")
+    .insert(values)
+    .select()
+    .single();
+  return result as { data: import("@/types/database").CancellationRow | null; error: { message: string } | null };
+}
+
+export async function queryCancellationByBooking(
+  supabase: AnySupabaseClient,
+  bookingId: string
+) {
+  const result = await supabase
+    .from("cancellation")
+    .select("*")
+    .eq("booking_id", bookingId)
+    .maybeSingle();
+  return result as { data: import("@/types/database").CancellationRow | null; error: { message: string } | null };
 }
 
 // ─── E-Ticket ────────────────────────────────────────────────────────────────

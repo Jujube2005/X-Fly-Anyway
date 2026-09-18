@@ -124,6 +124,10 @@ export default function TicketPage() {
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [selectedPassenger, setSelectedPassenger] = useState<number | "all">("all");
 
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [cancelErrorMsg, setCancelErrorMsg] = useState<string | null>(null);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+
   const isInvalidRef = !ref || ref === "undefined";
   const error = isInvalidRef ? (t.ticket?.invalidRef ?? "Invalid booking reference") : fetchError;
 
@@ -164,6 +168,33 @@ export default function TicketPage() {
     window.print();
   }
 
+  const confirmCancel = async () => {
+    if (!ref || ref === "undefined") return;
+    setIsCancelling(true);
+    setCancelErrorMsg(null);
+    try {
+      const res = await fetch(`/api/bookings/${encodeURIComponent(ref)}/cancel`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: "Customer requested cancellation via ticket page" })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to cancel booking");
+      setShowCancelConfirm(false);
+      setTicket((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          booking: { ...prev.booking, status: "cancelled" }
+        } as ETicket;
+      });
+    } catch (err: any) {
+      setCancelErrorMsg(err.message);
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
   const bookingRef = ticket?.booking?.reference ?? ref ?? "—";
   const ticketCode = ticket?.ticketCode ?? `ETK-${bookingRef}`;
   const rawClass = ticket?.booking?.cabinClass;
@@ -189,6 +220,17 @@ export default function TicketPage() {
     : [{ firstName: "Passenger", lastName: "" } as Passenger];
 
   const isPageLoading = isInvalidRef ? false : isLoading;
+  const isCancelled = ticket?.booking?.status === 'cancelled';
+
+  let canCancel = false;
+  if (ticket && ticket.booking?.status === "confirmed" && flights.length > 0) {
+    const now = Date.now();
+    const earliestDeparture = Math.min(...flights.map(f => new Date(f.departureAt).getTime()));
+    const hoursToDeparture = (earliestDeparture - now) / (1000 * 60 * 60);
+    if (hoursToDeparture >= 24) {
+      canCancel = true;
+    }
+  }
 
   return (
     <div className="min-h-dvh flex flex-col items-center justify-center px-4 py-12 ticket-page-container">
@@ -248,8 +290,16 @@ export default function TicketPage() {
             return (
               <div
                 key={p.id || passengerIndex}
-                className="rounded-3xl overflow-hidden print:shadow-none ticket-card-glass ticket-perforation flex flex-col"
+                className={`rounded-3xl overflow-hidden print:shadow-none ticket-card-glass ticket-perforation flex flex-col relative ${isCancelled ? 'opacity-70 grayscale' : ''}`}
               >
+                {isCancelled && (
+                  <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
+                    <div className="border-4 border-red-500 text-red-500 text-4xl font-black uppercase tracking-widest px-8 py-3 rounded-xl rotate-[-15deg] shadow-lg bg-black/50">
+                      CANCELLED
+                    </div>
+                  </div>
+                )}
+                
                 {/* 1. Ticket Header */}
                 <div className="px-6 md:px-8 pt-6 pb-4 border-b border-white/10 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
@@ -268,9 +318,15 @@ export default function TicketPage() {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <span className="px-3 py-1 rounded-full text-[11px] font-bold tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 uppercase">
-                      {t.ticket?.confirmed ?? "Confirmed"}
-                    </span>
+                    {isCancelled ? (
+                      <span className="px-3 py-1 rounded-full text-[11px] font-bold tracking-wider bg-red-500/20 text-red-400 border border-red-500/30 uppercase">
+                        Cancelled
+                      </span>
+                    ) : (
+                      <span className="px-3 py-1 rounded-full text-[11px] font-bold tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 uppercase">
+                        {t.ticket?.confirmed ?? "Confirmed"}
+                      </span>
+                    )}
                     <span className="text-white/90 text-sm font-semibold tracking-wide hidden sm:inline">
                       {t.ticket?.title ?? "E-Ticket"}
                     </span>
@@ -453,19 +509,21 @@ export default function TicketPage() {
                   </div>
 
                   {/* Real Airline QR Code section */}
-                  <div className="shrink-0 flex flex-col items-center gap-2 self-center">
-                    <AirlineQRCode
-                      data={`XFA//${ticketCode}//${bookingRef}//${p.firstName || ""}_${p.lastName || ""}//SEAT:${passengerSeat}`}
-                    />
-                    <div className="text-center">
-                      <span className="text-[10px] font-mono text-white/50 block font-semibold tracking-wider">
-                        {ticketCode}
-                      </span>
-                      <span className="text-[9px] text-white/30 block tracking-tight">
-                        {t.ticket?.scanToVerify ?? "Scan to verify electronic ticket"}
-                      </span>
+                  {!isCancelled && (
+                    <div className="shrink-0 flex flex-col items-center gap-2 self-center">
+                      <AirlineQRCode
+                        data={`XFA//${ticketCode}//${bookingRef}//${p.firstName || ""}_${p.lastName || ""}//SEAT:${passengerSeat}`}
+                      />
+                      <div className="text-center">
+                        <span className="text-[10px] font-mono text-white/50 block font-semibold tracking-wider">
+                          {ticketCode}
+                        </span>
+                        <span className="text-[9px] text-white/30 block tracking-tight">
+                          {t.ticket?.scanToVerify ?? "Scan to verify electronic ticket"}
+                        </span>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Dashed tear line indicator */}
@@ -481,24 +539,96 @@ export default function TicketPage() {
           })}
 
           {/* Actions & Print Options */}
-          <div className="flex flex-col gap-3 print:hidden">
-            <Button
-              fullWidth
-              onClick={handlePrint}
-              className="flex items-center justify-center gap-2 text-base font-bold py-3.5"
-            >
-              <span>🖨</span>
-              <span>{t.ticket?.downloadPrint ?? "Download / Print E-Ticket"}</span>
-            </Button>
-            <p className="text-center text-xs text-white/40">
-              {t.ticket?.printTip ?? "Tip: In your browser print dialog, select \"Save as PDF\" to download a digital copy."}
-            </p>
+          <div className="flex flex-col gap-3 print:hidden mt-2">
+            {!isCancelled && (
+              <>
+                <Button
+                  fullWidth
+                  onClick={handlePrint}
+                  className="flex items-center justify-center gap-2 text-base font-bold py-3.5"
+                >
+                  <span>🖨</span>
+                  <span>{t.ticket?.downloadPrint ?? "Download / Print E-Ticket"}</span>
+                </Button>
+                <p className="text-center text-xs text-white/40">
+                  {t.ticket?.printTip ?? "Tip: In your browser print dialog, select \"Save as PDF\" to download a digital copy."}
+                </p>
+              </>
+            )}
+
+            {!isCancelled && canCancel && (
+              <Button
+                variant="ghost"
+                fullWidth
+                onClick={() => setShowCancelConfirm(true)}
+                className="text-red-400 hover:text-red-300 hover:bg-red-400/10 transition-colors"
+              >
+                Cancel Booking & Refund
+              </Button>
+            )}
+
+            {!isCancelled && ticket?.booking?.status === "confirmed" && !canCancel && (
+              <p className="text-center text-xs text-white/40 italic">
+                Cancellations are only permitted up to 24 hours before scheduled departure.
+              </p>
+            )}
+
             <button
               onClick={() => router.push("/")}
               className="text-sm text-white/60 hover:text-white transition-colors underline text-center mt-2"
             >
               {t.ticket?.backHome ?? "Back to Home"}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Cancellation Confirmation Modal */}
+      {showCancelConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-[#111827] border border-white/10 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4">
+            <div className="p-6">
+              <h2 className="text-xl font-black text-white mb-2">Cancel Booking</h2>
+              <p className="text-sm text-white/70 mb-4">
+                Are you sure you want to cancel your booking? 
+                This action cannot be undone.
+              </p>
+              
+              <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 mb-6 text-sm">
+                <ul className="list-disc pl-4 text-red-200/90 space-y-1">
+                  <li>Your seats will be released immediately.</li>
+                  <li>A full refund will be processed to your original payment method.</li>
+                  <li>Refunds typically take 7 business days to appear.</li>
+                </ul>
+              </div>
+
+              {cancelErrorMsg && (
+                <div className="bg-red-500/20 text-red-400 p-3 rounded-xl text-sm mb-4 border border-red-500/30">
+                  {cancelErrorMsg}
+                </div>
+              )}
+
+              <div className="flex gap-3 mt-6">
+                <Button 
+                  variant="ghost" 
+                  fullWidth 
+                  onClick={() => setShowCancelConfirm(false)}
+                  disabled={isCancelling}
+                  className="bg-white/5 hover:bg-white/10 text-white"
+                >
+                  Keep Booking
+                </Button>
+                <Button 
+                  fullWidth 
+                  onClick={confirmCancel}
+                  isLoading={isCancelling}
+                  disabled={isCancelling}
+                  className="bg-red-500 hover:bg-red-600 text-white border-transparent"
+                >
+                  Confirm Cancellation
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       )}

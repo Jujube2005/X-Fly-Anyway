@@ -139,10 +139,27 @@ export class PaymentService {
 
   /**
    * Refund a payment — mock only.
+   * Ensures idempotency by requiring fromStatus === 'success'.
+   * Records refunded_at timestamp.
    */
   async refundPayment(bookingId: string): Promise<void> {
+    const existing = await this.getPaymentByBookingId(bookingId);
+    if (!existing) {
+      throw new Error(`Payment record not found for booking ${bookingId}`);
+    }
+    if (existing.status === "refunded") {
+      throw new Error("Payment has already been refunded.");
+    }
+    if (existing.status !== "success") {
+      throw new Error(`Cannot refund payment in status '${existing.status}'.`);
+    }
+
     const { error } = await updatePaymentStatusByBooking(
-      this.supabase, bookingId, "refunded", "success"
+      this.supabase,
+      bookingId,
+      "refunded",
+      "success",
+      { refunded_at: new Date().toISOString() }
     );
     if (error) throw new Error(`Refund failed: ${error.message}`);
   }

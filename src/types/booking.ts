@@ -50,3 +50,26 @@ export interface BookingDraft {
   currency: string;
 }
 
+export interface BookingCancellation {
+  id: string;
+  bookingId: string;
+  reason: string | null;
+  refundAmount: number;
+  refundCurrency: string;
+  refundStatus: "pending" | "completed" | "failed";
+  refundChannel: string;
+  cancelledAt: string;
+}
+
+export interface CancelBookingResult {
+  success: boolean;
+  booking: Booking;
+  cancellation: BookingCancellation;
+  refund: {
+    amount: number;
+    currency: string;
+    channel: string;
+    timeline: string;
+  };
+}
+

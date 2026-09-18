@@ -188,8 +188,22 @@ export interface PaymentRow {
   status: PaymentStatusValue;  // default "pending"
   transaction_ref: string | null; // mock transaction reference — UNIQUE when set
   paid_at: string | null;      // ISO 8601
+  refunded_at: string | null;  // ISO 8601
   created_at: string;
   updated_at: string;
+}
+
+export type RefundStatusValue = "pending" | "completed" | "failed";
+
+export interface CancellationRow {
+  id: string;                  // UUID PRIMARY KEY
+  booking_id: string;          // FK → booking.id — UNIQUE
+  reason: string | null;
+  refund_amount: number;       // CHECK (refund_amount >= 0)
+  refund_currency: string;     // default "THB"
+  refund_status: RefundStatusValue;
+  refund_channel: string;      // e.g. "credit_card", "card_charge", "bitcoin"
+  cancelled_at: string;        // ISO 8601
 }
 
 export interface ETicketRow {
@@ -219,16 +233,19 @@ export type BookingInsert = Omit<BookingRow, "created_at" | "updated_at"> & {
   id?: string;
 };
 
-export type PassengerInsert = Omit<PassengerRow, "created_at"> & {
-  id?: string;
-};
+export type BookingLegInsert = Omit<BookingLegRow, "created_at"> & { id?: string };
 
-export type BookingSeatInsert = Omit<BookingSeatRow, "created_at"> & {
-  id?: string;
-};
+export type PassengerInsert = Omit<PassengerRow, "created_at"> & { id?: string };
+
+export type BookingSeatInsert = Omit<BookingSeatRow, "created_at"> & { id?: string };
 
 export type PaymentInsert = Omit<PaymentRow, "created_at" | "updated_at"> & {
   id?: string;
+};
+
+export type CancellationInsert = Omit<CancellationRow, "id" | "cancelled_at"> & {
+  id?: string;
+  cancelled_at?: string;
 };
 
 export type ETicketInsert = Omit<ETicketRow, "created_at"> & { id?: string };
@@ -263,6 +280,11 @@ export interface Database {
         Insert: BookingInsert;
         Update: Partial<BookingInsert>;
       };
+      booking_leg: {
+        Row: BookingLegRow;
+        Insert: BookingLegInsert;
+        Update: Partial<BookingLegInsert>;
+      };
       passenger: {
         Row: PassengerRow;
         Insert: PassengerInsert;
@@ -277,6 +299,11 @@ export interface Database {
         Row: PaymentRow;
         Insert: PaymentInsert;
         Update: Partial<PaymentInsert>;
+      };
+      cancellation: {
+        Row: CancellationRow;
+        Insert: CancellationInsert;
+        Update: Partial<CancellationInsert>;
       };
       e_ticket: {
         Row: ETicketRow;

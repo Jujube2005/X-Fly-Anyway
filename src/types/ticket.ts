@@ -20,6 +20,7 @@ export interface ETicketSeat {
 
 export interface ETicketBooking {
   reference: string;
+  status?: string;
   cabinClass: CabinClass;
   passengers: Passenger[];
   flight: ETicketFlight | null;

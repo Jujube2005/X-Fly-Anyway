@@ -1,9 +1,17 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { BookingRow, PassengerRow } from "@/types/database";
-import type { Booking, CreateBookingPayload } from "@/types/booking";
+import type {
+  Booking,
+  CreateBookingPayload,
+  BookingStatus,
+  CancelBookingResult,
+  BookingCancellation,
+} from "@/types/booking";
 import type { Passenger } from "@/types/passenger";
 import type { CabinClass } from "@/types/flight";
 import { generateBookingCode } from "@/lib/utils/booking-code";
+import { SeatService } from "./seat.service";
+import { PaymentService } from "./payment.service";
 import {
   insertBooking,
   queryBookingByRef,
@@ -15,6 +23,9 @@ import {
   queryPassengersByBooking,
   queryBookingSeatsWithSeat,
   insertETicket,
+  queryFlightById,
+  insertCancellation,
+  queryCancellationByBooking,
 } from "@/lib/supabase/queries";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -226,5 +237,177 @@ export class BookingService {
   async cancelBooking(bookingId: string): Promise<void> {
     const { error } = await updateBookingStatus(this.supabase, bookingId, "cancelled");
     if (error) throw new Error(`Booking cancellation failed: ${error.message}`);
+  }
+
+  /**
+   * Cancel a booking with full refund orchestration (FR-CUS-015, FR-CUS-016, AC-004).
+   * - Validates booking exists and is 'confirmed'.
+   * - Validates departure is at least 24 hours away (using earliest leg departure).
+   * - Ensures payment exists and is 'success' (not already refunded).
+   * - Updates booking to 'cancelled'.
+   * - Releases seats from booking_seat.
+   * - Increments available_seats in flight_cabin_class for each leg.
+   * - Marks payment as 'refunded'.
+   * - Records cancellation in cancellation table.
+   */
+  async cancelBookingWithRefund(
+    reference: string,
+    reason?: string
+  ): Promise<CancelBookingResult> {
+    const { data: bookingRow, error: bookingError } = await queryBookingByRef(
+      this.supabase,
+      reference.toUpperCase()
+    );
+
+    if (bookingError || !bookingRow) {
+      throw new Error(`Booking not found with reference ${reference}`);
+    }
+
+    // 1. Validate booking status
+    if (bookingRow.status === "cancelled") {
+      throw new Error("This booking has already been cancelled.");
+    }
+    if (bookingRow.status !== "confirmed") {
+      throw new Error(
+        `Cannot cancel booking in status '${bookingRow.status}'. Only confirmed bookings can be cancelled.`
+      );
+    }
+
+    // 2. Fetch full booking details (passengers, legs, seats)
+    const booking = await this.getBookingByReference(reference.toUpperCase());
+    if (!booking) {
+      throw new Error(`Failed to load booking details for ${reference}`);
+    }
+
+    const { queryBookingLegsByBooking } = await import("@/lib/supabase/queries");
+    const legResult = await queryBookingLegsByBooking(this.supabase, bookingRow.id);
+    const legs = legResult.data ?? [];
+
+    const flightIds = legs.length > 0
+      ? legs.map((l) => l.flight_id)
+      : (bookingRow.flight_id ? [bookingRow.flight_id] : []);
+
+    if (flightIds.length === 0) {
+      throw new Error("No flight legs associated with this booking.");
+    }
+
+    // 3. Query flights to check the 24-hour departure condition
+    const flightPromises = flightIds.map((fid) => queryFlightById(this.supabase, fid));
+    const flightResults = await Promise.all(flightPromises);
+    const flights = flightResults
+      .map((r) => r.data)
+      .filter((f): f is NonNullable<typeof f> => !!f);
+
+    if (flights.length === 0) {
+      throw new Error("Flight details could not be retrieved for cancellation validation.");
+    }
+
+    // Find the earliest scheduled departure time (leg_sequence = 1 or earliest departure)
+    const departureTimes = flights.map((f) => new Date(f.departure_time).getTime());
+    const earliestDepartureEpoch = Math.min(...departureTimes);
+    const nowEpoch = Date.now();
+    const hoursToDeparture = (earliestDepartureEpoch - nowEpoch) / (1000 * 60 * 60);
+
+    if (hoursToDeparture < 24) {
+      throw new Error(
+        `Cancellation is only permitted at least 24 hours prior to scheduled departure (FR-CUS-015). Scheduled departure is in ${Math.max(0, hoursToDeparture).toFixed(1)} hours.`
+      );
+    }
+
+    // 4. Verify payment status before altering any state
+    const paymentService = new PaymentService(this.supabase);
+    const payment = await paymentService.getPaymentByBookingId(bookingRow.id);
+
+    if (!payment) {
+      throw new Error("Payment record not found for this booking.");
+    }
+    if (payment.status === "refunded") {
+      throw new Error("Payment for this booking has already been refunded.");
+    }
+    if (payment.status !== "success") {
+      throw new Error(`Cannot refund payment in status '${payment.status}'.`);
+    }
+
+    // 5. Atomic Cancellation Execution
+    // 5.1 Update booking status to 'cancelled'
+    await this.cancelBooking(bookingRow.id);
+
+    // 5.2 Release reserved seats
+    const seatService = new SeatService(this.supabase);
+    await seatService.releaseSeats(bookingRow.id);
+
+    // 5.3 Increment available seats for each flight leg
+    const passengerCount = booking.passengers.length || 1;
+    for (const fid of flightIds) {
+      await seatService.incrementAvailableSeats(fid, booking.cabinClass, passengerCount);
+    }
+
+    // 5.4 Process payment refund
+    await paymentService.refundPayment(bookingRow.id);
+
+    // 5.5 Insert cancellation audit record
+    const { data: cancellationRow, error: cancelInsertError } = await insertCancellation(
+      this.supabase,
+      {
+        booking_id: bookingRow.id,
+        reason: reason?.trim() || null,
+        refund_amount: Number(bookingRow.total_amount),
+        refund_currency: bookingRow.currency,
+        refund_status: "completed",
+        refund_channel: payment.method,
+      }
+    );
+
+    if (cancelInsertError || !cancellationRow) {
+      console.error(
+        `[cancelBookingWithRefund] Warning: Cancellation audit insert failed for booking ${bookingRow.id}:`,
+        cancelInsertError
+      );
+    }
+
+    const updatedBooking: Booking = {
+      ...booking,
+      status: "cancelled",
+      updatedAt: new Date().toISOString(),
+    };
+
+    return {
+      success: true,
+      booking: updatedBooking,
+      cancellation: {
+        id: cancellationRow?.id ?? "",
+        bookingId: bookingRow.id,
+        reason: cancellationRow?.reason ?? (reason?.trim() || null),
+        refundAmount: Number(bookingRow.total_amount),
+        refundCurrency: bookingRow.currency,
+        refundStatus: "completed",
+        refundChannel: payment.method,
+        cancelledAt: cancellationRow?.cancelled_at ?? new Date().toISOString(),
+      },
+      refund: {
+        amount: Number(bookingRow.total_amount),
+        currency: bookingRow.currency,
+        channel: payment.method,
+        timeline: "ภายใน 7 วันทำการ (Within 7 business days)",
+      },
+    };
+  }
+
+  /**
+   * Get cancellation record for a booking.
+   */
+  async getCancellation(bookingId: string): Promise<BookingCancellation | null> {
+    const { data, error } = await queryCancellationByBooking(this.supabase, bookingId);
+    if (error || !data) return null;
+    return {
+      id: data.id,
+      bookingId: data.booking_id,
+      reason: data.reason,
+      refundAmount: Number(data.refund_amount),
+      refundCurrency: data.refund_currency,
+      refundStatus: data.refund_status as "pending" | "completed" | "failed",
+      refundChannel: data.refund_channel,
+      cancelledAt: data.cancelled_at,
+    };
   }
 }
