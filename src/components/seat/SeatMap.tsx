@@ -105,7 +105,7 @@ export function SeatMap({
 
                   return (
                     <React.Fragment key={seatNumber}>
-                      <div className="transform rotate-90 my-1">
+                      <div className="my-1">
                         <SeatCell
                           seatNumber={seatNumber}
                           columnLetter={col}

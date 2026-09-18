@@ -65,8 +65,6 @@ export function SeatCell({
   };
 
   const style = getSeatStyle();
-  
-  // Format price if applicable
   const priceDisplay = price > 0 ? `+฿${price.toLocaleString()}` : "Included";
 
   return (
@@ -76,13 +74,13 @@ export function SeatCell({
       disabled={isOccupied || disabled}
       title={`${style.label} ${priceDisplay !== 'Included' ? priceDisplay : ''}`}
       aria-label={`${seatNumber} - ${style.label}`}
-      className={`relative flex flex-col items-center justify-between w-9 h-11 sm:w-11 sm:h-12 border rounded-t-lg rounded-b-md ${style.base} focus:outline-none focus:ring-2 focus:ring-[#f5c800] focus:ring-offset-1 shrink-0 overflow-hidden group`}
+      className={`relative flex items-center justify-center w-11 h-9 sm:w-12 sm:h-11 border rounded-l-lg rounded-r-md ${style.base} focus:outline-none focus:ring-2 focus:ring-[#f5c800] focus:ring-offset-1 shrink-0 overflow-hidden group`}
     >
-      {/* Seat Armrests/Cushion detailing */}
-      <div className="absolute inset-x-0.5 top-0.5 bottom-2 border border-black/5 rounded-t-md rounded-b-sm bg-gradient-to-b from-white/20 to-transparent"></div>
+      {/* Seat Armrests/Cushion detailing (Top and Bottom now, since it faces left) */}
+      <div className="absolute inset-y-0.5 left-0.5 right-2 border border-black/5 rounded-l-md rounded-r-sm bg-gradient-to-r from-white/20 to-transparent z-0"></div>
       
-      {/* Seat Label */}
-      <span className="text-[10px] sm:text-xs font-semibold z-10 mt-1">
+      {/* Seat Label (Upright) */}
+      <span className="text-[10px] sm:text-xs font-semibold z-10 -ml-1">
         {columnLetter}
       </span>
       
@@ -93,8 +91,8 @@ export function SeatCell({
         </svg>
       )}
       
-      {/* Seat back structure */}
-      <div className={`w-full h-2.5 sm:h-3 ${style.seatBack} rounded-b-sm shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)] border-t border-black/5`} />
+      {/* Seat back structure (On the RIGHT side, since nose is LEFT) */}
+      <div className={`absolute right-0 top-0 bottom-0 w-2.5 sm:w-3 ${style.seatBack} rounded-r-sm shadow-[inset_2px_0_4px_rgba(0,0,0,0.05)] border-l border-black/5 z-0`} />
     </button>
   );
 }
