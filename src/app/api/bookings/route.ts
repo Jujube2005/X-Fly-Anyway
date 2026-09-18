@@ -75,9 +75,14 @@ export async function POST(request: Request) {
       const legSeats = bookingPayload.seatNumbers[i];
       if (!legSeats || legSeats.length === 0) continue;
 
-      // Reserve seats (marks as 'occupied', inserts booking_seat)
+      // Reserve seats (inserts booking_seat)
       // Throws on race condition (unique constraint violation)
-      await seatService.reserveSeats(flightId, legSeats, booking.id);
+      await seatService.reserveSeats(
+        flightId,
+        legSeats,
+        booking.id,
+        bookingPayload.cabinClass
+      );
 
       // Decrement available_seats counter
       await seatService.decrementAvailableSeats(

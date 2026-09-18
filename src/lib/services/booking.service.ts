@@ -190,16 +190,16 @@ export class BookingService {
     // Group seats by flightId, then map back to flightIds order
     const seatsByFlight = new Map<string, string[]>();
     for (const bs of bsResult.data ?? []) {
-      const flightId = bs.seat?.flight_id;
-      const seatNum = bs.seat?.seat_number;
+      const flightId = bs.flight_id;
+      const seatNum = bs.seat_definition?.seat_number;
       if (flightId && seatNum) {
         if (!seatsByFlight.has(flightId)) seatsByFlight.set(flightId, []);
         seatsByFlight.get(flightId)!.push(seatNum);
       }
     }
     
-    const flightIds = (legResult.data ?? []).map(l => l.flight_id);
-    const seatNumbers = flightIds.map(fid => seatsByFlight.get(fid) ?? []);
+    const flightIds = (legResult.data ?? []).map((l) => l.flight_id);
+    const seatNumbers = flightIds.map((fid) => seatsByFlight.get(fid) ?? []);
 
     const booking = toBooking(bookingRow, passengers, seatNumbers);
     booking.flightIds = flightIds;
