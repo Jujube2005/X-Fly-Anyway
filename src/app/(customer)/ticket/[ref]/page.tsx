@@ -497,7 +497,7 @@ export default function TicketPage() {
               onClick={() => router.push("/")}
               className="text-sm text-white/60 hover:text-white transition-colors underline text-center mt-2"
             >
-              {t.ticket?.backHome ?? "🏠 Back to Home"}
+              {t.ticket?.backHome ?? "Back to Home"}
             </button>
           </div>
         </div>

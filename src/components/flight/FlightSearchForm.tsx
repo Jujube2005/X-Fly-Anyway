@@ -128,9 +128,18 @@ export function FlightSearchForm({
     [originAirport, destAirport]
   );
 
-  // Auto-select round-trip for international routes
+  // Auto-select round-trip for international routes, and revert to one-way when switching to domestic
+  const prevIsIntlRef = useRef(isIntl);
   useEffect(() => {
-    if (isIntl) setTripType("round_trip");
+    if (isIntl) {
+      setTripType("round_trip");
+    } else if (prevIsIntlRef.current && !isIntl) {
+      // Switched from international to domestic: revert to one_way and clear return date/errors
+      setTripType("one_way");
+      setReturnDate("");
+      setErrors((prev) => ({ ...prev, returnDate: undefined, international: undefined }));
+    }
+    prevIsIntlRef.current = isIntl;
   }, [isIntl]);
 
   // Apply defaultDestination override (popular destination click)
@@ -194,37 +203,37 @@ export function FlightSearchForm({
     const today = todayStr();
     const errs: FormErrors = {};
 
-    if (!origin) errs.origin = "กรุณาเลือกสนามบินต้นทาง";
-    if (!destination) errs.destination = "กรุณาเลือกสนามบินปลายทาง";
+    if (!origin) errs.origin = t.search?.errors?.originRequired ?? "กรุณาเลือกสนามบินต้นทาง";
+    if (!destination) errs.destination = t.search?.errors?.destRequired ?? "กรุณาเลือกสนามบินปลายทาง";
 
     if (origin && destination && origin === destination) {
-      errs.sameAirport = "ต้นทางและปลายทางต้องไม่ใช่สนามบินเดียวกัน";
+      errs.sameAirport = t.search?.errors?.sameAirport ?? "ต้นทางและปลายทางต้องไม่ใช่สนามบินเดียวกัน";
     }
 
     if (!departureDate) {
-      errs.departureDate = "กรุณาเลือกวันเดินทางไป";
+      errs.departureDate = t.search?.errors?.depDateRequired ?? "กรุณาเลือกวันเดินทางไป";
     } else if (departureDate < today) {
-      errs.departureDate = "วันเดินทางไปต้องไม่เป็นวันที่ผ่านมาแล้ว";
+      errs.departureDate = t.search?.errors?.depDatePast ?? "วันเดินทางไปต้องไม่เป็นวันที่ผ่านมาแล้ว";
     }
 
     if (tripType === "round_trip") {
       if (!returnDate) {
-        errs.returnDate = "กรุณาเลือกวันเดินทางกลับ";
+        errs.returnDate = t.search?.errors?.returnDateRequired ?? "กรุณาเลือกวันเดินทางกลับ";
       } else if (departureDate && returnDate < departureDate) {
-        errs.returnDate = "วันเดินทางกลับต้องไม่ก่อนวันออกเดินทาง";
+        errs.returnDate = t.search?.errors?.returnDateBeforeDep ?? "วันเดินทางกลับต้องไม่ก่อนวันออกเดินทาง";
       }
     }
 
     if (isIntl && tripType !== "round_trip") {
-      errs.international = "เที่ยวบินระหว่างประเทศจำเป็นต้องระบุวันเดินทางกลับ";
+      errs.international = t.search?.errors?.intlReturnRequired ?? "เที่ยวบินระหว่างประเทศจำเป็นต้องระบุวันเดินทางกลับ";
     }
 
     if (isIntl && tripType === "round_trip" && !returnDate) {
-      errs.returnDate = "เที่ยวบินระหว่างประเทศต้องระบุวันเดินทางกลับ";
+      errs.returnDate = t.search?.errors?.intlReturnRequired ?? "เที่ยวบินระหว่างประเทศต้องระบุวันเดินทางกลับ";
     }
 
     if (passengers < 1 || passengers > 9) {
-      errs.passengers = "จำนวนผู้โดยสารต้องอยู่ระหว่าง 1–9 คน";
+      errs.passengers = t.search?.errors?.passengersRange ?? "จำนวนผู้โดยสารต้องอยู่ระหว่าง 1–9 คน";
     }
 
     return errs;
@@ -275,9 +284,9 @@ export function FlightSearchForm({
       : t.search.cabinClass.first;
 
   const passengerSummary = [
-    adults > 0 ? `${adults} ผู้ใหญ่` : null,
-    children > 0 ? `${children} เด็ก` : null,
-    infants > 0 ? `${infants} ทารก` : null,
+    adults > 0 ? `${adults} ${adults > 1 ? (t.search?.adults ?? "Adults") : (t.search?.adult ?? "Adult")}` : null,
+    children > 0 ? `${children} ${t.search?.children ?? "Children"}` : null,
+    infants > 0 ? `${infants} ${t.search?.infants ?? "Infants"}` : null,
   ]
     .filter(Boolean)
     .join(", ");
@@ -300,7 +309,7 @@ export function FlightSearchForm({
     <form onSubmit={handleSubmit} className="w-full" aria-label="Flight search" noValidate>
 
       {/* ── Trip Type ──────────────────────────────────────────────────────── */}
-      <div className="flex items-center gap-6 mb-4">
+      <div className="flex items-center gap-6 mb-4 flex-wrap">
         <label
           className={`flex items-center text-sm cursor-pointer font-medium transition-colors ${
             isIntl
@@ -321,7 +330,7 @@ export function FlightSearchForm({
             className="mr-2 accent-[#f5c800] w-4 h-4 cursor-pointer disabled:cursor-not-allowed"
           />
           <span className={isIntl ? "line-through decoration-white/30" : ""}>
-            เที่ยวเดียว
+            {t.search?.oneWay ?? "เที่ยวเดียว"}
           </span>
         </label>
 
@@ -337,13 +346,21 @@ export function FlightSearchForm({
             }}
             className="mr-2 accent-[#f5c800] w-4 h-4 cursor-pointer"
           />
-          ไป-กลับ
+          {t.search?.roundTrip ?? "ไป-กลับ"}
         </label>
 
-        {/* International warning — inline, not alert */}
+        {/* International warning */}
         {isIntl && (
           <span className="ml-auto text-xs text-[#f5c800] font-medium bg-[#f5c800]/10 border border-[#f5c800]/30 rounded-lg px-3 py-1 leading-snug flex items-center gap-1.5">
-            ระหว่างประเทศ · ต้องไป-กลับ
+            {t.search?.intlNotice ?? "ระหว่างประเทศ · ต้องไป-กลับ"}
+          </span>
+        )}
+
+        {/* Domestic route notice (when both airports are selected and domestic) */}
+        {originAirport && destAirport && !isIntl && (
+          <span className="ml-auto text-xs text-emerald-400 font-medium bg-emerald-500/10 border border-emerald-500/30 rounded-lg px-3 py-1 leading-snug flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
+            {t.search?.domesticNotice ?? "บินในประเทศ · ไม่จำเป็นต้องมีตั๋วกลับ"}
           </span>
         )}
       </div>
@@ -353,7 +370,7 @@ export function FlightSearchForm({
         {/* Origin */}
         <div className="relative">
           <label htmlFor="origin" className={labelBase}>
-            ต้นทาง
+            {t.search?.from ?? "ต้นทาง"}
           </label>
           <AirportAutocomplete
             id="origin"
@@ -391,7 +408,7 @@ export function FlightSearchForm({
         {/* Destination */}
         <div className="relative">
           <label htmlFor="destination" className={labelBase}>
-            ปลายทาง
+            {t.search?.to ?? "ปลายทาง"}
           </label>
           <AirportAutocomplete
             id="destination"
@@ -442,7 +459,7 @@ export function FlightSearchForm({
         {/* Departure date */}
         <div>
           <label htmlFor="departure-date" className={labelBase}>
-            วันเดินทางไป
+            {t.search?.departureDate ?? "วันเดินทางไป"}
           </label>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50 pointer-events-none">
@@ -477,7 +494,7 @@ export function FlightSearchForm({
         {tripType === "round_trip" && (
           <div>
             <label htmlFor="return-date" className={labelBase}>
-              วันเดินทางกลับ
+              {t.search?.returnDate ?? "วันเดินทางกลับ"}
             </label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50 pointer-events-none">
@@ -507,7 +524,7 @@ export function FlightSearchForm({
 
         {/* Passengers + Cabin class popover */}
         <div className="relative" ref={popoverRef}>
-          <label className={labelBase}>ผู้โดยสาร</label>
+          <label className={labelBase}>{t.search?.passengers ?? "ผู้โดยสาร"}</label>
           <button
             type="button"
             onClick={() => setIsPopoverOpen(!isPopoverOpen)}
