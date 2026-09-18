@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/Button";
@@ -38,8 +38,13 @@ export default function PaymentPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (!selectedLegs || selectedLegs.length === 0 || !contact || !cabinClass) {
+      router.replace("/");
+    }
+  }, [selectedLegs, contact, cabinClass, router]);
+
   if (!selectedLegs || selectedLegs.length === 0 || !contact || !cabinClass) {
-    if (typeof window !== "undefined") router.replace("/");
     return null;
   }
 
@@ -289,9 +294,21 @@ export default function PaymentPage() {
                       className={inputCls}
                       aria-label="Cardholder name"
                     />
-                    <p className="text-xs text-white/40 italic">
-                      Test: use card ending 0000 to simulate a declined payment.
-                    </p>
+                    <div className="flex items-center justify-between text-xs text-white/50 pt-1">
+                      <span className="italic">Test: card ending 0000 simulates decline</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCardNumber("4532 1234 5678 9010");
+                          setExpiry("12/28");
+                          setCvv("123");
+                          setCardHolder("John Doe");
+                        }}
+                        className="text-[#f5c800] hover:underline font-semibold transition-colors"
+                      >
+                        Auto-fill Valid Card
+                      </button>
+                    </div>
                   </div>
                 )}
 

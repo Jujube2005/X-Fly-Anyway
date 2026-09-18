@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { useBookingContext } from "@/components/booking/BookingProvider";
@@ -109,8 +110,13 @@ export default function CabinClassPage() {
 
   const { setCabinClass } = useBookingContext();
 
+  useEffect(() => {
+    if (!selectedLegs || selectedLegs.length === 0) {
+      router.replace("/");
+    }
+  }, [selectedLegs, router]);
+
   if (!selectedLegs || selectedLegs.length === 0) {
-    if (typeof window !== "undefined") router.replace("/");
     return null;
   }
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/Button";
@@ -35,8 +36,13 @@ export default function BookingSummaryPage() {
   const { selectedLegs, cabinClass, selectedSeats, passengers, contact } =
     useBookingContext();
 
+  useEffect(() => {
+    if (!selectedLegs || selectedLegs.length === 0 || !contact) {
+      router.replace("/");
+    }
+  }, [selectedLegs, contact, router]);
+
   if (!selectedLegs || selectedLegs.length === 0 || !contact) {
-    if (typeof window !== "undefined") router.replace("/");
     return null;
   }
 

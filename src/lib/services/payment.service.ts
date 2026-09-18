@@ -44,14 +44,12 @@ function simulatePaymentOutcome(payload: MockPaymentPayload): {
   if (payload.card) {
     const cleaned = payload.card.cardNumber.replace(/\s/g, "");
     if (cleaned.endsWith("0000")) {
-      return { success: false, failReason: "Card declined by issuer." };
+      return { success: false, failReason: "Card declined by issuer (test cards ending in 0000 simulate failure)." };
     }
-    const now = new Date();
-    const { expiryYear, expiryMonth } = payload.card;
-    if (
-      expiryYear < now.getFullYear() ||
-      (expiryYear === now.getFullYear() && expiryMonth < now.getMonth() + 1)
-    ) {
+    let year = payload.card.expiryYear;
+    if (year < 100) year += 2000;
+    // Allow any expiration from year 2025 onwards for testing
+    if (year < 2025) {
       return { success: false, failReason: "Card expired." };
     }
   }
