@@ -55,9 +55,7 @@ export function Header({ variant: variantProp = "transparent" }: HeaderProps) {
         {/* Nav */}
         <nav className="hidden md:flex items-center gap-8" aria-label="Main navigation">
           {[
-                      { href: "/", label: t.nav.book },
-            { href: "/flights", label: t.nav.flights },
-            { href: "/booking/confirmation", label: t.nav.myBooking },
+            { href: "/", label: t.nav.book },
           ].map(({ href, label }) => {
             const isActive = pathname === href;
             return (
