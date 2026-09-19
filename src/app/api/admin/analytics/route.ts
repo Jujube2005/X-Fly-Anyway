@@ -5,6 +5,7 @@ import { z } from "zod";
 
 const querySchema = z.object({
   period: z.enum(["daily", "weekly", "monthly"]).default("monthly"),
+  destination: z.string().optional(),
 });
 
 /**
@@ -18,6 +19,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const parseResult = querySchema.safeParse({
       period: searchParams.get("period") || "monthly",
+      destination: searchParams.get("destination") || undefined,
     });
 
     if (!parseResult.success) {
@@ -27,7 +29,7 @@ export async function GET(request: Request) {
       );
     }
 
-    const { period } = parseResult.data;
+    const { period, destination } = parseResult.data;
 
     const supabase = await createClient();
     
@@ -56,8 +58,8 @@ export async function GET(request: Request) {
 
     const adminService = new AdminService(supabase);
     
-    // Pass period, role, and userId for scoping
-    const analyticsData = await adminService.getAnalytics(period, role, user.id);
+    // Pass period, role, userId, and destination for scoping
+    const analyticsData = await adminService.getAnalytics(period, role, user.id, destination);
 
     return NextResponse.json(analyticsData);
   } catch (error: any) {

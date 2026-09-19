@@ -25,14 +25,26 @@ const COLORS = ["#f5c800", "#3b82f6", "#22c55e", "#f97316", "#8b5cf6", "#ec4899"
 
 export default function AdminDashboardPage() {
   const [period, setPeriod] = useState<"daily" | "weekly" | "monthly">("monthly");
+  const [destination, setDestination] = useState<string>("");
+  const [airports, setAirports] = useState<any[]>([]);
   const [data, setData] = useState<AnalyticsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    fetch("/api/airports")
+      .then(res => res.json())
+      .then(d => setAirports(d.airports || []))
+      .catch(console.error);
+  }, []);
+
+  useEffect(() => {
     setIsLoading(true);
     setError(null);
-    fetch(`/api/admin/analytics?period=${period}`)
+    const params = new URLSearchParams({ period });
+    if (destination) params.append("destination", destination);
+    
+    fetch(`/api/admin/analytics?${params.toString()}`)
       .then(async (res) => {
         const json = await res.json();
         if (!res.ok) throw new Error(json.error || "Failed to fetch analytics");
@@ -47,7 +59,7 @@ export default function AdminDashboardPage() {
         setError(err.message);
         setIsLoading(false);
       });
-  }, [period]);
+  }, [period, destination]);
 
   const fmtCurrency = (n: number) =>
     new Intl.NumberFormat("en-US", { style: "currency", currency: "THB", maximumFractionDigits: 0 }).format(n);
@@ -61,7 +73,18 @@ export default function AdminDashboardPage() {
           <p className="text-sm text-[#6b7280] font-medium mt-1">Super Admin Overview</p>
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 flex-wrap">
+          <select 
+            className="bg-[#f3f4f6] text-[#111827] font-bold rounded-xl px-4 py-2 border-none outline-none cursor-pointer focus:ring-2 focus:ring-[#f5c800]"
+            value={destination}
+            onChange={(e) => setDestination(e.target.value)}
+          >
+            <option value="">All Destinations</option>
+            {airports.map(apt => (
+              <option key={apt.id} value={apt.id}>{apt.city} ({apt.id})</option>
+            ))}
+          </select>
+
           <div className="bg-[#f3f4f6] rounded-xl p-1 flex">
             {(["daily", "weekly", "monthly"] as const).map((p) => (
               <button

@@ -8,7 +8,6 @@ const NAV_ITEMS = [
   { href: "/admin/dashboard", label: "Overview", icon: "🏠" },
   { href: "/admin/bookings", label: "Bookings", icon: "📋" },
   { href: "/admin/flights", label: "Flights", icon: "✈️" },
-  { href: "/admin/revenue", label: "Reports", icon: "📊" },
 ];
 
 export function AdminSidebar() {

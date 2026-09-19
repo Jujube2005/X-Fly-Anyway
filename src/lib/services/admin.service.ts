@@ -9,8 +9,8 @@ import type { AnalyticsResponse } from "@/types/admin";
 export class AdminService {
   constructor(private readonly supabase: SupabaseClient<Database>) {}
 
-  /** Get dashboard analytics for a given time period */
-  async getAnalytics(period: "daily" | "weekly" | "monthly", role: string = "super_admin", userId?: string): Promise<AnalyticsResponse> {
+  /** Get dashboard analytics for a given time period and optional destination */
+  async getAnalytics(period: "daily" | "weekly" | "monthly", role: string = "super_admin", userId?: string, destination?: string): Promise<AnalyticsResponse> {
     const now = new Date();
     const startDate = new Date();
     
@@ -21,7 +21,7 @@ export class AdminService {
     
     const startDateStr = startDate.toISOString();
 
-    let assignedFlightIds: string[] = [];
+    let assignedFlightIds: string[] | null = null; // null means all flights (super_admin)
 
     // Filter assigned flights for flight_staff
     if (role === "flight_staff" && userId) {
@@ -31,17 +31,39 @@ export class AdminService {
         .eq("staff_id", userId);
       
       assignedFlightIds = ((assignments as any[]) || []).map(a => a.flight_id);
-      
-      // If staff has no assignments, return empty analytics immediately
-      if (assignedFlightIds.length === 0) {
-        return {
-          overview: { totalBookings: 0, totalPassengers: 0, totalRevenue: 0, averageOccupancy: 0 },
-          bookingVolume: [],
-          occupancyByFlight: [],
-          destinations: [],
-          nationalities: []
-        };
-      }
+    }
+
+    // Filter by destination if provided
+    let destFlightIds: string[] | null = null;
+    if (destination) {
+      const { data: destFlights } = await this.supabase
+        .from("flight")
+        .select("id")
+        .eq("destination_airport_id", destination);
+        
+      destFlightIds = ((destFlights as any[]) || []).map(f => f.id);
+    }
+
+    // Intersect RBAC and Destination filters
+    let effectiveFlightIds: string[] | null = null;
+    
+    if (assignedFlightIds !== null && destFlightIds !== null) {
+      effectiveFlightIds = assignedFlightIds.filter(id => destFlightIds!.includes(id));
+    } else if (assignedFlightIds !== null) {
+      effectiveFlightIds = assignedFlightIds;
+    } else if (destFlightIds !== null) {
+      effectiveFlightIds = destFlightIds;
+    }
+
+    // If staff has no assignments OR destination filter yields zero flights, return empty analytics immediately
+    if (effectiveFlightIds !== null && effectiveFlightIds.length === 0) {
+      return {
+        overview: { totalBookings: 0, totalPassengers: 0, totalRevenue: 0, averageOccupancy: 0 },
+        bookingVolume: [],
+        occupancyByFlight: [],
+        destinations: [],
+        nationalities: []
+      };
     }
 
     // 1. Fetch Bookings within period
@@ -50,22 +72,22 @@ export class AdminService {
       .select()
       .gte("created_at", startDateStr);
 
-    // If flight_staff, we must get bookings where booking.flight_id is in assigned OR booking_leg.flight_id is in assigned.
-    if (role === "flight_staff" && assignedFlightIds.length > 0) {
+    // Filter bookings by effectiveFlightIds (either directly or via legs)
+    if (effectiveFlightIds !== null && effectiveFlightIds.length > 0) {
       const { data: legs } = await this.supabase
         .from("booking_leg")
         .select("booking_id")
-        .in("flight_id", assignedFlightIds);
+        .in("flight_id", effectiveFlightIds);
         
       const legBookingIds = ((legs as any[]) || []).map(l => l.booking_id);
       
-      const flightIdFilter = `flight_id.in.(${assignedFlightIds.join(',')})`;
+      const flightIdFilter = `flight_id.in.(${effectiveFlightIds.join(',')})`;
       const idFilter = legBookingIds.length > 0 ? `id.in.(${legBookingIds.join(',')})` : ``;
       
       if (idFilter) {
         bookingsQuery = bookingsQuery.or(`${flightIdFilter},${idFilter}`);
       } else {
-        bookingsQuery = bookingsQuery.in("flight_id", assignedFlightIds);
+        bookingsQuery = bookingsQuery.in("flight_id", effectiveFlightIds);
       }
     }
 
@@ -141,7 +163,7 @@ export class AdminService {
          const flightId = flightObj?.id;
          
          if (!dest) return;
-         if (role === "flight_staff" && !assignedFlightIds.includes(flightId)) return; // Exclude unassigned flight segments from destination analysis
+         if (effectiveFlightIds !== null && !effectiveFlightIds.includes(flightId)) return; // Exclude filtered flight segments from destination analysis
 
          if (!bookingLegs[leg.booking_id] || leg.leg_sequence > bookingLegs[leg.booking_id].seq) {
            bookingLegs[leg.booking_id] = { seq: leg.leg_sequence, dest };
@@ -162,8 +184,8 @@ export class AdminService {
       .from("flight_cabin_class")
       .select("flight_id, total_seats, available_seats, flight:flight_id(flight_number)");
       
-    if (role === "flight_staff" && assignedFlightIds.length > 0) {
-      occupancyQuery = occupancyQuery.in("flight_id", assignedFlightIds);
+    if (effectiveFlightIds !== null && effectiveFlightIds.length > 0) {
+      occupancyQuery = occupancyQuery.in("flight_id", effectiveFlightIds);
     }
       
     const { data: classes, error: classesErr } = await occupancyQuery;

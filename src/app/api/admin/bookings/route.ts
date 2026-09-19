@@ -26,9 +26,10 @@ export async function GET(request: Request) {
     // 2. Build Query
     let query = supabase.from("booking").select(`
       *,
-      flight:flight_id (flight_number, departure_time, status, origin:origin_airport_id(city), destination:destination_airport_id(city)),
+      payment (method, status, amount, transaction_ref),
+      flight:flight_id (flight_number, departure_time, arrival_time, status, origin:origin_airport_id(city), destination:destination_airport_id(city)),
       passenger (id, first_name, last_name, title, date_of_birth),
-      booking_leg (leg_sequence, flight:flight_id(flight_number, departure_time, status, origin:origin_airport_id(city), destination:destination_airport_id(city)))
+      booking_leg (leg_sequence, flight:flight_id(flight_number, departure_time, arrival_time, status, origin:origin_airport_id(city), destination:destination_airport_id(city)))
     `).order('created_at', { ascending: false });
 
     // RBAC Enforcement for Booking Management
