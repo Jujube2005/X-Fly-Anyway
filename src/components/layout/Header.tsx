@@ -63,11 +63,10 @@ export function Header({ variant: variantProp = "transparent" }: HeaderProps) {
               <Link
                 key={href}
                 href={href}
-                className={`text-sm font-medium transition-colors relative pb-0.5 ${navColor} ${
-                  isActive
+                className={`text-sm font-medium transition-colors relative pb-0.5 ${navColor} ${isActive
                     ? "!text-[#f5c800] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[#f5c800] after:rounded-full"
                     : ""
-                }`}
+                  }`}
               >
                 {label}
               </Link>

@@ -55,7 +55,6 @@ function toBooking(
 ): Booking {
   return {
     id:         row.id,
-    customerId: row.customer_id,
     reference:  row.reference,
     flightIds:  row.flight_id ? [row.flight_id] : [],
     cabinClass: row.cabin_class,
@@ -88,7 +87,7 @@ export class BookingService {
    * FR-CUS-008: Booking created before payment is processed.
    */
   async createBooking(payload: CreateBookingPayload): Promise<Booking> {
-    const { flightIds, cabinClass, passengers, contact, seatNumbers, customerId } = payload;
+    const { flightIds, cabinClass, passengers, contact, seatNumbers } = payload;
 
     // Generate unique booking reference — retry up to 3 times on collision
     let reference = "";
@@ -114,7 +113,6 @@ export class BookingService {
 
     const { data: bookingRow, error: bookingError } = await insertBooking(this.supabase, {
       reference,
-      customer_id:        customerId ?? null,
       flight_id:          flightIds.length === 1 ? flightIds[0] : null,
       cabin_class:        cabinClass as CabinClass,
       contact_first_name: contact.firstName,

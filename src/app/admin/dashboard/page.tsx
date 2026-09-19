@@ -105,10 +105,14 @@ export default function AdminDashboardPage() {
               subtitle="Current snapshot" 
             />
             <StatCard 
-              title="Profit" 
-              value="N/A" 
-              subtitle="*Operating cost required" 
+              title="Estimated Profit" 
+              value={fmtCurrency(data.overview.totalRevenue)} 
+              subtitle="*Equals Gross Revenue" 
             />
+          </div>
+
+          <div className="bg-yellow-50 text-yellow-800 p-4 rounded-2xl text-sm font-semibold border border-yellow-200">
+            * <span className="font-bold">Estimated Profit</span> is currently equivalent to Gross Revenue because Operating Cost data is unavailable.
           </div>
 
           {/* Charts Row 1 */}

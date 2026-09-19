@@ -134,7 +134,6 @@ export interface SeatRow {
 
 export interface BookingRow {
   id: string;                  // UUID PRIMARY KEY
-  customer_id: string | null;  // UUID FK to customer
   reference: string;           // e.g. "XFA-20260907-A1B2" — UNIQUE
   flight_id: string | null;    // FK → flight.id (nullable for connecting flights)
   cabin_class: CabinClassValue;
@@ -215,6 +214,12 @@ export interface ETicketRow {
   created_at: string;
 }
 
+export interface FlightStaffAssignmentRow {
+  staff_id: string;      // UUID FK -> admin_roles.id
+  flight_id: string;     // UUID FK -> flight.id
+  assigned_at: string;
+}
+
 // ─── Insert types (omit server-generated fields) ───────────────────────────
 
 export type AirportInsert = Omit<AirportRow, "created_at">;
@@ -250,6 +255,10 @@ export type CancellationInsert = Omit<CancellationRow, "id" | "cancelled_at"> & 
 };
 
 export type ETicketInsert = Omit<ETicketRow, "created_at"> & { id?: string };
+
+export type FlightStaffAssignmentInsert = Omit<FlightStaffAssignmentRow, "assigned_at"> & {
+  assigned_at?: string;
+};
 
 // ─── Supabase Database interface ────────────────────────────────────────────
 
@@ -310,6 +319,11 @@ export interface Database {
         Row: ETicketRow;
         Insert: ETicketInsert;
         Update: Partial<ETicketInsert>;
+      };
+      flight_staff_assignment: {
+        Row: FlightStaffAssignmentRow;
+        Insert: FlightStaffAssignmentInsert;
+        Update: Partial<FlightStaffAssignmentInsert>;
       };
     };
     Views: Record<string, never>;

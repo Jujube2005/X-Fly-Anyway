@@ -42,33 +42,23 @@ export async function POST(
       return NextResponse.json({ error: "Booking not found" }, { status: 404 });
     }
 
-    // 2. Authorization
-    if (booking.customerId) {
-      // Authenticated booking: Must be logged in as the owner
-      const supabaseAuth = await createClient();
-      const { data: { user } } = await supabaseAuth.auth.getUser();
-      if (!user || user.id !== booking.customerId) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      }
-    } else {
-      // Guest booking: Must provide correct lastName
-      if (!lastName) {
-        return NextResponse.json({ error: "Last name is required for guest cancellation" }, { status: 400 });
-      }
-      
-      const normalizedLastName = lastName.trim().toLowerCase();
-      const isContactMatch = booking.contact.lastName.trim().toLowerCase() === normalizedLastName;
-      
-      let isPassengerMatch = false;
-      if (!isContactMatch && booking.passengers) {
-        isPassengerMatch = booking.passengers.some(
-          (p) => p.lastName.trim().toLowerCase() === normalizedLastName
-        );
-      }
-      
-      if (!isContactMatch && !isPassengerMatch) {
-        return NextResponse.json({ error: "Booking Reference or Last Name is incorrect." }, { status: 401 });
-      }
+    // 2. Authorization (Guest flow only)
+    if (!lastName) {
+      return NextResponse.json({ error: "Last name is required for guest cancellation" }, { status: 400 });
+    }
+    
+    const normalizedLastName = lastName.trim().toLowerCase();
+    const isContactMatch = booking.contact.lastName.trim().toLowerCase() === normalizedLastName;
+    
+    let isPassengerMatch = false;
+    if (!isContactMatch && booking.passengers) {
+      isPassengerMatch = booking.passengers.some(
+        (p) => p.lastName.trim().toLowerCase() === normalizedLastName
+      );
+    }
+    
+    if (!isContactMatch && !isPassengerMatch) {
+      return NextResponse.json({ error: "Booking Reference or Last Name is incorrect." }, { status: 401 });
     }
     
     // 3. Process cancellation

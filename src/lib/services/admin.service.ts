@@ -10,7 +10,7 @@ export class AdminService {
   constructor(private readonly supabase: SupabaseClient<Database>) {}
 
   /** Get dashboard analytics for a given time period */
-  async getAnalytics(period: "daily" | "weekly" | "monthly"): Promise<AnalyticsResponse> {
+  async getAnalytics(period: "daily" | "weekly" | "monthly", role: string = "super_admin", userId?: string): Promise<AnalyticsResponse> {
     const now = new Date();
     const startDate = new Date();
     
@@ -21,11 +21,55 @@ export class AdminService {
     
     const startDateStr = startDate.toISOString();
 
+    let assignedFlightIds: string[] = [];
+
+    // Filter assigned flights for flight_staff
+    if (role === "flight_staff" && userId) {
+      const { data: assignments } = await this.supabase
+        .from("flight_staff_assignment")
+        .select("flight_id")
+        .eq("staff_id", userId);
+      
+      assignedFlightIds = ((assignments as any[]) || []).map(a => a.flight_id);
+      
+      // If staff has no assignments, return empty analytics immediately
+      if (assignedFlightIds.length === 0) {
+        return {
+          overview: { totalBookings: 0, totalPassengers: 0, totalRevenue: 0, averageOccupancy: 0 },
+          bookingVolume: [],
+          occupancyByFlight: [],
+          destinations: [],
+          nationalities: []
+        };
+      }
+    }
+
     // 1. Fetch Bookings within period
-    const { data: bookings, error: bookingsErr } = await this.supabase
+    let bookingsQuery = this.supabase
       .from("booking")
       .select()
       .gte("created_at", startDateStr);
+
+    // If flight_staff, we must get bookings where booking.flight_id is in assigned OR booking_leg.flight_id is in assigned.
+    if (role === "flight_staff" && assignedFlightIds.length > 0) {
+      const { data: legs } = await this.supabase
+        .from("booking_leg")
+        .select("booking_id")
+        .in("flight_id", assignedFlightIds);
+        
+      const legBookingIds = ((legs as any[]) || []).map(l => l.booking_id);
+      
+      const flightIdFilter = `flight_id.in.(${assignedFlightIds.join(',')})`;
+      const idFilter = legBookingIds.length > 0 ? `id.in.(${legBookingIds.join(',')})` : ``;
+      
+      if (idFilter) {
+        bookingsQuery = bookingsQuery.or(`${flightIdFilter},${idFilter}`);
+      } else {
+        bookingsQuery = bookingsQuery.in("flight_id", assignedFlightIds);
+      }
+    }
+
+    const { data: bookings, error: bookingsErr } = await bookingsQuery;
 
     if (bookingsErr) throw bookingsErr;
     
@@ -77,22 +121,28 @@ export class AdminService {
     // 3. Fetch Destinations (Resolving Connecting Flights)
     const destinationsMap: Record<string, number> = {};
     if (activeBookingIds.length > 0) {
-       const { data: legs, error: legsErr } = await this.supabase
+       let legsQuery = this.supabase
          .from("booking_leg")
-         .select("booking_id, leg_sequence, flight:flight_id(destination_airport_id)")
+         .select("booking_id, leg_sequence, flight:flight_id(destination_airport_id, id)")
          .in("booking_id", activeBookingIds);
+         
+       const { data: legs, error: legsErr } = await legsQuery;
          
        if (legsErr) throw legsErr;
        
        const legsData = (legs || []) as any[];
        // Group by booking_id to find the final destination (max leg_sequence)
+       // If flight_staff, we only count destinations for flights they are assigned to
        const bookingLegs: Record<string, { seq: number; dest: string }> = {};
        legsData.forEach(leg => {
          const flightData = leg.flight as any;
          const flightObj = Array.isArray(flightData) ? flightData[0] : flightData;
          const dest = flightObj?.destination_airport_id;
+         const flightId = flightObj?.id;
          
          if (!dest) return;
+         if (role === "flight_staff" && !assignedFlightIds.includes(flightId)) return; // Exclude unassigned flight segments from destination analysis
+
          if (!bookingLegs[leg.booking_id] || leg.leg_sequence > bookingLegs[leg.booking_id].seq) {
            bookingLegs[leg.booking_id] = { seq: leg.leg_sequence, dest };
          }
@@ -108,9 +158,15 @@ export class AdminService {
       .sort((a, b) => b.count - a.count);
 
     // 4. Fetch Flight Occupancy (Current snapshot of active flights)
-    const { data: classes, error: classesErr } = await this.supabase
+    let occupancyQuery = this.supabase
       .from("flight_cabin_class")
       .select("flight_id, total_seats, available_seats, flight:flight_id(flight_number)");
+      
+    if (role === "flight_staff" && assignedFlightIds.length > 0) {
+      occupancyQuery = occupancyQuery.in("flight_id", assignedFlightIds);
+    }
+      
+    const { data: classes, error: classesErr } = await occupancyQuery;
       
     if (classesErr) throw classesErr;
     

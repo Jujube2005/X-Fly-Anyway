@@ -178,7 +178,7 @@ export default function TicketPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           reason: "Customer requested cancellation via ticket page",
-          lastName: ticket?.booking?.contact?.lastName || ticket?.booking?.passengers?.[0]?.lastName
+          lastName: ticket?.booking?.passengers?.[0]?.lastName
         })
       });
       const data = await res.json();

@@ -43,18 +43,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // 1.5 Authorization: If this is an authenticated customer's booking, 
-    // it cannot be looked up via the Guest flow (or the user must be logged in as that customer).
-    if (booking.customer_id) {
-      const supabaseAuth = await createClient();
-      const { data: { user } } = await supabaseAuth.auth.getUser();
-      if (!user || user.id !== booking.customer_id) {
-        return NextResponse.json(
-          { error: "Booking Reference or Last Name is incorrect." },
-          { status: 401 }
-        );
-      }
-    }
 
     // 2. Booking exists. Check if last name matches Contact
     const isContactMatch = booking.contact_last_name.trim().toLowerCase() === normalizedLastName;

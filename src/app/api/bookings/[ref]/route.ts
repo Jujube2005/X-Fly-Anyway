@@ -34,17 +34,6 @@ export async function GET(
       return Response.json({ error: "Booking not found" }, { status: 404 });
     }
 
-    // Authorization: 
-    // If booking belongs to a customer, only that customer can view it.
-    if (booking.customerId) {
-      const supabaseAuth = await createClient();
-      const { data: { user } } = await supabaseAuth.auth.getUser();
-      if (!user || user.id !== booking.customerId) {
-        return Response.json({ error: "Unauthorized" }, { status: 401 });
-      }
-    }
-    // If booking.customerId is null (Guest), we allow access via PNR (Phase 1 behavior)
-
     return Response.json({ booking });
   } catch (err) {
     console.error("[GET /api/bookings/[ref]]", err);

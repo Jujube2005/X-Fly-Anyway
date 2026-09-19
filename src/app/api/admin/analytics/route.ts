@@ -30,9 +30,34 @@ export async function GET(request: Request) {
     const { period } = parseResult.data;
 
     const supabase = await createClient();
+    
+    // 1. Authenticate user and get role
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { data: roleData } = await supabase
+      .from("admin_roles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (!roleData) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const role = (roleData as any).role;
+
+    // RBAC: Booking staff are denied access to Dashboard Analytics
+    if (role === "booking_staff") {
+      return NextResponse.json({ error: "Forbidden: Booking staff cannot access analytics" }, { status: 403 });
+    }
+
     const adminService = new AdminService(supabase);
     
-    const analyticsData = await adminService.getAnalytics(period);
+    // Pass period, role, and userId for scoping
+    const analyticsData = await adminService.getAnalytics(period, role, user.id);
 
     return NextResponse.json(analyticsData);
   } catch (error: any) {
