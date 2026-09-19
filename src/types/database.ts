@@ -220,6 +220,19 @@ export interface FlightStaffAssignmentRow {
   assigned_at: string;
 }
 
+export interface ExternalApiTokenRow {
+  id: string;
+  name: string;
+  token_hash: string;
+  refresh_token_hash: string;
+  scopes: string[];
+  expires_at: string;
+  refresh_expires_at: string;
+  is_revoked: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 // ─── Insert types (omit server-generated fields) ───────────────────────────
 
 export type AirportInsert = Omit<AirportRow, "created_at">;
@@ -258,6 +271,10 @@ export type ETicketInsert = Omit<ETicketRow, "created_at"> & { id?: string };
 
 export type FlightStaffAssignmentInsert = Omit<FlightStaffAssignmentRow, "assigned_at"> & {
   assigned_at?: string;
+};
+
+export type ExternalApiTokenInsert = Omit<ExternalApiTokenRow, "id" | "created_at" | "updated_at"> & {
+  id?: string;
 };
 
 // ─── Supabase Database interface ────────────────────────────────────────────
@@ -324,6 +341,11 @@ export interface Database {
         Row: FlightStaffAssignmentRow;
         Insert: FlightStaffAssignmentInsert;
         Update: Partial<FlightStaffAssignmentInsert>;
+      };
+      external_api_tokens: {
+        Row: ExternalApiTokenRow;
+        Insert: ExternalApiTokenInsert;
+        Update: Partial<ExternalApiTokenInsert>;
       };
     };
     Views: Record<string, never>;
