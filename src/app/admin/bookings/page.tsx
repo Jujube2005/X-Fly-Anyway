@@ -43,6 +43,12 @@ export default function AdminBookingsPage() {
           <h1 className="text-2xl font-black text-[#111827] tracking-tight">Booking Management</h1>
           <p className="text-sm text-[#6b7280] font-medium mt-1">View and manage customer bookings</p>
         </div>
+        <a 
+          href="/admin/dashboard"
+          className="bg-[#f3f4f6] text-[#374151] px-6 py-2 rounded-xl font-bold hover:bg-[#e5e7eb] transition-colors"
+        >
+          ← Back to Dashboard
+        </a>
       </div>
 
       {isLoading && <div className="mt-12"><LoadingState message="Loading bookings..." /></div>}

@@ -46,7 +46,10 @@ export function AdminSidebar() {
 
       {/* Bottom items */}
       <div className="flex flex-col gap-1">
-        {[{ href: "/admin/login", label: "Log Out", icon: "↩️" }].map(({ href, label, icon }) => (
+        {[
+          { href: "/", label: "Back to Site", icon: "🌐" },
+          { href: "/admin/login", label: "Log Out", icon: "↩️" }
+        ].map(({ href, label, icon }) => (
           <Link
             key={href}
             href={href}
