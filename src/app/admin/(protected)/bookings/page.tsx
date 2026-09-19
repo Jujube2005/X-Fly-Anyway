@@ -142,12 +142,24 @@ export default function AdminBookingsPage() {
                 <h2 className="text-2xl font-black text-[#111827]">Booking Details</h2>
                 <p className="text-[#6b7280] font-medium mt-1">Ref: {selectedBooking.reference}</p>
               </div>
-              <button 
-                onClick={() => setSelectedBooking(null)}
-                className="text-[#9ca3af] hover:text-[#111827] text-2xl font-bold p-2"
-              >
-                ×
-              </button>
+              <div className="flex items-center gap-4">
+                {selectedBooking.status === "confirmed" && (
+                  <a 
+                    href={`/ticket/${selectedBooking.reference}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="bg-[#111827] text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-black transition-colors shadow-sm"
+                  >
+                    View E-Ticket
+                  </a>
+                )}
+                <button 
+                  onClick={() => setSelectedBooking(null)}
+                  className="text-[#9ca3af] hover:text-[#111827] text-2xl font-bold p-2 leading-none"
+                >
+                  ×
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-6 mb-8">
