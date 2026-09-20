@@ -274,75 +274,83 @@ export default function CabinClassPage() {
         }));
 
   return (
-    <div className="min-h-dvh flex flex-col cabin-page-container">
-      <Header variant="glass" />
+    <div 
+      className="min-h-dvh flex flex-col bg-cover bg-center bg-fixed relative"
+      style={{ backgroundImage: 'url("/images/BG/Cloud2.png")' }}
+    >
+      {/* Subtle overlay to ensure readability */}
+      <div className="absolute inset-0 bg-white/10 pointer-events-none"></div>
 
-      <main className="flex-1 flex flex-col items-center justify-center px-4 pt-24 pb-12">
-        <h1 className="text-4xl md:text-5xl font-bold text-[#111827] mb-12 text-center">
-          {t.booking.cabin.title}
-        </h1>
+      <div className="relative z-10 flex flex-col min-h-dvh">
+        <Header variant="glass" />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl">
-          {displayCabins.slice(0, 3).map((cabin) => {
-            const details = CABIN_DETAILS[cabin.cabinClass] ?? CABIN_DETAILS.economy;
-            const priceDisplay = new Intl.NumberFormat("en-US", {
-              style: "currency",
-              currency: cabin.currency,
-              maximumFractionDigits: 0,
-            }).format(cabin.price);
+        <main className="flex-1 flex flex-col items-center justify-center px-4 pt-24 pb-12">
+          <h1 className="text-4xl md:text-5xl font-bold text-[#111827] mb-12 text-center glass-text-contrast">
+            {t.booking.cabin.title}
+          </h1>
 
-            return (
-              <div
-                key={cabin.cabinClass}
-                className="flex flex-col rounded-3xl p-8 transition-transform hover:-translate-y-1 cabin-card-glass"
-              >
-                <h2 className="text-3xl font-bold text-[#111827] mb-8 text-center">
-                  {details.label}
-                </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl">
+            {displayCabins.slice(0, 3).map((cabin) => {
+              const details = CABIN_DETAILS[cabin.cabinClass] ?? CABIN_DETAILS.economy;
+              const priceDisplay = new Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: cabin.currency,
+                maximumFractionDigits: 0,
+              }).format(cabin.price);
 
-                <ul className="flex flex-col gap-4 flex-1 mb-8">
-                  {details.features.map((f, idx) => {
-                    const IconComponent = f.icon;
-                    return (
-                      <li key={idx} className="flex items-center gap-3 text-sm">
-                        <span
-                          className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
-                            f.negative
-                              ? "bg-slate-100 text-slate-400 border border-slate-200/70"
-                              : "bg-[#f5c800]/15 text-[#926004] border border-[#f5c800]/30"
-                          }`}
-                        >
-                          <IconComponent className="w-4 h-4" />
-                        </span>
-                        <span
-                          className={`leading-snug ${
-                            f.negative ? "text-slate-400" : "text-slate-700 font-medium"
-                          }`}
-                        >
-                          {f.text}
-                        </span>
-                      </li>
-                    );
-                  })}
-                </ul>
+              return (
+                <div
+                  key={cabin.cabinClass}
+                  className="glass-card flex flex-col p-8 transition-transform hover:-translate-y-1 relative overflow-hidden group"
+                >
+                  <h2 className="text-3xl font-bold text-[#111827] mb-8 text-center group-hover:text-brand-yellow transition-colors">
+                    {details.label}
+                  </h2>
 
-                {cabin.availableSeats === 0 ? (
-                  <div className="w-full py-3 text-center text-sm text-[#9ca3af] font-medium rounded-xl border border-[#e5e7eb]">
-                    {t.booking.cabin.soldOut}
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => handleSelect(cabin.cabinClass)}
-                    className="w-full py-3.5 rounded-xl font-semibold text-[#111827] transition-all hover:brightness-95 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-[#f5c800] cabin-btn"
-                  >
-                    {t.booking.cabin.selectFrom} {priceDisplay}
-                  </button>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </main>
+                  <ul className="flex flex-col gap-4 flex-1 mb-8">
+                    {details.features.map((f, idx) => {
+                      const IconComponent = f.icon;
+                      return (
+                        <li key={idx} className="flex items-center gap-3 text-sm">
+                          <span
+                            className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+                              f.negative
+                                ? "bg-white/40 text-slate-500 border border-white/50"
+                                : "bg-brand-yellow/20 text-brand-yellow-dark border border-brand-yellow/40"
+                            }`}
+                          >
+                            <IconComponent className="w-4 h-4" />
+                          </span>
+                          <span
+                            className={`leading-snug ${
+                              f.negative ? "text-slate-500" : "text-[#111827] font-medium"
+                            }`}
+                          >
+                            {f.text}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+
+                  {cabin.availableSeats === 0 ? (
+                    <div className="w-full py-3 text-center text-sm text-[#9ca3af] font-medium rounded-xl border border-[#e5e7eb] bg-white/30 backdrop-blur-md">
+                      {t.booking.cabin.soldOut}
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => handleSelect(cabin.cabinClass)}
+                      className="glass-button w-full py-3.5 font-semibold text-[#111827] focus-visible:outline-2 focus-visible:outline-[#f5c800]"
+                    >
+                      {t.booking.cabin.selectFrom} {priceDisplay}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

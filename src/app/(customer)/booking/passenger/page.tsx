@@ -35,7 +35,7 @@ function emptyPassenger(): PassengerInput {
   return { title: "Mr", firstName: "", lastName: "", dateOfBirth: "", gender: "male", nationality: "TH" };
 }
 
-const inputCls = "w-full bg-white/10 border border-white/30 text-white placeholder:text-white/50 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#f5c800] focus:ring-1 focus:ring-[#f5c800] transition-all backdrop-blur-sm appearance-none";
+const inputCls = "glass-input w-full px-4 py-3 text-sm text-[#111827] placeholder:text-slate-600 appearance-none";
 
 export default function PassengerPage() {
   const router = useRouter();
@@ -70,57 +70,63 @@ export default function PassengerPage() {
   ];
 
   return (
-    <div className="min-h-dvh flex flex-col passenger-page-container">
-      <Header variant="transparent" />
+    <div 
+      className="min-h-dvh flex flex-col bg-cover bg-center bg-fixed relative"
+      style={{ backgroundImage: 'url("/images/BG/Cloud.png")' }}
+    >
+      <div className="absolute inset-0 bg-white/10 pointer-events-none"></div>
 
-      <main className="flex-1 flex items-center justify-center px-4 pt-24 pb-12">
-        <div className="w-full max-w-2xl rounded-3xl px-8 py-10 passenger-card-glass">
-          <h1 className="text-3xl font-bold text-white mb-2">
-            {t.booking?.passenger?.title ?? "Passenger Information"}
-          </h1>
+      <div className="relative z-10 flex flex-col min-h-dvh">
+        <Header variant="glass" />
 
-          <div className="mb-6">
-            <BookingStepper currentLabel="Passenger" variant="dark" />
-          </div>
+        <main className="flex-1 flex items-center justify-center px-4 pt-24 pb-12">
+          <div className="w-full max-w-2xl px-8 py-10 glass-card">
+            <h1 className="text-3xl font-bold text-[#111827] mb-2 glass-text-contrast">
+              {t.booking?.passenger?.title ?? "Passenger Information"}
+            </h1>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-8">
-            {forms.map((passenger, idx) => (
-              <div key={idx}>
-                <h2 className="text-sm font-semibold text-white/70 mb-4 uppercase tracking-wide">
-                  {t.booking?.passenger?.passengerN ?? "Passenger"} {idx + 1} ({t.booking?.passenger?.adult ?? "Adult"})
-                </h2>
-                <div className="flex flex-col gap-3">
-                  <div className="grid grid-cols-3 gap-3">
-                    <select
-                      value={passenger.title}
-                      onChange={(e) => updateField(idx, "title", e.target.value)}
-                      className={inputCls}
-                      aria-label={`${t.booking?.passenger?.title_field ?? "Title"} for passenger ${idx + 1}`}
-                    >
-                      {TITLE_OPTIONS.map((o) => (
-                        <option key={o.value} value={o.value} className="bg-gray-900">{o.label}</option>
-                      ))}
-                    </select>
-                    <input
-                      value={passenger.firstName}
-                      onChange={(e) => updateField(idx, "firstName", e.target.value)}
-                      placeholder={t.booking?.passenger?.firstName ?? "First Name"}
-                      required
-                      className={inputCls}
-                      aria-label={`${t.booking?.passenger?.firstName ?? "First name"} for passenger ${idx + 1}`}
-                    />
-                    <input
-                      value={passenger.lastName}
-                      onChange={(e) => updateField(idx, "lastName", e.target.value)}
-                      placeholder={t.booking?.passenger?.lastName ?? "Last Name"}
-                      required
-                      className={inputCls}
-                      aria-label={`${t.booking?.passenger?.lastName ?? "Last name"} for passenger ${idx + 1}`}
-                    />
-                  </div>
+            <div className="mb-6 glass-panel p-4">
+              <BookingStepper currentLabel="Passenger" variant="light" />
+            </div>
+
+            <form onSubmit={handleSubmit} className="flex flex-col gap-8">
+              {forms.map((passenger, idx) => (
+                <div key={idx}>
+                  <h2 className="text-sm font-semibold text-slate-800 mb-4 uppercase tracking-wide drop-shadow-sm">
+                    {t.booking?.passenger?.passengerN ?? "Passenger"} {idx + 1} ({t.booking?.passenger?.adult ?? "Adult"})
+                  </h2>
+                  <div className="flex flex-col gap-3">
+                    <div className="grid grid-cols-3 gap-3">
+                      <select
+                        value={passenger.title}
+                        onChange={(e) => updateField(idx, "title", e.target.value)}
+                        className={inputCls}
+                        aria-label={`${t.booking?.passenger?.title_field ?? "Title"} for passenger ${idx + 1}`}
+                      >
+                        {TITLE_OPTIONS.map((o) => (
+                          <option key={o.value} value={o.value} className="bg-white text-[#111827]">{o.label}</option>
+                        ))}
+                      </select>
+                      <input
+                        value={passenger.firstName}
+                        onChange={(e) => updateField(idx, "firstName", e.target.value)}
+                        placeholder={t.booking?.passenger?.firstName ?? "First Name"}
+                        required
+                        className={inputCls}
+                        aria-label={`${t.booking?.passenger?.firstName ?? "First name"} for passenger ${idx + 1}`}
+                      />
+                      <input
+                        value={passenger.lastName}
+                        onChange={(e) => updateField(idx, "lastName", e.target.value)}
+                        placeholder={t.booking?.passenger?.lastName ?? "Last Name"}
+                        required
+                        className={inputCls}
+                        aria-label={`${t.booking?.passenger?.lastName ?? "Last name"} for passenger ${idx + 1}`}
+                      />
+                    </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="flex flex-col gap-1 relative">
-                      <label className="text-[10px] font-medium text-white/60 ml-2 absolute -top-2 left-2 bg-[#1a1b26] px-1 z-10">
+                      <label className="text-[10px] font-medium text-slate-600 ml-2 absolute -top-2 left-2 bg-white/80 backdrop-blur-sm rounded px-1 z-10">
                         {t.booking?.passenger?.dateOfBirth ?? "Date of birth"}
                       </label>
                       <input
@@ -149,7 +155,7 @@ export default function PassengerPage() {
                       aria-label={`${t.booking?.passenger?.gender ?? "Gender"} for passenger ${idx + 1}`}
                     >
                       {genderOptions.map((o) => (
-                        <option key={o.value} value={o.value} className="bg-gray-900">{o.label}</option>
+                        <option key={o.value} value={o.value} className="bg-white text-[#111827]">{o.label}</option>
                       ))}
                     </select>
                     <select
@@ -159,7 +165,7 @@ export default function PassengerPage() {
                       aria-label={`${t.booking?.passenger?.nationality ?? "Nationality"} for passenger ${idx + 1}`}
                     >
                       {COMMON_NATIONALITIES.map((n) => (
-                        <option key={n.value} value={n.value} className="bg-gray-900">{n.label}</option>
+                        <option key={n.value} value={n.value} className="bg-white text-[#111827]">{n.label}</option>
                       ))}
                     </select>
                   </div>
@@ -168,10 +174,10 @@ export default function PassengerPage() {
             ))}
 
             <div className="flex items-center justify-between pt-2">
-              <Button variant="secondary" onClick={() => router.back()} type="button">
+              <Button variant="secondary" onClick={() => router.back()} type="button" className="glass-button text-[#111827] border-0">
                 {t.booking?.passenger?.back ?? "← Back"}
               </Button>
-              <Button type="submit">
+              <Button type="submit" className="bg-[#f5c800] text-slate-950 hover:bg-[#e6bb00] shadow-md border-0">
                 {t.booking?.passenger?.continueToContact ?? "Continue →"}
               </Button>
             </div>
@@ -180,13 +186,14 @@ export default function PassengerPage() {
       </main>
 
       {/* Footer */}
-      <footer className="py-4 px-6 border-t border-white/10">
-        <div className="max-w-2xl mx-auto flex items-center justify-center gap-6 text-xs text-white/40">
+      <footer className="py-4 px-6 border-t border-slate-400/30">
+        <div className="max-w-2xl mx-auto flex items-center justify-center gap-6 text-xs text-slate-800 font-medium drop-shadow-sm">
           <span>{t.home?.footer?.privacy ?? "Privacy Policy"}</span>
           <span>{t.home?.footer?.terms ?? "Terms of Service"}</span>
           <span>{t.home?.footer?.support ?? "Support"}</span>
         </div>
       </footer>
+      </div>
     </div>
   );
 }

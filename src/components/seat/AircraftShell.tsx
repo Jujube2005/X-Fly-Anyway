@@ -113,7 +113,7 @@ export function AircraftShell({ children }: AircraftShellProps) {
           COHERENT AIRCRAFT SILHOUETTE (NO NESTED CARDS)
           Single continuous aerodynamic hull: Nose -> Cabin -> Tail
          ====================================================== */}
-      <div className="relative flex flex-row items-stretch w-full bg-white border-2 border-slate-300/90 rounded-l-[180px] rounded-r-[110px] shadow-[0_20px_50px_rgba(0,0,0,0.06),0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden">
+      <div className="relative flex flex-row items-stretch w-full glass-card border-slate-300/50 rounded-l-[180px] rounded-r-[110px] overflow-hidden">
         {/* 1. NOSE & COCKPIT SECTION (LEFT) */}
         <div className="w-24 sm:w-32 md:w-40 shrink-0 relative flex flex-col justify-between py-6 bg-gradient-to-r from-slate-100/70 via-slate-50/40 to-white select-none border-r border-slate-100">
           {/* Top Forward Door (Door 1L) */}

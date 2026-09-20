@@ -63,33 +63,33 @@ export function SeatSelectionSummary({
   );
 
   return (
-    <div className="w-full bg-white/90 backdrop-blur-md border-2 border-[#f5c800] rounded-3xl shadow-xl p-5 sm:p-6 flex flex-col justify-between">
+    <div className="w-full glass-card border-[#f5c800]/50 p-5 sm:p-6 flex flex-col justify-between">
       {/* Top Header matching reference pill design */}
       <div>
-        <div className="bg-slate-100 rounded-xl py-2.5 px-4 text-center font-bold text-slate-800 text-lg mb-5 shadow-2xs">
+        <div className="glass-panel rounded-xl py-2.5 px-4 text-center font-bold text-[#111827] text-lg mb-5 shadow-2xs">
           {t.booking?.seat?.yourSelection ?? "Your Selection"}
         </div>
 
         {/* Selected List */}
-        <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
+        <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-3 drop-shadow-sm">
           {t.booking?.seat?.selected ?? "Selected"}:
         </h3>
 
         {assignedCount === 0 ? (
-          <div className="text-sm text-slate-500 py-8 px-4 bg-slate-50/80 rounded-2xl border border-dashed border-slate-200 flex flex-col items-center justify-center text-center">
-            <p className="font-medium text-slate-700">{t.booking?.seat?.noSeats ?? "No seats selected"}</p>
-            <p className="text-xs text-slate-400 mt-1">
+          <div className="text-sm text-slate-700 py-8 px-4 glass-panel border border-dashed flex flex-col items-center justify-center text-center">
+            <p className="font-medium text-[#111827]">{t.booking?.seat?.noSeats ?? "No seats selected"}</p>
+            <p className="text-xs text-slate-700 mt-1">
               {t.booking?.seat?.selectUpTo ?? "Select up to"} {passengerCount} {(t.booking?.seat?.seat ?? "seat").toLowerCase()}{passengerCount > 1 ? "s" : ""}
             </p>
           </div>
         ) : (
-          <div className="flex flex-col divide-y divide-slate-100 mb-6">
+          <div className="flex flex-col divide-y divide-slate-400/30 mb-6">
             {seatDetails.map((detail, i) => {
               if (!detail) {
                 return (
                   <div
                     key={`unassigned-${i}`}
-                    className="py-3 flex items-center justify-between text-slate-400 opacity-60 text-xs"
+                    className="py-3 flex items-center justify-between text-slate-700 opacity-80 text-xs"
                   >
                     <span>{t.booking?.passenger?.passengerN ?? "Passenger"} {i + 1}</span>
                     <span className="italic">{t.booking?.seat?.noSeats ?? "No seat assigned"}</span>
@@ -102,14 +102,14 @@ export function SeatSelectionSummary({
                   key={detail.seatNumber}
                   className="py-3 flex items-center justify-between text-sm"
                 >
-                  <div className="flex items-center gap-1.5 font-medium text-slate-800">
+                  <div className="flex items-center gap-1.5 font-medium text-[#111827]">
                     <span className="font-bold">{t.booking?.seat?.seat ?? "Seat"} {detail.seatNumber}</span>
-                    <span className="text-xs text-slate-500">
+                    <span className="text-xs text-slate-700">
                       ({detail.cabinName}, {detail.position})
                     </span>
                   </div>
 
-                  <div className="text-right font-bold text-slate-900">
+                  <div className="text-right font-bold text-[#111827]">
                     - ${detail.price > 0 ? detail.price.toLocaleString() : "0"}
                   </div>
                 </div>
@@ -120,21 +120,21 @@ export function SeatSelectionSummary({
       </div>
 
       {/* Bottom Summary & Actions */}
-      <div className="pt-4 border-t border-slate-200 mt-6">
+      <div className="pt-4 border-t border-slate-400/30 mt-6">
         <div className="flex justify-between items-center mb-2">
-          <span className="text-sm font-semibold text-slate-600">
+          <span className="text-sm font-semibold text-slate-800">
             {t.booking?.summary?.total ?? "Total"}:
           </span>
-          <span className="text-xl font-black text-slate-900">
+          <span className="text-xl font-black text-[#111827]">
             ${totalPrice.toLocaleString()}
           </span>
         </div>
 
-        <div className="flex justify-between items-center text-xs font-medium text-slate-500 mb-5">
+        <div className="flex justify-between items-center text-xs font-medium text-slate-700 mb-5">
           <span>{t.booking?.seat?.seatsCurrent ?? "Seats Assigned"}</span>
           <span
             className={
-              isComplete ? "text-emerald-600 font-bold" : "text-slate-600"
+              isComplete ? "text-emerald-800 font-bold drop-shadow-sm" : "text-slate-700"
             }
           >
             {assignedCount} / {passengerCount}
@@ -146,7 +146,7 @@ export function SeatSelectionSummary({
             variant="outline"
             onClick={onClear}
             disabled={assignedCount === 0}
-            className="w-full h-11 rounded-xl text-sm font-semibold bg-slate-200/80 hover:bg-slate-300 border-0 text-slate-700 transition-colors"
+            className="glass-button w-full h-11 rounded-xl text-sm font-semibold text-[#111827]"
           >
             {t.booking?.seat?.changeSelection ?? "Change Selection"}
           </Button>

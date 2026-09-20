@@ -90,27 +90,33 @@ export default function SeatSelectionPage() {
   const allSelectedSeats = currentLegSeats.filter(Boolean);
 
   return (
-    <div className="min-h-dvh flex flex-col bg-[#f9fafb]">
-      <Header variant="glass" />
+    <div 
+      className="min-h-dvh flex flex-col bg-cover bg-center bg-fixed relative"
+      style={{ backgroundImage: 'url("/images/BG/Cloud.png")' }}
+    >
+      <div className="absolute inset-0 bg-white/10 pointer-events-none"></div>
 
-      <main className="flex-1 flex flex-col items-center pt-24 pb-16 px-4 sm:px-6 max-w-7xl mx-auto w-full">
-        {/* Title + Stepper */}
-        <div className="text-center mb-8 w-full max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold text-[#111827] mb-2 font-display">
-            {t.booking?.seat?.title ?? "Select Your Seats"}
-          </h1>
-          <p className="text-base text-[#6b7280] mb-6">
-            {selectedLegs.length > 1
-              ? `${t.booking?.summary?.flight ?? "Flight"} ${currentLegIndex + 1} / ${selectedLegs.length}`
-              : ((t.booking?.seat as any)?.subtitle ?? "Choose the perfect spot for your journey")}
-          </p>
-          <div className="bg-white p-4 rounded-3xl shadow-sm border border-slate-100">
-            <BookingStepper
-              currentLabel={t.booking.seat.seatsCurrent}
-              variant="light"
-            />
+      <div className="relative z-10 flex flex-col min-h-dvh">
+        <Header variant="glass" />
+
+        <main className="flex-1 flex flex-col items-center pt-24 pb-16 px-4 sm:px-6 max-w-7xl mx-auto w-full">
+          {/* Title + Stepper */}
+          <div className="text-center mb-8 w-full max-w-4xl mx-auto glass-text-contrast">
+            <h1 className="text-3xl font-bold text-[#111827] mb-2 font-display">
+              {t.booking?.seat?.title ?? "Select Your Seats"}
+            </h1>
+            <p className="text-base text-[#111827] mb-6 font-medium">
+              {selectedLegs.length > 1
+                ? `${t.booking?.summary?.flight ?? "Flight"} ${currentLegIndex + 1} / ${selectedLegs.length}`
+                : ((t.booking?.seat as any)?.subtitle ?? "Choose the perfect spot for your journey")}
+            </p>
+            <div className="glass-panel p-4">
+              <BookingStepper
+                currentLabel={t.booking.seat.seatsCurrent}
+                variant="light"
+              />
+            </div>
           </div>
-        </div>
 
         {/* Main Booking Layout: CSS Grid (Aircraft Area 70-75% | Selection Summary 25-30%) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 w-full items-start">
@@ -183,7 +189,8 @@ export default function SeatSelectionPage() {
             </div>
           )}
         </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

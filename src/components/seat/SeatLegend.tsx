@@ -6,12 +6,12 @@ import { useTranslation } from "@/hooks/useTranslation";
 export function SeatLegend() {
   const { t } = useTranslation();
   return (
-    <div className="w-full bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5 mt-4">
-      <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
+    <div className="w-full glass-card p-4 sm:p-5 mt-4">
+      <h3 className="text-xs font-bold text-[#111827] uppercase tracking-wider mb-3 drop-shadow-sm">
         Cabin &amp; Seat Legend
       </h3>
       
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 text-xs">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 text-xs font-medium text-[#111827]">
         {/* Available */}
         <div className="flex items-center gap-2.5">
           <div className="w-6 h-6 rounded-md bg-white border border-slate-300 shadow-sm flex items-center justify-center shrink-0">

@@ -38,8 +38,8 @@ export function PassengerSelector({
             onClick={() => onSelectPassenger(index)}
             className={`flex flex-col items-start min-w-[120px] p-3 rounded-xl border transition-all ${
               isActive
-                ? "border-[#f5c800] bg-[#fdf8e6] shadow-sm"
-                : "border-[#e5e7eb] bg-white hover:border-[#d1d5db]"
+                ? "border-[#f5c800] bg-white/40 shadow-sm"
+                : "border-white/30 bg-white/20 hover:bg-white/30"
             }`}
           >
             <span className={`text-xs font-bold ${isActive ? "text-[#b48c00]" : "text-[#4b5563]"}`}>

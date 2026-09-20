@@ -12,7 +12,7 @@ import "./page.css";
 type Method = "credit_card" | "card_charge" | "bitcoin";
 
 const inputCls =
-  "w-full bg-white/10 border border-white/20 text-white placeholder:text-white/40 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#f5c800] focus:ring-1 focus:ring-[#f5c800] transition-all backdrop-blur-sm";
+  "glass-input w-full px-4 py-3 text-sm text-[#111827] placeholder:text-slate-600 appearance-none";
 
 export default function PaymentPage() {
   const router = useRouter();
@@ -151,67 +151,73 @@ export default function PaymentPage() {
   }
 
   return (
-    <div className="min-h-dvh flex flex-col payment-page-container">
-      <Header variant="glass" />
+    <div 
+      className="min-h-dvh flex flex-col bg-cover bg-center bg-fixed relative"
+      style={{ backgroundImage: 'url("/images/BG/airport.png")' }}
+    >
+      <div className="absolute inset-0 bg-white/20 pointer-events-none"></div>
 
-      <main className="flex-1 pt-24 pb-12 px-4 flex items-start justify-center">
-        <div className="w-full max-w-3xl rounded-3xl overflow-hidden payment-card-glass">
-          {/* Header bar */}
-          <div className="px-8 py-5 border-b border-white/10 flex items-center gap-4">
-            <span className="text-lg font-bold text-white">X-Fly Anyway</span>
-            <span className="text-white/30">|</span>
-            <span className="text-[#f5c800] font-semibold">
-              {t.booking?.payment?.paymentInfo ?? "Payment Information"}
-            </span>
-          </div>
+      <div className="relative z-10 flex flex-col min-h-dvh">
+        <Header variant="glass" />
 
-          <div className="flex flex-col lg:flex-row gap-0">
-            {/* Left: flight summary */}
-            <div className="lg:w-64 p-6 border-b lg:border-b-0 lg:border-r border-white/10">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-[#f5c800] text-xl">✈</span>
-              </div>
-              <div className="flex flex-col gap-4 mb-4">
-                {selectedLegs.map((leg) => (
-                  <div key={leg.id}>
-                    <p className="text-white font-bold text-sm mb-1">
-                      {t.booking?.payment?.flight ?? "Flight"} {leg.flightNumber} — {leg.origin.airport_code} {t.booking?.payment?.to ?? "to"} {leg.destination.airport_code}
-                    </p>
-                    <p className="text-white/50 text-xs">
-                      {new Date(leg.departureAt).toLocaleDateString("en-US", {
-                        weekday: "short",
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </p>
-                  </div>
-                ))}
-              </div>
+        <main className="flex-1 pt-24 pb-12 px-4 flex items-start justify-center">
+          <div className="w-full max-w-3xl glass-card overflow-hidden">
+            {/* Header bar */}
+            <div className="px-8 py-5 border-b border-white/30 flex items-center gap-4 bg-white/10">
+              <span className="text-lg font-bold text-[#111827]">X-Fly Anyway</span>
+              <span className="text-slate-400">|</span>
+              <span className="text-brand-yellow-dark font-semibold drop-shadow-sm">
+                {t.booking?.payment?.paymentInfo ?? "Payment Information"}
+              </span>
+            </div>
 
-              <div className="border-t border-white/10 pt-4">
-                <p className="text-xs text-white/50 mb-1">{t.booking?.payment?.total ?? "Total"}</p>
-                <p className="text-2xl font-bold text-white">{fmt(totalAmount)}</p>
-                <div className="mt-3 text-xs text-white/40 flex flex-col gap-1">
-                  <div className="flex justify-between">
-                    <span>{t.booking?.payment?.baseFare ?? "Base Fare"} × {passengers.length}</span>
-                    <span>{fmt(basePrice * passengers.length)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>{t.booking?.payment?.taxesFees ?? "Taxes & Fees"}</span>
-                    <span>{t.booking?.payment?.included ?? "Included"}</span>
+            <div className="flex flex-col lg:flex-row gap-0">
+              {/* Left: flight summary */}
+              <div className="lg:w-64 p-6 border-b lg:border-b-0 lg:border-r border-white/30 bg-white/10 backdrop-blur-sm">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-[#f5c800] text-xl">✈</span>
+                </div>
+                <div className="flex flex-col gap-4 mb-4">
+                  {selectedLegs.map((leg) => (
+                    <div key={leg.id}>
+                      <p className="text-[#111827] font-bold text-sm mb-1">
+                        {t.booking?.payment?.flight ?? "Flight"} {leg.flightNumber} — {leg.origin.airport_code} {t.booking?.payment?.to ?? "to"} {leg.destination.airport_code}
+                      </p>
+                      <p className="text-slate-600 font-medium text-xs">
+                        {new Date(leg.departureAt).toLocaleDateString("en-US", {
+                          weekday: "short",
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="border-t border-white/40 pt-4">
+                  <p className="text-xs text-slate-700 font-medium mb-1">{t.booking?.payment?.total ?? "Total"}</p>
+                  <p className="text-2xl font-bold text-[#111827]">{fmt(totalAmount)}</p>
+                  <div className="mt-3 text-xs text-slate-600 font-medium flex flex-col gap-1">
+                    <div className="flex justify-between">
+                      <span>{t.booking?.payment?.baseFare ?? "Base Fare"} × {passengers.length}</span>
+                      <span>{fmt(basePrice * passengers.length)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>{t.booking?.payment?.taxesFees ?? "Taxes & Fees"}</span>
+                      <span className="text-emerald-700">{t.booking?.payment?.included ?? "Included"}</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
             {/* Right: payment form */}
             <div className="flex-1 p-6">
-              <h2 className="text-[#f5c800] font-semibold mb-4">
+              <h2 className="text-[#111827] font-bold mb-4 drop-shadow-sm">
                 {t.booking?.payment?.paymentDetails ?? "Payment Details"}
               </h2>
 
               {error && (
-                <div className="mb-4 p-3 rounded-xl bg-red-500/20 border border-red-500/30 text-red-300 text-sm">
+                <div className="mb-4 p-3 rounded-xl bg-red-500/20 border border-red-500/30 text-red-700 text-sm font-medium">
                   {error}
                 </div>
               )}
@@ -229,8 +235,8 @@ export default function PaymentPage() {
                     key={m}
                     className={`flex items-center gap-3 rounded-xl px-4 py-3 cursor-pointer border transition-all ${
                       method === m
-                        ? "border-[#f5c800] bg-[#f5c800]/10"
-                        : "border-white/15 hover:border-white/30"
+                        ? "border-[#f5c800] bg-white/40 shadow-sm"
+                        : "border-white/30 bg-white/20 hover:bg-white/30"
                     }`}
                   >
                     <input
@@ -241,11 +247,11 @@ export default function PaymentPage() {
                       onChange={() => setMethod(m as Method)}
                       className="accent-[#f5c800]"
                     />
-                    <span className="text-sm text-white font-medium">
+                    <span className={`text-sm font-medium ${method === m ? "text-[#b48c00]" : "text-[#111827]"}`}>
                       {label}
                     </span>
                     {m === "credit_card" && (
-                      <div className="ml-auto flex gap-1 text-xs text-white/40">
+                      <div className="ml-auto flex gap-1 text-xs text-slate-500 font-semibold">
                         <span>VISA</span>
                         <span>MC</span>
                         <span>AMEX</span>
@@ -300,7 +306,7 @@ export default function PaymentPage() {
                       className={inputCls}
                       aria-label={t.booking?.payment?.name ?? "Cardholder name"}
                     />
-                    <div className="flex items-center justify-between text-xs text-white/50 pt-1">
+                    <div className="flex items-center justify-between text-xs text-slate-600 font-medium pt-1">
                       <span className="italic">
                         {t.booking?.payment?.testDeclineNotice ?? "Test: card ending 0000 simulates decline"}
                       </span>
@@ -312,7 +318,7 @@ export default function PaymentPage() {
                           setCvv("123");
                           setCardHolder("John Doe");
                         }}
-                        className="text-[#f5c800] hover:underline font-semibold transition-colors"
+                        className="text-brand-yellow-dark hover:underline font-bold transition-colors"
                       >
                         {t.booking?.payment?.autoFillValidCard ?? "Auto-fill Valid Card"}
                       </button>
@@ -321,14 +327,14 @@ export default function PaymentPage() {
                 )}
 
                 {method === "bitcoin" && (
-                  <div className="mt-2 rounded-xl p-4 bg-[#f7931a]/10 border border-[#f7931a]/20 text-sm text-white/70">
+                  <div className="mt-2 rounded-xl p-4 bg-[#f7931a]/10 border border-[#f7931a]/20 text-sm text-[#111827] font-medium backdrop-blur-sm">
                     {t.booking?.payment?.bitcoinSimNotice ?? "Bitcoin payment is simulated. Click Complete Booking to proceed."}
                   </div>
                 )}
 
                 <div className="mt-4 flex items-center gap-3">
-                  <span className="text-white/40 text-lg">🔒</span>
-                  <Button type="submit" fullWidth isLoading={isLoading}>
+                  <span className="text-slate-400 text-lg">🔒</span>
+                  <Button type="submit" fullWidth isLoading={isLoading} className="bg-[#f5c800] text-slate-950 hover:bg-[#e6bb00] shadow-md border-0 text-base font-bold">
                     {isLoading
                       ? (t.booking?.payment?.processing ?? "Processing...")
                       : (t.booking?.payment?.completeBooking ?? "Complete Booking")}
@@ -338,7 +344,8 @@ export default function PaymentPage() {
             </div>
           </div>
         </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }
