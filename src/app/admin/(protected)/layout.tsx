@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { isCompanyDeviceIdentity } from "@/lib/auth/device-auth";
 
 /** Admin layout — light #e8eef5 background with white sidebar */
 export default async function AdminLayout({
@@ -13,6 +14,11 @@ export default async function AdminLayout({
 
   if (!user) {
     redirect("/admin/login");
+  }
+
+  // Enforce company device restriction
+  if (!isCompanyDeviceIdentity(user)) {
+    redirect("/"); // Redirect non-company identities to customer experience
   }
 
   // Check RBAC for admin_roles

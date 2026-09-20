@@ -1,10 +1,15 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { isCompanyDeviceIdentity } from "@/lib/auth/device-auth";
 
 async function authorizeSuperAdmin() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
+
+  if (!isCompanyDeviceIdentity(user)) {
+    return null;
+  }
 
   const { data: roleData } = await supabase
     .from("admin_roles")
