@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import { Header } from "@/components/layout/Header";
 import { FlightSearchForm } from "@/components/flight/FlightSearchForm";
@@ -102,69 +104,93 @@ const WHY_FLY_FEATURES = [
   { Icon: IconHeadset, key: "support247"     as const },
 ];
 
-const OFFERS = [
+// Featured Routes — real routes, no fake prices or discounts
+const FEATURED_ROUTES = [
   {
-    id: "offer-1",
+    id: "route-1",
     from: "Bangkok",
+    fromCode: "BKK",
     to: "Tokyo",
-    toCode: "TYO",
-    discount: "30% OFF",
-    price: 18500,
-    originalPrice: 26500,
-    validUntil: "Sep 30",
+    toCode: "NRT",
+    description: "Land of the rising sun",
     accent: "#1e40af",
     accentLight: "#3b82f6",
   },
   {
-    id: "offer-2",
+    id: "route-2",
     from: "Bangkok",
+    fromCode: "BKK",
     to: "Dubai",
     toCode: "DXB",
-    discount: "20% OFF",
-    price: 6960,
-    originalPrice: 8700,
-    validUntil: "Oct 15",
+    description: "Desert city of wonders",
     accent: "#b45309",
     accentLight: "#f59e0b",
   },
   {
-    id: "offer-3",
+    id: "route-3",
     from: "Bangkok",
+    fromCode: "BKK",
     to: "London",
     toCode: "LHR",
-    discount: "15% OFF",
-    price: 12750,
-    originalPrice: 15000,
-    validUntil: "Oct 31",
+    description: "Heart of the British Isles",
     accent: "#065f46",
     accentLight: "#10b981",
   },
 ];
 
+// Unsplash photo IDs — free-to-use, no download needed
 const INSPIRATION = [
-  { id: "ins-1", city: "Santorini",  country: "Greece",    color: "#1e3a5f", span2: true  },
-  { id: "ins-2", city: "Kyoto",      country: "Japan",     color: "#2d1b4e", span2: false },
-  { id: "ins-3", city: "Marrakech",  country: "Morocco",   color: "#4a2010", span2: false },
-  { id: "ins-4", city: "Patagonia",  country: "Argentina", color: "#0d3b2e", span2: false },
-  { id: "ins-5", city: "Maldives",   country: "Maldives",  color: "#0c2a4a", span2: false },
+  { id: "ins-1", city: "Santorini",  country: "Greece",    unsplashId: "photo-1570077188670-e3a8d69ac5ff", span2: true  },
+  { id: "ins-2", city: "Kyoto",      country: "Japan",     unsplashId: "photo-1493976040374-85c8e12f0c0e", span2: false },
+  { id: "ins-3", city: "Marrakech",  country: "Morocco",   unsplashId: "photo-1539020140153-e479b8c22e70", span2: false },
+  { id: "ins-4", city: "Patagonia",  country: "Argentina", unsplashId: "photo-1501854140801-50d01698950b", span2: false },
+  { id: "ins-5", city: "Maldives",   country: "Maldives",  unsplashId: "photo-1514282401047-d79a71a590e8", span2: false },
 ];
+
+// IATA codes for inspiration cards that have seeded airport data
+const INSPIRATION_IATA: Record<string, string> = {
+  Tokyo: "NRT",
+  Dubai: "DXB",
+  London: "LHR",
+  // Santorini, Kyoto, Marrakech, Patagonia, Maldives have no seeded airports
+};
 
 /* ─── Page ───────────────────────────────────────────────────── */
 
-export default function HomePage() {
+function HomeContent() {
   const { t } = useTranslation();
   const { language, currency } = useLocale();
+  const searchParams = useSearchParams();
+  const heroRef = useRef<HTMLDivElement>(null);
+
+  // Read ?destination= query param on mount and whenever it changes.
+  // This is the same mechanism used by Popular Destinations (setHeroDestination).
+  const queryDestination = searchParams.get("destination") ?? undefined;
 
   // Popular destination click-to-fill: stores the IATA code to set as destination.
   // Only airports that exist in the seed DB are clickable.
-  const [heroDestination, setHeroDestination] = useState<string | undefined>(undefined);
+  const [heroDestination, setHeroDestination] = useState<string | undefined>(queryDestination);
+
+  // Sync state when query param changes (e.g. navigating from Offers/Inspiration)
+  useEffect(() => {
+    if (queryDestination) {
+      setHeroDestination(queryDestination);
+      // Scroll to hero search form so user sees the pre-filled destination
+      heroRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [queryDestination]);
+
+  function handleDestinationClick(iata: string) {
+    setHeroDestination(iata);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
   return (
     <div className="flex flex-col">
       <Header variant="transparent" />
 
       {/* ── Hero ─────────────────────────────────────────────── */}
-      <section className="home-hero flex flex-col items-center justify-center px-4 pt-20 pb-16">
+      <section ref={heroRef} className="home-hero flex flex-col items-center justify-center px-4 pt-20 pb-16">
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none home-noise-overlay" />
 
         <div className="relative w-full max-w-3xl rounded-3xl px-8 py-10 home-hero-card">
@@ -190,9 +216,7 @@ export default function HomePage() {
                   key={dest.city}
                   onClick={() => {
                     if (dest.clickable) {
-                      setHeroDestination(dest.iata);
-                      // Scroll hero card into view so user sees the form update
-                      window.scrollTo({ top: 0, behavior: "smooth" });
+                      handleDestinationClick(dest.iata);
                     }
                   }}
                   title={dest.clickable ? `เลือกปลายทาง ${dest.city}` : undefined}
@@ -248,51 +272,42 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Special Offers ───────────────────────────────────── */}
+      {/* ── Featured Routes ───────────────────────────────────── */}
       <section className="home-section home-offers" id="offers">
         <div className="home-section-inner">
-          <span className="home-section-label">Promotions</span>
+          <span className="home-section-label">Routes</span>
           <h2 className="home-section-title">{t.home.offers.title}</h2>
-          <p className="home-section-subtitle mb-12">{t.home.offers.subtitle}</p>
+          <p className="home-section-subtitle mb-12">Popular routes departing from Bangkok</p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {OFFERS.map((offer) => (
-              <div key={offer.id} className="offer-card">
+            {FEATURED_ROUTES.map((route) => (
+              <div key={route.id} className="offer-card">
                 {/* Card header */}
                 <div
                   className="p-6 flex items-start justify-between"
-                  style={{ background: `linear-gradient(135deg, ${offer.accent} 0%, ${offer.accentLight}33 100%)` }}
+                  style={{ background: `linear-gradient(135deg, ${route.accent} 0%, ${route.accentLight}33 100%)` }}
                 >
                   <div>
-                    <div className="offer-badge mb-3 flex items-center gap-1.5">
-                      <IconTag />
-                      {t.home.offers.badge} · {offer.discount}
-                    </div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-white/60 text-xs font-medium">{offer.from}</span>
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-white/70 text-xs font-medium">{route.from}</span>
                       <span className="text-white/40"><IconPlane /></span>
-                      <span className="text-white/60 text-xs font-medium">{offer.to}</span>
+                      <span className="text-white font-bold text-sm">{route.to}</span>
                     </div>
-                    <div className="offer-price text-white">
-                      {formatCurrency(offer.price, currency, language)}{" "}
-                      <span className="line-through">
-                        {formatCurrency(offer.originalPrice, currency, language)}
-                      </span>
-                    </div>
+                    <p className="text-white/55 text-xs">{route.description}</p>
                   </div>
-                  {/* IATA destination code in a stylised box */}
+                  {/* IATA destination code */}
                   <div
                     className="rounded-xl px-3 py-2 flex flex-col items-center justify-center shrink-0"
                     style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)" }}
                   >
-                    <span className="text-white text-lg font-black tracking-widest leading-none">{offer.toCode}</span>
+                    <span className="text-white text-lg font-black tracking-widest leading-none">{route.toCode}</span>
                     <span className="text-white/50 text-[9px] mt-0.5 tracking-wide">IATA</span>
                   </div>
                 </div>
                 {/* Card footer */}
                 <div className="p-5 flex flex-col flex-1">
-                  <p className="text-xs text-gray-400 mb-4">Valid until {offer.validUntil}</p>
-                  <Link href="/" className="offer-book-btn">
+                  <p className="text-xs text-gray-400 mb-4">{route.fromCode} → {route.toCode}</p>
+                  <Link href={`/?destination=${route.toCode}`} className="offer-book-btn">
                     {t.home.offers.bookNow}
                   </Link>
                 </div>
@@ -310,36 +325,44 @@ export default function HomePage() {
           <p className="home-section-subtitle mb-12">{t.home.inspiration.subtitle}</p>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4" style={{ gridAutoRows: "200px" }}>
-            {INSPIRATION.map((dest, i) => (
-              <div
-                key={dest.id}
-                className={`inspiration-card ${i === 0 ? "row-span-2" : ""}`}
-                style={{ background: dest.color }}
-              >
-                {/* Decorative subtle pattern using SVG */}
-                <svg
-                  className="absolute inset-0 w-full h-full opacity-10 pointer-events-none"
-                  viewBox="0 0 400 400"
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden="true"
+            {INSPIRATION.map((dest, i) => {
+              const iata = INSPIRATION_IATA[dest.city];
+              const isClickable = Boolean(iata);
+              const imgSrc = `https://images.unsplash.com/${dest.unsplashId}?auto=format&fit=crop&w=600&q=70`;
+              return (
+                <div
+                  key={dest.id}
+                  className={`inspiration-card ${i === 0 ? "row-span-2" : ""} ${isClickable ? "cursor-pointer" : ""}`}
+                  onClick={() => isClickable && handleDestinationClick(iata!)}
+                  role={isClickable ? "button" : undefined}
+                  tabIndex={isClickable ? 0 : undefined}
+                  onKeyDown={isClickable ? (e) => { if (e.key === "Enter" || e.key === " ") handleDestinationClick(iata!); } : undefined}
+                  aria-label={isClickable ? `Explore ${dest.city} — pre-fill destination` : undefined}
                 >
-                  <circle cx="300" cy="100" r="160" fill="white" />
-                  <circle cx="80" cy="320" r="100" fill="white" />
-                </svg>
-                {/* MapPin icon top-right */}
-                <div className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/15 flex items-center justify-center text-white">
-                  <IconMapPin />
+                  {/* Unsplash background image */}
+                  <Image
+                    src={imgSrc}
+                    alt={`${dest.city}, ${dest.country}`}
+                    fill
+                    sizes="(max-width: 768px) 50vw, 33vw"
+                    className="inspiration-card-bg"
+                    style={{ objectFit: "cover" }}
+                  />
+                  {/* MapPin icon top-right */}
+                  <div className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/15 flex items-center justify-center text-white z-10">
+                    <IconMapPin />
+                  </div>
+                  <div className="inspiration-overlay z-10">
+                    <p className="inspiration-card-title">{dest.city}</p>
+                    <p className="inspiration-card-sub">{dest.country}</p>
+                    <span className={`inspiration-explore-btn ${isClickable ? "text-[#f5c800]" : "text-white/50 cursor-default"}`}>
+                      {isClickable ? t.home.inspiration.explore : "Coming soon"}
+                      {isClickable && <IconArrowRight />}
+                    </span>
+                  </div>
                 </div>
-                <div className="inspiration-overlay">
-                  <p className="inspiration-card-title">{dest.city}</p>
-                  <p className="inspiration-card-sub">{dest.country}</p>
-                  <span className="inspiration-explore-btn">
-                    {t.home.inspiration.explore}
-                    <IconArrowRight />
-                  </span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -388,5 +411,13 @@ export default function HomePage() {
         </div>
       </footer>
     </div>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={null}>
+      <HomeContent />
+    </Suspense>
   );
 }
