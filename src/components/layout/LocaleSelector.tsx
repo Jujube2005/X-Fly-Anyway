@@ -7,7 +7,7 @@ import "./LocaleSelector.css";
 
 /* ── Data ─────────────────────────────────────────────────────── */
 
-export const LANGUAGES = [
+const LANGUAGES = [
   { code: "th",    flag: "🇹🇭", label: "ภาษาไทย" },
   { code: "en",    flag: "🇪🇬",  label: "English" },
   { code: "en-TH", flag: "🇹🇭", label: "English (Thailand)" },
@@ -83,7 +83,7 @@ export const LANGUAGES = [
   { code: "gl",    flag: "🇪🇸", label: "Galego" },
 ];
 
-export const CURRENCIES = [
+const CURRENCIES = [
   // Popular (shown first)
   { code: "THB", symbol: "฿",    name: "บาทไทย",                     popular: true },
   { code: "USD", symbol: "$",    name: "ดอลลาร์สหรัฐ",               popular: true },

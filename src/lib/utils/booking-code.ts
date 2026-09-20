@@ -23,6 +23,3 @@ export function generateBookingCode(): string {
 /**
  * Validates that a booking reference code matches the expected format.
  */
-export function isValidBookingCode(ref: string): boolean {
-  return /^XFA-\d{8}-[A-Z0-9]{4}$/i.test(ref);
-}

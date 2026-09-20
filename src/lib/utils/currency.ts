@@ -33,9 +33,3 @@ export function formatCurrency(
 /**
  * Format a number as a plain number with thousands separators.
  */
-export function formatNumber(
-  value: number,
-  locale: string = "th-TH"
-): string {
-  return new Intl.NumberFormat(locale).format(value);
-}
