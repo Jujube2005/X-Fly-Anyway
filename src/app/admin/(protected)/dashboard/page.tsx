@@ -81,7 +81,7 @@ export default function AdminDashboardPage() {
           >
             <option value="">All Destinations</option>
             {airports.map(apt => (
-              <option key={apt.id} value={apt.id}>{apt.city} ({apt.id})</option>
+              <option key={apt.airport_code} value={apt.airport_code}>{apt.city} ({apt.airport_code})</option>
             ))}
           </select>
 
