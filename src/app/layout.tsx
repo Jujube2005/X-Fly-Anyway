@@ -22,6 +22,11 @@ export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
   ),
+  icons: {
+    icon: "/images/logo/logo.png",
+    shortcut: "/images/logo/logo.png",
+    apple: "/images/logo/logo.png",
+  },
   openGraph: {
     type: "website",
     siteName: "X-Fly Anyway",
