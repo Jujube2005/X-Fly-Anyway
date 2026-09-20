@@ -556,19 +556,19 @@ export function FlightSearchForm({
             <div
               role="dialog"
               aria-modal="true"
-              aria-label="เลือกผู้โดยสารและชั้นโดยสาร"
-              className="absolute top-full left-0 mt-2 w-full sm:w-80 bg-white rounded-2xl shadow-xl z-50 p-5 border border-gray-100 text-gray-900 animate-in fade-in slide-in-from-top-2 duration-200"
+              aria-label={t.search.passengers}
+              className="absolute top-full left-0 mt-2 w-full sm:w-80 bg-[#1e2335]/95 backdrop-blur-md rounded-2xl shadow-xl z-50 p-5 border border-white/20 text-white animate-in fade-in slide-in-from-top-2 duration-200"
             >
               {/* Passenger rows */}
-              <h4 className="font-bold text-base text-gray-900 mb-5">จำนวนผู้โดยสาร</h4>
+              <h4 className="font-bold text-base text-white mb-5">{t.search.passengers}</h4>
 
               {/* Adults */}
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-3">
                   <PassengerIcon />
                   <div>
-                    <p className="font-semibold text-sm">ผู้ใหญ่</p>
-                    <p className="text-xs text-gray-500">อายุตั้งแต่ 12 ปีขึ้นไป</p>
+                    <p className="font-semibold text-sm">{t.search.adult}</p>
+                    <p className="text-xs text-white/50">{t.search.adultAge}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
@@ -576,8 +576,8 @@ export function FlightSearchForm({
                     type="button"
                     onClick={() => setAdults(Math.max(1, adults - 1))}
                     disabled={adults <= 1}
-                    className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 disabled:opacity-40 font-bold text-lg"
-                    aria-label="ลดผู้ใหญ่"
+                    className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-white/80 hover:bg-white/20 disabled:opacity-40 font-bold text-lg transition-colors"
+                    aria-label={`Decrease ${t.search.adult}`}
                   >
                     −
                   </button>
@@ -586,8 +586,8 @@ export function FlightSearchForm({
                     type="button"
                     onClick={() => setAdults(Math.min(9, adults + 1))}
                     disabled={passengers >= 9}
-                    className="w-9 h-9 rounded-full bg-sky-100 flex items-center justify-center text-gray-700 hover:bg-sky-200 font-bold text-lg"
-                    aria-label="เพิ่มผู้ใหญ่"
+                    className="w-9 h-9 rounded-full bg-[#f5c800]/20 flex items-center justify-center text-[#f5c800] hover:bg-[#f5c800]/30 disabled:opacity-40 font-bold text-lg transition-colors"
+                    aria-label={`Increase ${t.search.adult}`}
                   >
                     +
                   </button>
@@ -599,8 +599,8 @@ export function FlightSearchForm({
                 <div className="flex items-center gap-3">
                   <span className="text-xl" aria-hidden="true">♧</span>
                   <div>
-                    <p className="font-semibold text-sm">เด็ก</p>
-                    <p className="text-xs text-gray-500">2–11 ปี</p>
+                    <p className="font-semibold text-sm">{t.search.children}</p>
+                    <p className="text-xs text-white/50">{t.search.childAge}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
@@ -608,8 +608,8 @@ export function FlightSearchForm({
                     type="button"
                     onClick={() => setChildren(Math.max(0, children - 1))}
                     disabled={children <= 0}
-                    className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 disabled:opacity-40 font-bold text-lg"
-                    aria-label="ลดเด็ก"
+                    className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-white/80 hover:bg-white/20 disabled:opacity-40 font-bold text-lg transition-colors"
+                    aria-label={`Decrease ${t.search.children}`}
                   >
                     −
                   </button>
@@ -618,8 +618,8 @@ export function FlightSearchForm({
                     type="button"
                     onClick={() => { if (passengers < 9) setChildren(children + 1); }}
                     disabled={passengers >= 9}
-                    className="w-9 h-9 rounded-full bg-sky-100 flex items-center justify-center text-gray-700 hover:bg-sky-200 font-bold text-lg"
-                    aria-label="เพิ่มเด็ก"
+                    className="w-9 h-9 rounded-full bg-[#f5c800]/20 flex items-center justify-center text-[#f5c800] hover:bg-[#f5c800]/30 disabled:opacity-40 font-bold text-lg transition-colors"
+                    aria-label={`Increase ${t.search.children}`}
                   >
                     +
                   </button>
@@ -631,8 +631,8 @@ export function FlightSearchForm({
                 <div className="flex items-center gap-3">
                   <span className="text-xl" aria-hidden="true">◉</span>
                   <div>
-                    <p className="font-semibold text-sm">ทารก</p>
-                    <p className="text-xs text-gray-500">ต่ำกว่า 2 ปี</p>
+                    <p className="font-semibold text-sm">{t.search.infants}</p>
+                    <p className="text-xs text-white/50">{t.search.infantAge}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
@@ -640,8 +640,8 @@ export function FlightSearchForm({
                     type="button"
                     onClick={() => setInfants(Math.max(0, infants - 1))}
                     disabled={infants <= 0}
-                    className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 disabled:opacity-40 font-bold text-lg"
-                    aria-label="ลดทารก"
+                    className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-white/80 hover:bg-white/20 disabled:opacity-40 font-bold text-lg transition-colors"
+                    aria-label={`Decrease ${t.search.infants}`}
                   >
                     −
                   </button>
@@ -650,24 +650,24 @@ export function FlightSearchForm({
                     type="button"
                     onClick={() => { if (passengers < 9) setInfants(infants + 1); }}
                     disabled={passengers >= 9}
-                    className="w-9 h-9 rounded-full bg-sky-100 flex items-center justify-center text-gray-700 hover:bg-sky-200 font-bold text-lg"
-                    aria-label="เพิ่มทารก"
+                    className="w-9 h-9 rounded-full bg-[#f5c800]/20 flex items-center justify-center text-[#f5c800] hover:bg-[#f5c800]/30 disabled:opacity-40 font-bold text-lg transition-colors"
+                    aria-label={`Increase ${t.search.infants}`}
                   >
                     +
                   </button>
                 </div>
               </div>
 
-              <div className="h-px bg-gray-100 my-6" />
+              <div className="h-px bg-white/10 my-6" />
 
               {/* Cabin Class */}
               <div>
-                <h4 className="font-bold text-base text-gray-900 mb-3">ชั้นโดยสาร</h4>
+                <h4 className="font-bold text-base text-white mb-3">{t.search.cabinClassLabel}</h4>
                 <select
                   value={cabinClass}
                   onChange={(e) => setCabinClass(e.target.value)}
-                  className="w-full h-12 rounded-xl border border-gray-300 px-4 text-sm text-gray-800 bg-white focus:outline-none focus:border-sky-500"
-                  aria-label="ชั้นโดยสาร"
+                  className="w-full h-12 rounded-xl border border-white/20 px-4 text-sm text-white bg-white/10 focus:outline-none focus:border-[#f5c800] [&>option]:bg-[#1e2335] [&>option]:text-white"
+                  aria-label={t.search.cabinClassLabel}
                 >
                   <option value="economy">{t.search.cabinClass.economy}</option>
                   <option value="premium_economy">{t.search.cabinClass.premium_economy}</option>
@@ -679,9 +679,9 @@ export function FlightSearchForm({
               <button
                 type="button"
                 onClick={() => setIsPopoverOpen(false)}
-                className="w-full mt-5 bg-sky-500 hover:bg-sky-600 text-white font-bold rounded-xl py-3.5 transition-colors"
+                className="w-full mt-5 bg-[#f5c800] hover:bg-[#e6b800] text-[#111827] font-bold rounded-xl py-3.5 transition-colors"
               >
-                เสร็จสิ้น
+                {t.search.done}
               </button>
             </div>
           )}

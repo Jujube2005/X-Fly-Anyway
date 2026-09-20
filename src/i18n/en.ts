@@ -63,8 +63,13 @@ export const en = {
     searching: "Searching...",
     adult: "Adult",
     adults: "Adults",
+    adultAge: "12+ years",
     children: "Children",
+    childAge: "2–11 years",
     infants: "Infants",
+    infantAge: "Under 2 years",
+    cabinClassLabel: "Cabin Class",
+    done: "Done",
     cabinClass: {
       economy: "Economy",
       premium_economy: "Premium Economy",

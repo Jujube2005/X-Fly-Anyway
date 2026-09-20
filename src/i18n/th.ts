@@ -63,8 +63,13 @@ export const th = {
     searching: "กำลังค้นหา...",
     adult: "ผู้ใหญ่",
     adults: "ผู้ใหญ่",
+    adultAge: "อายุตั้งแต่ 12 ปีขึ้นไป",
     children: "เด็ก",
+    childAge: "2–11 ปี",
     infants: "ทารก",
+    infantAge: "ต่ำกว่า 2 ปี",
+    cabinClassLabel: "ชั้นโดยสาร",
+    done: "เสร็จสิ้น",
     cabinClass: {
       economy: "ชั้นประหยัด",
       premium_economy: "ชั้นประหยัดพรีเมียม",
