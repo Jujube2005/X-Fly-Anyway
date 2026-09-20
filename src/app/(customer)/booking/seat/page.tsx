@@ -40,6 +40,17 @@ export default function SeatSelectionPage() {
     fetchSeatMap(selectedLegs[currentLegIndex].id, cabinClass);
   }, [selectedLegs, cabinClass, fetchSeatMap, router, currentLegIndex]);
 
+  let currency = "THB";
+  if (selectedLegs && selectedLegs.length > 0 && cabinClass) {
+    const leg = selectedLegs[currentLegIndex] || selectedLegs[0];
+    const cabinInfo = (leg.cabinClasses ?? []).find(
+      (c) => c.cabinClass === cabinClass
+    );
+    if (cabinInfo && cabinInfo.currency) {
+      currency = cabinInfo.currency;
+    }
+  }
+
   // Ensure currentLegSeats is always an array of length passengerCount
   const currentLegSeats: string[] =
     selectedSeats[currentLegIndex] || Array(passengerCount).fill("");
@@ -156,14 +167,11 @@ export default function SeatSelectionPage() {
                   <SeatMap
                     layout={layout}
                     seatsInfo={seatsInfo}
-                    currentLegSeats={
-                      currentLegSeats[activePassengerIndex]
-                        ? [currentLegSeats[activePassengerIndex]]
-                        : []
-                    }
+                    currentLegSeats={currentLegSeats}
                     allSelectedSeats={allSelectedSeats}
                     onSeatClick={handleSeatClick}
-                    maxSeatsReached={false}
+                    maxSeatsReached={allSelectedSeats.length >= passengerCount}
+                    currency={currency}
                   />
                 </AircraftShell>
 
@@ -180,11 +188,12 @@ export default function SeatSelectionPage() {
                 passengerCount={passengerCount}
                 selectedSeats={currentLegSeats}
                 seatsInfo={seatsInfo}
-                firstRow={layout.firstRow}
+                firstRow={layout?.firstRow || 1}
                 cabinClass={cabinClass!}
                 onConfirm={handleConfirm}
                 onClear={handleClearSelection}
                 isNextFlight={currentLegIndex < selectedLegs.length - 1}
+                currency={currency}
               />
             </div>
           )}

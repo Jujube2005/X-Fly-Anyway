@@ -1,35 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { BookingStepper } from "@/components/booking/BookingStepper";
 import { Button } from "@/components/ui/Button";
 import { useBookingContext, type PassengerInput } from "@/components/booking/BookingProvider";
 import { useTranslation } from "@/hooks/useTranslation";
+import { ALL_NATIONALITIES } from "@/lib/constants";
 import "./page.css";
 
-const TITLE_OPTIONS = [
-  { value: "Mr", label: "Mr" },
-  { value: "Mrs", label: "Mrs" },
-  { value: "Ms", label: "Ms" },
-  { value: "Master", label: "Master" },
-];
-
-const COMMON_NATIONALITIES = [
-  { value: "TH", label: "Thai" },
-  { value: "US", label: "American" },
-  { value: "GB", label: "British" },
-  { value: "JP", label: "Japanese" },
-  { value: "CN", label: "Chinese" },
-  { value: "SG", label: "Singaporean" },
-  { value: "AU", label: "Australian" },
-  { value: "DE", label: "German" },
-  { value: "FR", label: "French" },
-  { value: "KR", label: "Korean" },
-  { value: "IN", label: "Indian" },
-  { value: "AE", label: "Emirati" },
-];
 
 function emptyPassenger(): PassengerInput {
   return { title: "Mr", firstName: "", lastName: "", dateOfBirth: "", gender: "male", nationality: "TH" };
@@ -39,8 +19,15 @@ const inputCls = "glass-input w-full px-4 py-3 text-sm text-[#111827] placeholde
 
 export default function PassengerPage() {
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const { passengerCount, passengers, setPassengers } = useBookingContext();
+
+  const TITLE_OPTIONS = [
+    { value: "Mr", label: t.booking?.passenger?.mr ?? "Mr." },
+    { value: "Mrs", label: t.booking?.passenger?.mrs ?? "Mrs." },
+    { value: "Ms", label: t.booking?.passenger?.ms ?? "Ms." },
+    { value: "Master", label: t.booking?.passenger?.master ?? "Master" },
+  ];
 
   const [forms, setForms] = useState<PassengerInput[]>(
     passengers?.length > 0 ? passengers : Array.from({ length: passengerCount }, () => emptyPassenger())
@@ -50,6 +37,15 @@ export default function PassengerPage() {
   const maxDobDate = new Date();
   maxDobDate.setDate(maxDobDate.getDate() - 14);
   const maxDobString = maxDobDate.toISOString().split("T")[0];
+
+  const sortedNationalities = useMemo(() => {
+    const collator = new Intl.Collator(language);
+    return [...ALL_NATIONALITIES].sort((a, b) => {
+      const nameA = language === "th" ? a.th : a.en;
+      const nameB = language === "th" ? b.th : b.en;
+      return collator.compare(nameA, nameB);
+    });
+  }, [language]);
 
   function updateField(idx: number, field: keyof PassengerInput, value: string) {
     setForms((prev) => prev.map((p, i) => (i === idx ? { ...p, [field]: value } : p)));
@@ -70,7 +66,7 @@ export default function PassengerPage() {
   ];
 
   return (
-    <div 
+    <div
       className="min-h-dvh flex flex-col bg-cover bg-center bg-fixed relative"
       style={{ backgroundImage: 'url("/images/BG/Cloud.png")' }}
     >
@@ -124,75 +120,77 @@ export default function PassengerPage() {
                         aria-label={`${t.booking?.passenger?.lastName ?? "Last name"} for passenger ${idx + 1}`}
                       />
                     </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="flex flex-col gap-1 relative">
-                      <label className="text-[10px] font-medium text-slate-600 ml-2 absolute -top-2 left-2 bg-white/80 backdrop-blur-sm rounded px-1 z-10">
-                        {t.booking?.passenger?.dateOfBirth ?? "Date of birth"}
-                      </label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="flex flex-col gap-1 relative">
+                        <label className="text-[10px] font-medium text-slate-600 ml-2 absolute -top-2 left-2 bg-white/80 backdrop-blur-sm rounded px-1 z-10">
+                          {t.booking?.passenger?.dateOfBirth ?? "Date of birth"}
+                        </label>
+                        <input
+                          type="date"
+                          value={passenger.dateOfBirth}
+                          onChange={(e) => updateField(idx, "dateOfBirth", e.target.value)}
+                          required
+                          className={`${inputCls} relative pt-2`}
+                          max={maxDobString}
+                          aria-label={`${t.booking?.passenger?.dateOfBirth ?? "Date of birth"} for passenger ${idx + 1}`}
+                        />
+                      </div>
                       <input
-                        type="date"
-                        value={passenger.dateOfBirth}
-                        onChange={(e) => updateField(idx, "dateOfBirth", e.target.value)}
-                        required
-                        className={`${inputCls} relative pt-2`}
-                        max={maxDobString}
-                        aria-label={`${t.booking?.passenger?.dateOfBirth ?? "Date of birth"} for passenger ${idx + 1}`}
+                        value={passenger.passportNumber ?? ""}
+                        onChange={(e) => updateField(idx, "passportNumber", e.target.value)}
+                        placeholder={t.booking?.passenger?.passportOptional ?? "Passport Number (optional)"}
+                        className={inputCls}
+                        aria-label={`${t.booking?.passenger?.passportNumber ?? "Passport number"} for passenger ${idx + 1}`}
                       />
                     </div>
-                    <input
-                      value={passenger.passportNumber ?? ""}
-                      onChange={(e) => updateField(idx, "passportNumber", e.target.value)}
-                      placeholder={t.booking?.passenger?.passportOptional ?? "Passport Number (optional)"}
-                      className={inputCls}
-                      aria-label={`${t.booking?.passenger?.passportNumber ?? "Passport number"} for passenger ${idx + 1}`}
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <select
-                      value={passenger.gender}
-                      onChange={(e) => updateField(idx, "gender", e.target.value)}
-                      className={inputCls}
-                      aria-label={`${t.booking?.passenger?.gender ?? "Gender"} for passenger ${idx + 1}`}
-                    >
-                      {genderOptions.map((o) => (
-                        <option key={o.value} value={o.value} className="bg-white text-[#111827]">{o.label}</option>
-                      ))}
-                    </select>
-                    <select
-                      value={passenger.nationality}
-                      onChange={(e) => updateField(idx, "nationality", e.target.value)}
-                      className={inputCls}
-                      aria-label={`${t.booking?.passenger?.nationality ?? "Nationality"} for passenger ${idx + 1}`}
-                    >
-                      {COMMON_NATIONALITIES.map((n) => (
-                        <option key={n.value} value={n.value} className="bg-white text-[#111827]">{n.label}</option>
-                      ))}
-                    </select>
+                    <div className="grid grid-cols-2 gap-3">
+                      <select
+                        value={passenger.gender}
+                        onChange={(e) => updateField(idx, "gender", e.target.value)}
+                        className={inputCls}
+                        aria-label={`${t.booking?.passenger?.gender ?? "Gender"} for passenger ${idx + 1}`}
+                      >
+                        {genderOptions.map((o) => (
+                          <option key={o.value} value={o.value} className="bg-white text-[#111827]">{o.label}</option>
+                        ))}
+                      </select>
+                      <select
+                        value={passenger.nationality}
+                        onChange={(e) => updateField(idx, "nationality", e.target.value)}
+                        className={inputCls}
+                        aria-label={`${t.booking?.passenger?.nationality ?? "Nationality"} for passenger ${idx + 1}`}
+                      >
+                        {sortedNationalities.map((n) => (
+                          <option key={n.value} value={n.value} className="bg-white text-[#111827]">
+                            {language === "th" ? n.th : n.en}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                 </div>
+              ))}
+
+              <div className="flex items-center justify-between pt-2">
+                <Button variant="secondary" onClick={() => router.back()} type="button" className="glass-button text-[#111827] border-0">
+                  {t.booking?.passenger?.back ?? "← Back"}
+                </Button>
+                <Button type="submit" className="bg-[#f5c800] text-slate-950 hover:bg-[#e6bb00] shadow-md border-0">
+                  {t.booking?.passenger?.continueToContact ?? "Continue →"}
+                </Button>
               </div>
-            ))}
+            </form>
+          </div>
+        </main>
 
-            <div className="flex items-center justify-between pt-2">
-              <Button variant="secondary" onClick={() => router.back()} type="button" className="glass-button text-[#111827] border-0">
-                {t.booking?.passenger?.back ?? "← Back"}
-              </Button>
-              <Button type="submit" className="bg-[#f5c800] text-slate-950 hover:bg-[#e6bb00] shadow-md border-0">
-                {t.booking?.passenger?.continueToContact ?? "Continue →"}
-              </Button>
-            </div>
-          </form>
-        </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="py-4 px-6 border-t border-slate-400/30">
-        <div className="max-w-2xl mx-auto flex items-center justify-center gap-6 text-xs text-slate-800 font-medium drop-shadow-sm">
-          <span>{t.home?.footer?.privacy ?? "Privacy Policy"}</span>
-          <span>{t.home?.footer?.terms ?? "Terms of Service"}</span>
-          <span>{t.home?.footer?.support ?? "Support"}</span>
-        </div>
-      </footer>
+        {/* Footer */}
+        <footer className="py-4 px-6 border-t border-slate-400/30">
+          <div className="max-w-2xl mx-auto flex items-center justify-center gap-6 text-xs text-slate-800 font-medium drop-shadow-sm">
+            <span>{t.home?.footer?.privacy ?? "Privacy Policy"}</span>
+            <span>{t.home?.footer?.terms ?? "Terms of Service"}</span>
+            <span>{t.home?.footer?.support ?? "Support"}</span>
+          </div>
+        </footer>
       </div>
     </div>
   );

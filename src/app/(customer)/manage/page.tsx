@@ -63,6 +63,13 @@ export default function ManageBookingPage() {
       <div className="absolute bottom-0 -left-1/4 w-[600px] h-[600px] bg-blue-500/10 blur-[100px] rounded-full mix-blend-screen pointer-events-none" />
 
       <div className="w-full max-w-md relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
+        <Button 
+          variant="secondary" 
+          onClick={() => router.push("/")}
+          className="mb-6 bg-white/10 hover:bg-white/20 border-white/20 text-white backdrop-blur-md"
+        >
+          {t.booking?.passenger?.back ?? "← Back"}
+        </Button>
         <div className="text-center mb-8">
           <h1 className="text-3xl font-black text-white mb-2">
             {t.nav.manage || "Manage Booking"}

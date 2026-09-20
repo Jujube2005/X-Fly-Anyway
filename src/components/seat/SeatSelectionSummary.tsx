@@ -15,6 +15,7 @@ interface SeatSelectionSummaryProps {
   onConfirm: () => void;
   onClear: () => void;
   isNextFlight: boolean;
+  currency: string;
 }
 
 export function SeatSelectionSummary({
@@ -26,8 +27,16 @@ export function SeatSelectionSummary({
   onConfirm,
   onClear,
   isNextFlight,
+  currency,
 }: SeatSelectionSummaryProps) {
   const { t } = useTranslation();
+  
+  const formatPrice = (n: number) =>
+    new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 2,
+    }).format(n);
   
   const assignedCount = selectedSeats.filter(Boolean).length;
   const isComplete = assignedCount === passengerCount;
@@ -110,7 +119,7 @@ export function SeatSelectionSummary({
                   </div>
 
                   <div className="text-right font-bold text-[#111827]">
-                    - ${detail.price > 0 ? detail.price.toLocaleString() : "0"}
+                    {detail.price > 0 ? `+${formatPrice(detail.price)}` : t.booking?.summary?.included ?? "Included"}
                   </div>
                 </div>
               );
@@ -126,7 +135,7 @@ export function SeatSelectionSummary({
             {t.booking?.summary?.total ?? "Total"}:
           </span>
           <span className="text-xl font-black text-[#111827]">
-            ${totalPrice.toLocaleString()}
+            {formatPrice(totalPrice)}
           </span>
         </div>
 

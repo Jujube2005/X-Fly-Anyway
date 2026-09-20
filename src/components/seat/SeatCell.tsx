@@ -13,6 +13,7 @@ interface SeatCellProps {
   price: number;
   onClick: () => void;
   disabled: boolean;
+  currency: string;
 }
 
 export function SeatCell({
@@ -25,6 +26,7 @@ export function SeatCell({
   price,
   onClick,
   disabled,
+  currency,
 }: SeatCellProps) {
   const { t } = useTranslation();
 
@@ -66,7 +68,13 @@ export function SeatCell({
   };
 
   const config = getSeatConfig();
-  const priceDisplay = price > 0 ? `+฿${price.toLocaleString()}` : "Included";
+  const formatPrice = (n: number) =>
+    new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 0,
+    }).format(n);
+  const priceDisplay = price > 0 ? `+${formatPrice(price)}` : "Included";
 
   return (
     <button

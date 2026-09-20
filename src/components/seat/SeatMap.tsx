@@ -11,6 +11,7 @@ interface SeatMapProps {
   allSelectedSeats: string[];
   onSeatClick: (seatNumber: string) => void;
   maxSeatsReached: boolean;
+  currency: string;
 }
 
 export function SeatMap({
@@ -20,6 +21,7 @@ export function SeatMap({
   allSelectedSeats,
   onSeatClick,
   maxSeatsReached,
+  currency,
 }: SeatMapProps) {
   const rowNumbers = useMemo(() => {
     const list: number[] = [];
@@ -141,6 +143,7 @@ export function SeatMap({
                         price={info.priceModifier || 0}
                         onClick={() => onSeatClick(seatNumber)}
                         disabled={!isSelectedByMe && maxSeatsReached}
+                        currency={currency}
                       />
                     </div>
                   );

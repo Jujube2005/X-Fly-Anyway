@@ -8,7 +8,7 @@ export function SeatLegend() {
   return (
     <div className="w-full glass-card p-4 sm:p-5 mt-4">
       <h3 className="text-xs font-bold text-[#111827] uppercase tracking-wider mb-3 drop-shadow-sm">
-        Cabin &amp; Seat Legend
+        {t.booking?.cabin?.title ?? "Cabin"} &amp; {t.booking?.seat?.legend?.legendTitle ?? "Seat Legend"}
       </h3>
       
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 text-xs font-medium text-[#111827]">
@@ -44,7 +44,7 @@ export function SeatLegend() {
             <div className="w-1.5 h-1.5 bg-amber-500 rounded-full absolute top-1 left-1" />
             <div className="w-1.5 h-3 bg-amber-300 rounded-r-xs ml-auto" />
           </div>
-          <span className="text-slate-700 font-medium">Premium</span>
+          <span className="text-slate-700 font-medium">{t.search?.cabinClass?.premium_economy ?? "Premium"}</span>
         </div>
 
         {/* Exit Row */}
@@ -62,7 +62,7 @@ export function SeatLegend() {
               <rect x="5" y="4" width="14" height="16" rx="7" strokeWidth="2" />
             </svg>
           </div>
-          <span className="text-slate-600 font-medium">Window</span>
+          <span className="text-slate-600 font-medium">{t.booking?.seat?.legend?.window ?? "Window"}</span>
         </div>
 
         {/* Middle */}
@@ -72,7 +72,7 @@ export function SeatLegend() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h8M8 12h8M8 17h8" />
             </svg>
           </div>
-          <span className="text-slate-600 font-medium">Middle</span>
+          <span className="text-slate-600 font-medium">{t.booking?.seat?.legend?.middle ?? "Middle"}</span>
         </div>
 
         {/* Aisle */}
@@ -82,7 +82,7 @@ export function SeatLegend() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </div>
-          <span className="text-slate-600 font-medium">Aisle</span>
+          <span className="text-slate-600 font-medium">{t.booking?.seat?.legend?.aisle ?? "Aisle"}</span>
         </div>
 
         {/* Restroom */}

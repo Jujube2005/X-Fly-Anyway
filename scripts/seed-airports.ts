@@ -12,12 +12,12 @@ async function seedAirports() {
     const lines = fileContent.split("\n");
     const airportsToInsert = [];
 
-        for (const line of lines) {
+    for (const line of lines) {
         if (!line.trim()) continue;
 
         const columns = line.split(',');
 
-        const iataCode = columns[4]?.replace(/"/g, ''); 
+        const iataCode = columns[4]?.replace(/"/g, '');
 
         if (!iataCode || iataCode === '\\N' || iataCode.length !== 3) continue;
 
@@ -43,18 +43,18 @@ async function seedAirports() {
     console.log("Ex. first 2 airports: ", airportsToInsert.slice(0, 2));
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
-    
+
     if (!supabaseUrl || !supabaseKey) {
         console.error("not find supabase url or key !");
         return;
     }
     const supabase = createClient(supabaseUrl, supabaseKey);
-    const BATCH_SIZE = 500;     
+    const BATCH_SIZE = 500;
     console.log(`\n  ${airportsToInsert.length} airports...`);
     for (let i = 0; i < airportsToInsert.length; i += BATCH_SIZE) {
         const batch = airportsToInsert.slice(i, i + BATCH_SIZE);
         const { error } = await supabase.from('airport').insert(batch);
-        
+
         if (error) {
             console.error(`error ${i}:`, error.message);
         } else {

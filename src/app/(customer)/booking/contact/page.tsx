@@ -31,21 +31,27 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="min-h-dvh flex flex-col contact-page-container">
-      <Header variant="transparent" />
+    <div 
+      className="min-h-dvh flex flex-col contact-page-container bg-cover bg-center bg-fixed"
+      style={{ backgroundImage: 'url("/images/BG/Cloud.png")' }}
+    >
+      <div className="absolute inset-0 bg-white/10 pointer-events-none"></div>
+      
+      <div className="relative z-10 flex flex-col min-h-dvh">
+        <Header variant="transparent" />
 
-      <main className="flex-1 flex items-center justify-center px-4 pt-24 pb-12">
-        <div className="w-full max-w-2xl rounded-3xl px-8 py-10 contact-card-glass">
-          <h1 className="text-3xl font-bold text-white mb-2">
-            {t.booking?.contact?.title ?? "Contact Information"}
-          </h1>
-          <p className="text-sm text-white/50 mb-6">
-            {t.booking?.contact?.subtitle ?? "Your booking confirmation will be sent to this contact."}
-          </p>
+        <main className="flex-1 flex items-center justify-center px-4 pt-24 pb-12">
+          <div className="w-full max-w-2xl rounded-3xl px-8 py-10 glass-card">
+            <h1 className="text-3xl font-bold text-white mb-2">
+              {t.booking?.summary?.contact ?? "Contact"}
+            </h1>
+            <p className="text-sm text-white/70 mb-6 font-medium">
+              {t.booking?.contact?.subtitle ?? "Your booking confirmation will be sent to this contact."}
+            </p>
 
-          <div className="mb-6">
-            <BookingStepper currentLabel="Contact" variant="dark" />
-          </div>
+            <div className="mb-6">
+              <BookingStepper currentLabel="Contact" variant="dark" />
+            </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="grid grid-cols-2 gap-3">
@@ -98,6 +104,7 @@ export default function ContactPage() {
           </form>
         </div>
       </main>
+    </div>
     </div>
   );
 }

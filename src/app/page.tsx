@@ -360,24 +360,24 @@ export default function HomePage() {
             {/* Company */}
             <div>
               <p className="home-footer-col-title">{t.home.footer.company}</p>
-              <a href="#" className="home-footer-link">{t.home.footer.about}</a>
-              <a href="#" className="home-footer-link">{t.home.footer.careers}</a>
-              <a href="#" className="home-footer-link">{t.home.footer.press}</a>
+              <span className="home-footer-link block cursor-default">{t.home.footer.about}</span>
+              <span className="home-footer-link block cursor-default">{t.home.footer.careers}</span>
+              <span className="home-footer-link block cursor-default">{t.home.footer.press}</span>
             </div>
 
             {/* Support */}
             <div>
               <p className="home-footer-col-title">{t.home.footer.support}</p>
-              <a href="#" className="home-footer-link">{t.home.footer.helpCenter}</a>
-              <a href="#" className="home-footer-link">{t.home.footer.cancellation}</a>
-              <a href="#" className="home-footer-link">{t.home.footer.baggage}</a>
+              <span className="home-footer-link block cursor-default">{t.home.footer.helpCenter}</span>
+              <span className="home-footer-link block cursor-default">{t.home.footer.cancellation}</span>
+              <span className="home-footer-link block cursor-default">{t.home.footer.baggage}</span>
             </div>
 
             {/* Legal */}
             <div>
               <p className="home-footer-col-title">{t.home.footer.legal}</p>
-              <a href="#" className="home-footer-link">{t.home.footer.privacy}</a>
-              <a href="#" className="home-footer-link">{t.home.footer.terms}</a>
+              <span className="home-footer-link block cursor-default">{t.home.footer.privacy}</span>
+              <span className="home-footer-link block cursor-default">{t.home.footer.terms}</span>
             </div>
           </div>
 

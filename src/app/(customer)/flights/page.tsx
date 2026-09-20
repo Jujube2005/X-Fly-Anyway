@@ -78,8 +78,13 @@ function FlightResultsContent() {
     .join(" | ");
 
   return (
-    <div className="min-h-dvh flights-page-container">
-      <Header variant="glass" />
+    <div 
+      className="min-h-dvh flights-page-container bg-cover bg-center bg-fixed relative"
+      style={{ backgroundImage: 'url("/images/BG/Cloud.png")' }}
+    >
+      <div className="absolute inset-0 bg-white/10 pointer-events-none"></div>
+      <div className="relative z-10 flex flex-col min-h-dvh">
+        <Header variant="glass" />
 
       <main className="pt-20 pb-12 px-4">
         <div className="max-w-5xl mx-auto">
@@ -141,6 +146,7 @@ function FlightResultsContent() {
           </div>
         </div>
       </main>
+      </div>
     </div>
   );
 }
