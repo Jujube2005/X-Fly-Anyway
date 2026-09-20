@@ -79,11 +79,10 @@ function FlightResultsContent() {
 
   return (
     <div 
-      className="min-h-dvh flights-page-container bg-cover bg-center bg-fixed relative"
-      style={{ backgroundImage: 'url("/images/BG/Cloud.png")' }}
+      className="min-h-dvh flights-page-container bg-cover bg-center bg-fixed"
+      style={{ backgroundImage: 'url("/images/BG/Cloud.png")'}}
     >
-      <div className="absolute inset-0 bg-white/10 pointer-events-none"></div>
-      <div className="relative z-10 flex flex-col min-h-dvh">
+      <div className="flex flex-col min-h-dvh">
         <Header variant="glass" />
 
       <main className="pt-20 pb-12 px-4">

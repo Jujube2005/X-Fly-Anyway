@@ -76,7 +76,7 @@ export default function BookingSummaryPage() {
       className="min-h-dvh flex flex-col bg-cover bg-center bg-fixed relative"
       style={{ backgroundImage: 'url("/images/BG/airport.png")' }}
     >
-      <div className="absolute inset-0 bg-white/20 pointer-events-none"></div>
+      <div className="absolute inset-0 backdrop-blur-xs" />
 
       <div className="relative z-10 flex flex-col min-h-dvh">
         <Header variant="glass" />

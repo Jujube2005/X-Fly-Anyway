@@ -105,7 +105,7 @@ export default function SeatSelectionPage() {
       className="min-h-dvh flex flex-col bg-cover bg-center bg-fixed relative"
       style={{ backgroundImage: 'url("/images/BG/Cloud.png")' }}
     >
-      <div className="absolute inset-0 bg-white/10 pointer-events-none"></div>
+      <div className="absolute inset-0 backdrop-blur-xs" />
 
       <div className="relative z-10 flex flex-col min-h-dvh">
         <Header variant="glass" />
