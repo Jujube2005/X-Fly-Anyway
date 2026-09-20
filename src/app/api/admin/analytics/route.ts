@@ -56,9 +56,9 @@ export async function GET(request: Request) {
 
     const role = (roleData as any).role;
 
-    // RBAC: Booking staff are denied access to Dashboard Analytics
-    if (role === "booking_staff") {
-      return NextResponse.json({ error: "Forbidden: Booking staff cannot access analytics" }, { status: 403 });
+    // RBAC: Only super_admin can access Dashboard Analytics
+    if (role !== "super_admin") {
+      return NextResponse.json({ error: "Forbidden: Only super admin can access analytics" }, { status: 403 });
     }
 
     const adminService = new AdminService(supabase);

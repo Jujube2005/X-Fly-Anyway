@@ -34,7 +34,7 @@ export default async function AdminLayout({
 
   return (
     <div className="min-h-dvh bg-[#e8eef5] flex gap-5 p-5">
-      <AdminSidebar />
+      <AdminSidebar role={(roleData as any).role} />
       <div className="flex-1 min-w-0">{children}</div>
     </div>
   );
