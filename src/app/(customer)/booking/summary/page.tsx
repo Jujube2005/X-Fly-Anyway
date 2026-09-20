@@ -81,8 +81,8 @@ export default function BookingSummaryPage() {
       <div className="relative z-10 flex flex-col min-h-dvh">
         <Header variant="glass" />
 
-        <main className="flex-1 pt-24 pb-12 px-4">
-          <div className="max-w-4xl mx-auto flex flex-col lg:flex-row gap-5 items-start">
+        <main className="summary-main flex-1 pt-24 pb-12 px-4">
+          <div className="max-w-4xl mx-auto flex flex-col lg:flex-row gap-5 lg:items-start">
             {/* Left — booking details */}
             <div className="flex-1 min-w-0 flex flex-col gap-4">
               <h1 className="text-2xl font-bold text-[#111827] uppercase tracking-wide glass-text-contrast">

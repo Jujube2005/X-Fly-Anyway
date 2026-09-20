@@ -1,5 +1,15 @@
 .confirmation-page-container {
-  background: radial-gradient(ellipse at center, #2d1b69 0%, #1a0a3c 50%, #0d0621 100%);
+  background:
+    radial-gradient(ellipse at 20% 50%, #6b21a8 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, #1e40af 0%, transparent 50%),
+    radial-gradient(ellipse at 60% 80%, #c2410c 0%, transparent 50%),
+    #0f172a;
+  position: relative;
+}
+
+.confirmation-noise-overlay {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.04;
 }
 
 .confirmation-card-glass {

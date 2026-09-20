@@ -43,6 +43,9 @@ export default function ConfirmationPage() {
 
   return (
     <div className="min-h-dvh flex flex-col confirmation-page-container">
+      {/* Noise overlay — matches home hero */}
+      <div className="pointer-events-none absolute inset-0 confirmation-noise-overlay" aria-hidden="true" />
+
       <Header variant="transparent" />
 
       <main className="flex-1 flex items-center justify-center px-4 py-16">
