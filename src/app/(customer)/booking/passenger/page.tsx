@@ -136,9 +136,9 @@ export default function PassengerPage() {
                         />
                       </div>
                       <input
-                        value={passenger.passportNumber ?? ""}
+                        value={passenger.passportNumber}
                         onChange={(e) => updateField(idx, "passportNumber", e.target.value)}
-                        placeholder={t.booking?.passenger?.passportOptional ?? "Passport Number (optional)"}
+                        placeholder={t.booking?.passenger?.passportOptional ?? "Passport Number"}
                         className={inputCls}
                         aria-label={`${t.booking?.passenger?.passportNumber ?? "Passport number"} for passenger ${idx + 1}`}
                       />
